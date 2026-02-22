@@ -1,0 +1,22 @@
+{
+  "$schema": "./settings.schema.json",
+  "github": {
+    "owner": "nanikasheila",
+    "repo": "copilot-project-template",
+    "mergeMethod": "merge"
+  },
+  "issueTracker": {
+    "provider": "none"
+  },
+  "branch": {
+    "user": "nanikasheila",
+    "format": "<user>/<type>-<description>"
+  },
+  "project": {
+    "name": "copilot-project-template",
+    "language": "markdown"
+  },
+  "agents": {
+    "model": "Claude Sonnet 4.5 (copilot)"
+  }
+}
