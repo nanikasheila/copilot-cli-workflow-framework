@@ -30,7 +30,7 @@
 - `start-feature` スキルに従い、ブランチ・worktree を準備する
 - Issue トラッカーが設定されている場合（`provider` ≠ `"none"`）は Issue も作成する
 - ブランチ命名: `rules/branch-naming.md` に従う
-- worktree 配置: `rules/worktree.md` に従う
+- worktree 配置: `rules/worktree-layout.md` に従う
 
 ## 2. 設計フェーズ
 

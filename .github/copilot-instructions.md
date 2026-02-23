@@ -49,7 +49,7 @@
 - `branch-naming.md` — ブランチ命名規則
 - `commit-message.md` — コミットメッセージ規約
 - `merge-policy.md` — マージ方式
-- `worktree.md` — Git Worktree の制約
+- `worktree-layout.md` — Git Worktree の制約
 - `issue-tracker-workflow.md` — Issue トラッカーの管理ルール
 - `error-handling.md` — エラーハンドリングポリシー
 
