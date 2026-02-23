@@ -14,20 +14,20 @@
 ## フロー概要
 
 ```
-1. Issue 起票 & Worktree 作成   → skills/wf-new-feature/（Issue はオプション）
+1. Issue 起票 & Worktree 作成   → skills/start-feature/（Issue はオプション）
 2. 設計
    2a. 構造評価・配置判断       → agents/architect.agent.md（大規模変更時）
 3. 実装
 4. テスト
 5. コードレビュー               → agents/reviewer.agent.md
-6. PR 提出 & マージ             → skills/wf-submit-pr/（GitHub 推奨）
+6. PR 提出 & マージ             → skills/submit-pull-request/（GitHub 推奨）
 7. ドキュメント・ルール更新     → agents/writer.agent.md（必要な場合）
-8. クリーンアップ               → skills/wf-cleanup/
+8. クリーンアップ               → skills/cleanup-worktree/
 ```
 
 ## 1. Issue 起票 & Worktree 作成
 
-- `wf-new-feature` スキルに従い、ブランチ・worktree を準備する
+- `start-feature` スキルに従い、ブランチ・worktree を準備する
 - Issue トラッカーが設定されている場合（`provider` ≠ `"none"`）は Issue も作成する
 - ブランチ命名: `rules/branch-naming.md` に従う
 - worktree 配置: `rules/worktree.md` に従う
@@ -81,11 +81,11 @@
 
 ## 6. PR 提出 & マージ
 
-- `wf-submit-pr` スキルに従い、コミット → プッシュ → PR 作成 → マージ
+- `submit-pull-request` スキルに従い、コミット → プッシュ → PR 作成 → マージ
 - GitHub を使用しない場合はローカルで `git merge --no-ff` を実施する
 - マージ方式: `rules/merge-policy.md` に従う
-- コンフリクト発生時: `wf-resolve-conflict` スキルで解消
-- 入れ子ブランチ: `wf-nested-merge` スキルでサブ → 親 → main の順序マージ
+- コンフリクト発生時: `resolve-conflict` スキルで解消
+- 入れ子ブランチ: `merge-nested-branch` スキルでサブ → 親 → main の順序マージ
 - エラー発生時: `rules/error-handling.md` に従いリカバリ
 
 ## 7. ドキュメント・ルール更新
@@ -102,5 +102,5 @@
 
 ## 8. クリーンアップ
 
-- `wf-cleanup` スキルに従い、worktree・ブランチを整理する
+- `cleanup-worktree` スキルに従い、worktree・ブランチを整理する
 - Issue トラッカー利用時: `rules/issue-tracker-workflow.md` に従い Done に更新

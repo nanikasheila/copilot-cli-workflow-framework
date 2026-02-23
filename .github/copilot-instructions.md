@@ -4,7 +4,7 @@
 ## プロジェクト設定
 
 プロジェクト固有の設定は `.github/settings.json` で管理する（スキーマ: `settings.schema.json`）。
-新規プロジェクトでは `wf-init` スキルを使って初期設定を行う。
+新規プロジェクトでは `initialize-project` スキルを使って初期設定を行う。
 
 ### settings.json の構造
 

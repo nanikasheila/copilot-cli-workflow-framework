@@ -13,7 +13,7 @@
 | `git push` rejected | リモートに新しいコミットがある | `git pull --rebase origin <branch>` → 再 push |
 | `git worktree add` 失敗 | worktree またはブランチが既存 | `git worktree list` で確認 → 不要なら `git worktree remove` → リトライ |
 | `git branch` 既存 | 同名ブランチが存在 | `git branch -l` で確認 → 不要なら `git branch -D` → リトライ |
-| `git merge` コンフリクト | ファイルの競合 | `wf-resolve-conflict` スキルで解消 |
+| `git merge` コンフリクト | ファイルの競合 | `resolve-conflict` スキルで解消 |
 | `git checkout` 失敗 | 未コミットの変更がある | `git stash` → checkout → `git stash pop` |
 
 ## GitHub API のエラー（推奨: GitHub を使用する場合）
@@ -22,7 +22,7 @@
 |---|---|---|
 | PR 作成 409 | 同名 PR が既に存在 | 既存 PR を検索して再利用 |
 | PR 作成 422 | head ブランチがリモートにない | `git push origin <branch>` → リトライ |
-| マージ 405 | コンフリクトあり | `wf-resolve-conflict` スキルで解消 → リトライ |
+| マージ 405 | コンフリクトあり | `resolve-conflict` スキルで解消 → リトライ |
 | マージ 405 | レビュー承認が必要 | ユーザーに報告（リポジトリの保護ルール） |
 | API レート制限 | リクエスト過多 | 30秒待機 → リトライ |
 

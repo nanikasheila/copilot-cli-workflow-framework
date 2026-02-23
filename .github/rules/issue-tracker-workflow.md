@@ -53,5 +53,5 @@ GitHub を使用する場合（`settings.json` の `github` セクション）:
 
 具体的な操作手順は以下のスキルを参照:
 
-- Issue 作成: `skills/wf-new-feature/`
-- ステータス更新: `skills/wf-cleanup/`
+- Issue 作成: `skills/start-feature/`
+- ステータス更新: `skills/cleanup-worktree/`
