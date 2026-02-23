@@ -1,4 +1,3 @@
-```instructions
 ---
 description: TypeScript ファイルのコーディングガイドライン
 applyTo: "**/*.{ts,tsx}"
@@ -34,5 +33,3 @@ applyTo: "**/*.{ts,tsx}"
 - `@ts-ignore` の使用（`@ts-expect-error` に置き換え、理由をコメントで記載）
 - `as` によるキャストの乱用（型ガードを優先）
 - `enum` より `as const` オブジェクトを推奨
-
-```

@@ -110,7 +110,9 @@ URL から `owner` と `repo` を抽出する。
 対象ファイル:
 - `agents/developer.agent.md`
 - `agents/reviewer.agent.md`
+- `agents/writer.agent.md`
 - `agents/manager.agent.md`
+- `agents/architect.agent.md`
 
 ### 6. .gitignore の生成
 

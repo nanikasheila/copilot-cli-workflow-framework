@@ -1,4 +1,3 @@
-```instructions
 ---
 description: JavaScript ファイルのコーディングガイドライン
 applyTo: "**/*.{js,mjs,cjs}"
@@ -33,5 +32,3 @@ applyTo: "**/*.{js,mjs,cjs}"
 - `eval()` の使用
 - `with` 文の使用
 - グローバル変数の暗黙的宣言
-
-```

@@ -1,4 +1,3 @@
-```instructions
 ---
 description: Python ファイルのコーディングガイドライン
 applyTo: "**/*.py"
@@ -34,5 +33,3 @@ applyTo: "**/*.py"
 - `import *` の使用
 - ミュータブルなデフォルト引数（`def f(x=[])` → `def f(x=None)` に修正）
 - グローバル変数の変更（定数は `UPPER_CASE` で定義）
-
-```

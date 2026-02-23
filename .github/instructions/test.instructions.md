@@ -1,7 +1,6 @@
-```instructions
 ---
 description: テストファイルのガイドライン
-applyTo: "**/*.{test,spec}.{js,ts,mjs,cjs,jsx,tsx}"
+applyTo: "**/*.{test,spec}.{js,ts,mjs,cjs,jsx,tsx},**/test_*.py,**/*_test.py"
 ---
 
 # テストガイドライン
@@ -10,6 +9,8 @@ applyTo: "**/*.{test,spec}.{js,ts,mjs,cjs,jsx,tsx}"
 
 - テストファイルは対象ファイルと同名 + `.test` または `.spec` サフィックス
   - 例: `math.js` → `math.test.js`
+- Python の場合は `test_` プレフィックスまたは `_test` サフィックス
+  - 例: `math.py` → `test_math.py` / `math_test.py`
 - テスト関数名は `<対象関数> + <条件> + <期待結果>` の形式で記述する
   - 例: `"divide throws Error when divisor is zero"`
 
@@ -39,5 +40,3 @@ applyTo: "**/*.{test,spec}.{js,ts,mjs,cjs,jsx,tsx}"
 - テスト内での `console.log` によるデバッグ（assertion で検証する）
 - 1つのテストケースで複数の独立した機能を検証する
 - テストデータのハードコード共有（ヘルパー関数で生成する）
-
-```
