@@ -15,8 +15,9 @@
 
 ```
 1. Issue 起票 & Worktree 作成   → skills/start-feature/（Issue はオプション）
-2. 設計
-   2a. 構造評価・配置判断       → agents/architect.agent.md（大規模変更時）
+2. 影響分析・設計
+   2a. 影響分析                 → agents/manager.agent.md（全変更で実施）
+   2b. 構造評価・配置判断       → agents/architect.agent.md（エスカレ時）
 3. 実装
 4. テスト
 5. コードレビュー               → agents/reviewer.agent.md
@@ -32,11 +33,10 @@
 - ブランチ命名: `rules/branch-naming.md` に従う
 - worktree 配置: `rules/worktree-layout.md` に従う
 
-## 2. 設計フェーズ
+## 2. 影響分析・設計フェーズ
 
-- コードベースを調査し、影響範囲・変更ファイル・テスト方針を明確にする
-- 大規模な変更の場合、`manager` エージェントにタスク分解と計画策定を依頼する
-- 新規モジュール追加・アーキテクチャ変更・非機能要求変更の場合、`architect` エージェントに構造評価・配置判断を依頼する
+- `manager` エージェントに影響分析とタスク分解を依頼する。manager は全変更で簡易影響分析を実施する
+- 影響分析の結果、エスカレーション基準に該当する場合、`architect` エージェントに構造評価・配置判断を依頼する
 - 入れ子ブランチが必要な場合はこの段階で構造を決定する
 
 ## 3. 実装フェーズ
