@@ -113,7 +113,15 @@ URL から `owner` と `repo` を抽出する。
 - `agents/reviewer.agent.md`
 - `agents/manager.agent.md`
 
-### 6. GitHub リポジトリ設定（任意）
+### 6. .gitignore の生成
+
+`gitignore` スキル（`.github/skills/gitignore/SKILL.md`）を読み込み、手順に従って `.gitignore` を生成する。
+
+- `project.language` と OS 情報から適切なテンプレートを自動選択
+- ユーザーに追加テンプレートの要否を確認
+- gitignore.io API で `.gitignore` を生成・配置
+
+### 7. GitHub リポジトリ設定（任意）
 
 `delete_branch_on_merge` を有効にするか確認:
 
@@ -122,7 +130,7 @@ mcp_io_github_git → リポジトリ設定の更新
   delete_branch_on_merge: true
 ```
 
-### 7. 完了メッセージ
+### 8. 完了メッセージ
 
 設定完了後、以下を表示:
 
@@ -134,6 +142,7 @@ mcp_io_github_git → リポジトリ設定の更新
 - Issue トラッカー: <provider> (<team>)
 - ブランチ形式: <format>
 - エージェントモデル: <model>
+- .gitignore: 生成済み（テンプレート: <templates>）
 
 すべてのスキルがこの設定を参照して動作します。
 設定を変更する場合は .github/settings.json を直接編集してください。
