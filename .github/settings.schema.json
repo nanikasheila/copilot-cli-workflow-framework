@@ -101,7 +101,7 @@
         "language": {
           "type": "string",
           "description": "主要プログラミング言語",
-          "enum": ["javascript", "typescript", "python", "go", "rust", "java", "csharp", "ruby", "other"]
+          "enum": ["javascript", "typescript", "python", "go", "rust", "java", "csharp", "ruby", "markdown", "other"]
         },
         "entryPoint": {
           "type": "string",
