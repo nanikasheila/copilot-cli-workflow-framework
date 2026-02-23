@@ -1,4 +1,3 @@
-````skill
 ---
 name: wf-init
 description: 新規プロジェクトに .github/ を導入した際の初期設定を行う。settings.json の作成とプロジェクト固有値の設定を対話的にガイドする。
@@ -180,5 +179,3 @@ settings.json の先頭に `"$schema": "./settings.schema.json"` を含めると
 - `wf-new-feature` スキルで Issue 作成をスキップ
 - `wf-cleanup` スキルで Issue ステータス更新をスキップ
 - ブランチ名から Issue プレフィックス・番号が省略可能
-
-````

@@ -1,4 +1,3 @@
-````skill
 ---
 name: wf-submit-pr
 description: 変更をコミットし、PR を作成してマージする。worktree での変更が完了した後に使用する。
@@ -74,5 +73,3 @@ mcp_io_github_git_merge_pull_request:
 | PR 作成失敗（ブランチが存在しない） | プッシュが成功しているか確認 |
 | マージ失敗（405 Not Mergeable） | `wf-resolve-conflict` スキルを使用 |
 | マージ失敗（その他エラー） | PR の状態を確認し、必要に応じて再作成 |
-
-````

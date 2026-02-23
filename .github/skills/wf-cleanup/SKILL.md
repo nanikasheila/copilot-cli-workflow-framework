@@ -1,4 +1,3 @@
-````skill
 ---
 name: wf-cleanup
 description: マージ完了後のクリーンアップ処理を実行する。worktree、ローカルブランチ、Issue の整理を行うときに使用する。
@@ -94,5 +93,3 @@ git fetch --prune
 | `git worktree remove` 失敗（未コミットの変更あり） | `--force` を付与するか、先に変更を退避 |
 | `git branch -D` 失敗（worktree が残っている） | 先に worktree を削除する |
 | Issue 更新失敗（UUID 不明） | `mcp_<mcpServer>_list_issues` で検索して UUID を特定 |
-
-````

@@ -1,4 +1,3 @@
-````skill
 ---
 name: wf-resolve-conflict
 description: PR マージ時のコンフリクトを解消する。マージが 405 エラーで失敗した場合に使用する。
@@ -57,5 +56,3 @@ mcp_io_github_git_merge_pull_request:
   pullNumber: <PR番号>
   merge_method: "<mergeMethod>"
 ```
-
-````

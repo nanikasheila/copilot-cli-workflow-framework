@@ -1,4 +1,3 @@
-````skill
 ---
 name: gitignore
 description: gitignore.io API を使って .gitignore ファイルを生成・更新する。プロジェクトの言語・OS・エディタに応じたテンプレートを取得し、プロジェクトルートに .gitignore を作成する。
@@ -45,7 +44,7 @@ gitignore.io（toptal）API を利用して `.gitignore` を生成する。
 
 ユーザーに追加テンプレートが必要か確認する:
 
-> 「追加の gitignore テンプレートはありますか？（例: docker, terraform, dotenv）」
+> 「追加の gitignore テンプレートはありますか？（例: terraform, dotenv, redis）」
 
 ### 3. テンプレートの検証
 
@@ -107,4 +106,3 @@ API 生成コンテンツの末尾に、プロジェクト固有のルールを�
 ✅ .gitignore を生成しました。
 テンプレート: <templates>
 ```
-````
