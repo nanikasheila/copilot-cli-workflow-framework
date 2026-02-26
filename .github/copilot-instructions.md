@@ -32,7 +32,7 @@
 |---|---|---|
 | **Feature** | 開発の基本単位。1 Board・1 ブランチ・複数 Cycle | `rules/development-workflow.md` |
 | **Flow State** | 開発サイクル内の現在位置（initialized → completed） | `rules/workflow-state.md` |
-| **Maturity** | 機能の成熟度（experimental → release-ready） | `rules/workflow-state.md` |
+| **Maturity** | 機能の成熟度（experimental → release-ready、sandbox は検証専用） | `rules/workflow-state.md` |
 | **Gate** | 状態遷移の通過条件。Maturity に連動して厳格さが変わる | `rules/gate-profiles.json` |
 | **Board** | エージェント間の構造化された共有コンテキスト（JSON） | `.github/board.schema.json` |
 

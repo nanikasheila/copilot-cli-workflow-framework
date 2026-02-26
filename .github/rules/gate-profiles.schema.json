@@ -12,9 +12,10 @@
         "experimental": { "$ref": "#/definitions/gate_profile" },
         "development":  { "$ref": "#/definitions/gate_profile" },
         "stable":       { "$ref": "#/definitions/gate_profile" },
-        "release-ready": { "$ref": "#/definitions/gate_profile" }
+        "release-ready": { "$ref": "#/definitions/gate_profile" },
+        "sandbox":      { "$ref": "#/definitions/gate_profile" }
       },
-      "required": ["experimental", "development", "stable", "release-ready"],
+      "required": ["experimental", "development", "stable", "release-ready", "sandbox"],
       "additionalProperties": false
     }
   },
@@ -45,9 +46,9 @@
         "required": {
           "oneOf": [
             { "type": "boolean" },
-            { "type": "string", "enum": ["on_escalation"] }
+            { "type": "string", "enum": ["on_escalation", "blocked"] }
           ],
-          "description": "Gate が必須かどうか。on_escalation の場合、escalation_condition に合致した時のみ必須"
+          "description": "Gate が必須かどうか。on_escalation の場合、escalation_condition に合致した時のみ必須。blocked の場合、構造的に通過不可能（sandbox の submit_gate 等）"
         },
         "escalation_condition": {
           "type": "string",

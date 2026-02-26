@@ -40,6 +40,16 @@
       "review_gate":         { "required": true,  "checks": ["logic", "security_deep", "architecture", "performance", "test_quality"], "description": "全観点でのフルレビュー" },
       "documentation_gate":  { "required": true,  "description": "ドキュメント更新・リリースノート必須" },
       "submit_gate":         { "required": true,  "description": "PR 作成・マージ" }
+    },
+    "sandbox": {
+      "analysis_gate":       { "required": true,  "description": "影響分析を実施する" },
+      "design_gate":         { "required": "on_escalation", "escalation_condition": "artifacts.impact_analysis.escalation.required == true", "description": "エスカレーション基準に該当する場合のみ architect を起動" },
+      "plan_gate":           { "required": true,  "description": "manager による実行計画を策定する" },
+      "implementation_gate": { "required": true,  "description": "コード実装の完了を確認" },
+      "test_gate":           { "required": true,  "pass_rate": 100, "coverage_min": 70, "description": "主要パスのテスト PASS + カバレッジ 70% 以上" },
+      "review_gate":         { "required": true,  "checks": ["logic", "security_basic"], "description": "ロジック + 基本セキュリティチェック" },
+      "documentation_gate":  { "required": false, "description": "sandbox では不要" },
+      "submit_gate":         { "required": "blocked", "description": "main マージ禁止。sandbox は worktree 内で完結する検証専用" }
     }
   }
 }

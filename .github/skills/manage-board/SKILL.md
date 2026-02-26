@@ -120,6 +120,7 @@ Gate 条件を `gate-profiles.json` から読み取り、評価する:
    - `false` → Gate を `skipped` にし、次へ進む
    - `true` → 該当エージェントを呼び出し、結果で評価
    - `"on_escalation"` → **エスカレーション評価条件**（後述）を判定
+   - `"blocked"` → Gate を `blocked` にし、遷移を構造的に禁止する。sandbox の場合は `approved` で作業終了しクリーンアップへ
 3. Gate 通過条件を確認:
    - `test_gate`: `pass_rate` と `coverage_min` を `artifacts.test_results` と比較
    - `review_gate`: `verdict` が `lgtm` であること
@@ -175,6 +176,7 @@ board.updated_at = new Date().toISOString()
 - `artifact_updated` — 成果物更新時
 - `maturity_changed` — Maturity 変更時
 - `board_archived` — アーカイブ時
+- `board_destroyed` — sandbox Board 破棄時
 
 ### 6. サイクル再開
 
@@ -211,6 +213,56 @@ mv .copilot/boards/<feature-id>/board.json .copilot/boards/_archived/<feature-id
 # 空ディレクトリ削除
 rmdir .copilot/boards/<feature-id>
 ```
+
+### 9. sandbox Board 破棄
+
+sandbox（`maturity: "sandbox"`）の作業終了後、Board をアーカイブせず**削除**する。
+sandbox は main マージを構造的に禁止する検証専用のため、成果物を永続化しない。
+
+#### 前提条件
+
+- Board の `maturity` が `"sandbox"` であること
+- `flow_state` が `approved` または `reviewing`（LGTM 後）であること
+
+#### 手順
+
+1. `history` に `board_destroyed` エントリを追記（削除前の最終記録）
+2. Board ファイルを削除（`_archived` には移動しない）
+3. worktree を削除
+4. ローカルブランチを削除
+5. リモートブランチがある場合は削除
+
+```json
+{
+  "timestamp": "<ISO 8601>",
+  "cycle": "<現在のcycle>",
+  "agent": "orchestrator",
+  "action": "board_destroyed",
+  "details": {
+    "feature_id": "<feature-id>",
+    "reason": "sandbox 検証完了。main マージ対象外のため Board を破棄"
+  }
+}
+```
+
+```bash
+# Board ファイル削除
+rm .copilot/boards/<feature-id>/board.json
+rmdir .copilot/boards/<feature-id>
+
+# worktree 削除
+git worktree remove .worktrees/<feature-id>
+
+# ローカルブランチ削除
+git branch -D <branch-name>
+
+# リモートブランチ削除（存在する場合）
+git push origin --delete <branch-name> 2>/dev/null || true
+```
+
+> **注意**: `board_destroyed` の history エントリは Board 削除と共に消失する。
+> これは意図的な設計 — sandbox の痕跡を残さないことが目的。
+> 検証で得た知見を残す必要がある場合は、削除前に別途メモを取ること。
 
 ## 簡略化ガイドライン
 

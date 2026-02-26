@@ -38,6 +38,7 @@ initialized → analyzing → designing → planned → implementing
 **Maturity State** — 機能の成熟度:
 ```
 experimental → development → stable → release-ready   (任意 → abandoned)
+sandbox — 検証専用（main マージ禁止）
 ```
 
 ### Gate（品質関門）
@@ -252,6 +253,7 @@ Board の内容をプロンプトに転記する必要はない。
 - `cleanup-worktree` スキルに従い、worktree・ブランチを整理する
 - Issue トラッカー利用時: `rules/issue-tracker-workflow.md` に従い Done に更新
 - Board を `boards/_archived/<feature-id>/` に移動する（または maturity が上がる場合はそのまま保持）
+- **sandbox の場合**: Board をアーカイブせず**削除**する（`skills/manage-board/SKILL.md` セクション 9 参照）
 
 ## Maturity の昇格
 
@@ -263,6 +265,7 @@ Feature の Maturity は以下のタイミングで検討する:
 | `development` → `stable` | 機能が動作保証され、統合テスト済みの時 | ユーザー（architect の構造確認あり） |
 | `stable` → `release-ready` | リリース判定が通過した時 | ユーザー |
 | 任意 → `abandoned` | 機能が不要と判断された時 | ユーザー |
+| `sandbox` → 他の Maturity | **禁止**。検証成果を活かす場合は新規 Feature を作成する | — |
 
 昇格時は Board の `maturity` と `gate_profile` を更新し、`maturity_history` に記録する。
 以降のサイクルでは新しい Maturity に対応する Gate Profile が適用される。
@@ -279,3 +282,51 @@ Feature の Maturity は以下のタイミングで検討する:
 最低限のパスは: `initialized → implementing → submitting → completed`
 
 これにより素早く仮説を検証し、価値があれば `development` に昇格、なければ `abandoned` にできる。
+
+## sandbox フロー
+
+`sandbox` は main ブランチへのマージを**構造的に禁止**する検証専用の Maturity State。
+フレームワーク自体のメタ検証や PoC に使用し、成果物が main を汚染することを防ぐ。
+
+### Gate 厳格さ
+
+`development` 相当の Gate が適用される（analysis/plan/impl/test/review すべて必須）。
+ただし `submit_gate` が `blocked` のため、PR 作成・マージは不可能。
+
+### フロー
+
+```
+1. Feature 開始 & Board 作成    → maturity: sandbox
+2. 影響分析                      → [analysis_gate]
+3. 構造評価（on_escalation）     → [design_gate]
+4. 計画策定                      → [plan_gate]
+5. 実装                          → [implementation_gate]
+6. テスト                        → [test_gate]
+7. コードレビュー                → [review_gate] → approved
+   ── ここで終了 ──
+8. クリーンアップ（Board 破棄）  → worktree・ブランチ削除
+```
+
+### submit_gate の blocked 振る舞い
+
+- `submit_gate.required` が `"blocked"` の場合、Gate を `blocked` 状態にする
+- `approved` 状態に到達した時点で**作業を終了**と見なす
+- `submitting` / `completed` には遷移しない
+- オーケストレーターは直接クリーンアップに進む
+
+### クリーンアップ
+
+sandbox の作業完了後:
+
+1. Board を `_archived/` に移動せず、**削除**する（`board_destroyed` アクション）
+2. worktree を削除する
+3. ローカルブランチを削除する（リモートブランチは作成されていない場合が多い）
+4. `settings.json` 等への一時的変更は worktree と共に消滅する
+
+> 詳細手順は `skills/manage-board/SKILL.md` セクション 9 を参照。
+
+### sandbox の制約
+
+- `sandbox` から他の Maturity（experimental/development/stable/release-ready）への**昇格は禁止**
+- 検証の成果を本格実装する場合は、新しい Feature を通常の Maturity で開始する
+- `sandbox` → `abandoned` のみが許可される Maturity 遷移

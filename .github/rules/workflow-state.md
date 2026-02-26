@@ -71,7 +71,22 @@ experimental ──► development ──► stable ──► release-ready
   abandoned        abandoned    abandoned
                                     │
                    development ◄────┘  ※ 重大問題時のみ降格
+
+sandbox ──► abandoned   ※ sandbox は他の Maturity に昇格不可
 ```
+
+### sandbox（検証専用）
+
+`sandbox` は main ブランチへのマージを構造的に禁止する検証専用の Maturity State である。
+フレームワーク自体のメタ検証や PoC に使用し、成果物が main を汚染することを防ぐ。
+
+| 特性 | 値 |
+|---|---|
+| Gate 厳格さ | `development` 相当（analysis/plan/impl/test/review 必須） |
+| `submit_gate` | `blocked` — PR 作成・マージは構造的に不可能 |
+| 昇格 | 不可。sandbox から他の Maturity への遷移はできない |
+| クリーンアップ | Board を**破棄**（アーカイブしない）。worktree・ブランチを削除 |
+| Flow State | `approved` または `reviewing`（LGTM 後）で終了。`submitting` / `completed` には遷移しない |
 
 ### 昇格条件
 
@@ -96,6 +111,15 @@ experimental ──► development ──► stable ──► release-ready
 | 任意 → `abandoned` | 機能の方向性が不要と判断された場合。理由を `maturity_history` に記録する |
 
 > `abandoned` からの復帰は行わない。同じ目的で再開する場合は新しい Board を作成する。
+
+### sandbox の制約
+
+| ルール | 説明 |
+|---|---|
+| 昇格禁止 | `sandbox` から `experimental` / `development` / `stable` / `release-ready` への遷移は許可されない |
+| マージ禁止 | `submit_gate` が `blocked` のため、`submitting` / `completed` 状態には遷移できない |
+| 廃棄のみ | `sandbox` → `abandoned` のみが許可される Maturity 遷移 |
+| Board 破棄 | 作業終了時に Board をアーカイブせず**削除**する（`board_destroyed` アクション） |
 
 ## Cycle 管理
 
@@ -163,6 +187,7 @@ Gate 評価はオーケストレーターが以下の手順で実施する:
 | `review_gate` | `implementing` にループバックし、修正後に再レビュー |
 | `documentation_gate` | writer に再作成を依頼 |
 | `submit_gate` | エラー原因を確認し、`rules/error-handling.md` に従う |
+| `submit_gate`（`blocked`） | 遷移不可。sandbox では `approved` で作業を終了し、クリーンアップに進む |
 
 ## Board ファイル配置
 

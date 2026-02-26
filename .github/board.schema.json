@@ -25,7 +25,7 @@
     "maturity": {
       "type": "string",
       "description": "機能の成熟度。プロジェクト内での位置づけを示す",
-      "enum": ["experimental", "development", "stable", "release-ready", "abandoned"]
+      "enum": ["experimental", "development", "stable", "release-ready", "sandbox", "abandoned"]
     },
     "maturity_history": {
       "type": "array",
@@ -60,7 +60,7 @@
     "gate_profile": {
       "type": "string",
       "description": "適用する Gate Profile 名。通常は maturity に連動するが、手動オーバーライド可能",
-      "enum": ["experimental", "development", "stable", "release-ready"]
+      "enum": ["experimental", "development", "stable", "release-ready", "sandbox"]
     },
     "gates": {
       "type": "object",
@@ -142,7 +142,7 @@
       "properties": {
         "status": {
           "type": "string",
-          "enum": ["not_reached", "pending", "passed", "failed", "skipped"],
+          "enum": ["not_reached", "pending", "passed", "failed", "skipped", "blocked"],
           "description": "Gate の現在状態"
         },
         "required": {
@@ -172,11 +172,11 @@
       "properties": {
         "from": {
           "type": "string",
-          "enum": ["experimental", "development", "stable", "release-ready", "abandoned"]
+          "enum": ["experimental", "development", "stable", "release-ready", "sandbox", "abandoned"]
         },
         "to": {
           "type": "string",
-          "enum": ["experimental", "development", "stable", "release-ready", "abandoned"]
+          "enum": ["experimental", "development", "stable", "release-ready", "sandbox", "abandoned"]
         },
         "timestamp": { "type": "string", "format": "date-time" },
         "reason": { "type": "string", "description": "昇格・降格・廃棄の理由" },
@@ -445,7 +445,8 @@
             "gate_evaluated",
             "artifact_updated",
             "maturity_changed",
-            "board_archived"
+            "board_archived",
+            "board_destroyed"
           ],
           "description": "操作の種類"
         },
