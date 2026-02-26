@@ -67,7 +67,25 @@ git worktree add .worktrees/<ブランチ名（user/ を除いた部分）> <フ
 
 > **ブランチ/worktree が既に存在する場合**: `git branch` や `git worktree add` がエラーになったら、`git branch -l` / `git worktree list` で既存の状態を確認し、不要なら削除してからリトライする。
 
-### 4. 作業開始
+### 4. .gitignore の確認
+
+worktree ディレクトリ内に `.gitignore` が存在するか確認する:
+
+```bash
+test -f .gitignore
+```
+
+`.gitignore` が**存在しない場合**:
+- `generate-gitignore` スキルを使って `.gitignore` を生成する
+- `settings.json` の `project.language` を元にテンプレートを自動決定する
+
+`.gitignore` が**既に存在する場合**:
+- そのまま使用する（追加ルールが必要なら `generate-gitignore` スキルの「マージ」手順を参照）
+
+> **Why**: 前回の検証で `__pycache__/` や `.coverage` が Git 管理対象になりかけた。
+> Feature 開始時に .gitignore を確保することで、不要ファイルのコミットを防止する。
+
+### 5. 作業開始
 
 worktree ディレクトリ内でファイルの変更を行う。
 

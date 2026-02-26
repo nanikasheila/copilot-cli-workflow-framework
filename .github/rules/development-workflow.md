@@ -112,6 +112,20 @@ Flow State の遷移に通過条件を設ける。条件の厳格さは Maturity
 9. completed に到達するまで 2-8 を繰り返す
 ```
 
+> Board 操作の詳細手順は `skills/manage-board/SKILL.md` を参照。
+
+### サブエージェントへの Board パス伝達
+
+サブエージェントを `runSubagent` で呼び出す際、プロンプトに以下を必ず含める:
+
+```
+Board ファイル: .copilot/boards/<feature-id>/board.json
+作業開始時に read_file で Board を読み取り、関連 artifact を参照してください。
+```
+
+これにより各エージェントは Board を直接 `read_file` で参照できる。
+Board の内容をプロンプトに転記する必要はない。
+
 ## 1. Feature 開始 & Board 作成
 
 - `start-feature` スキルに従い、ブランチ・worktree を準備する
@@ -124,6 +138,8 @@ Flow State の遷移に通過条件を設ける。条件の厳格さは Maturity
   - `flow_state`: `initialized`
   - `cycle`: 1
   - `gate_profile`: `maturity` と同値
+  - `$schema`: 省略推奨（記載する場合は `../../.github/board.schema.json`）
+  - Board 操作の詳細手順は `skills/manage-board/SKILL.md` を参照
 
 ### Feature の再開（既存 Board がある場合）
 

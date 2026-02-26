@@ -23,6 +23,12 @@ model: Claude Sonnet 4.6 (copilot)
 このエージェントは Board の以下のセクションに関与する。
 書き込み権限の詳細は `rules/workflow-state.md` の権限マトリクスを参照。
 
+### Board ファイルの参照
+
+オーケストレーターからのプロンプトに Board ファイルパスが含まれる。
+作業開始時に `read_file` で Board を読み取り、関連フィールドを参照すること。
+パス形式: `.copilot/boards/<feature-id>/board.json`
+
 | 操作 | 対象フィールド | 権限 |
 |---|---|---|
 | 読み取り | Board 全体 | ✅ |
@@ -41,6 +47,30 @@ model: Claude Sonnet 4.6 (copilot)
 ### 出力として書き込む Board フィールド
 
 実装結果とテスト結果を構造化 JSON として出力し、オーケストレーターが Board に反映する。
+
+#### 実装モード出力（必須フィールド）
+
+`artifacts.implementation` には以下を必ず含める:
+
+- `changed_files` — 変更ファイル一覧（path, action, summary）
+- `public_api` — **公開関数・クラスのシグネチャ一覧**（writer がドキュメントを正確に作成するために必須）
+- `summary` — 実装概要
+
+`public_api` の各エントリには以下を記載する:
+
+```json
+{
+  "name": "calculate_retry_delay",
+  "file": "src/utils.py",
+  "signature": "calculate_retry_delay(attempt: int, base_delay: float = 1.0) -> float",
+  "returns": "float — 次のリトライまでの待ち時間（秒）",
+  "raises": ["ValueError — attempt が負の値の場合"],
+  "description": "指数バックオフでリトライ間隔を計算する"
+}
+```
+
+> **Why**: 前回の検証で writer が例外型・戻り値型を誤認した（ZeroDivisionError を ValueError と記述）。
+> developer が実装時点で正確な API 情報を Board に記録することで、後続の writer が事実に基づいたドキュメントを作成できる。
 
 ### Feature の Maturity を意識した実装
 

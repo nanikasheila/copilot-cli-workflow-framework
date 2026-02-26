@@ -28,6 +28,12 @@ developer / reviewer を順次実行し、Board を通じてフローを制御�
 このエージェントは Board の以下のセクションに関与する。
 書き込み権限の詳細は `rules/workflow-state.md` の権限マトリクスを参照。
 
+### Board ファイルの参照
+
+オーケストレーターからのプロンプトに Board ファイルパスが含まれる。
+作業開始時に `read_file` で Board を読み取り、関連フィールドを参照すること。
+パス形式: `.copilot/boards/<feature-id>/board.json`
+
 | 操作 | 対象フィールド | 権限 |
 |---|---|---|
 | 読み取り | Board 全体 | ✅ |

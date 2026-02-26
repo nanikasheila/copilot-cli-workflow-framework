@@ -7,7 +7,7 @@
   "properties": {
     "$schema": {
       "type": "string",
-      "description": "JSON Schema ファイルへの参照"
+      "description": "JSON Schema ファイルへの参照。省略推奨。記載する場合はリポジトリルートからの相対パスで指定する（例: ../../.github/board.schema.json）。worktree の深さに依存する絶対的な相対パスは避ける"
     },
     "schema_version": {
       "type": "integer",
@@ -311,6 +311,11 @@
             "additionalProperties": false
           }
         },
+        "public_api": {
+          "type": "array",
+          "description": "公開関数・クラスのシグネチャ一覧。writer がドキュメントを正確に書くために必須",
+          "items": { "$ref": "#/definitions/api_signature" }
+        },
         "commit_sha": { "type": "string", "description": "コミットハッシュ" },
         "summary": { "type": "string", "description": "実装概要" }
       },
@@ -403,9 +408,26 @@
       "additionalProperties": false
     },
 
-    "history_entry": {
+    "api_signature": {
       "type": "object",
-      "description": "Board 操作の履歴エントリ",
+      "description": "公開関数・クラスのシグネチャ情報",
+      "required": ["name", "file", "signature"],
+      "properties": {
+        "name": { "type": "string", "description": "関数・クラス名" },
+        "file": { "type": "string", "description": "定義ファイルパス" },
+        "signature": { "type": "string", "description": "完全なシグネチャ（引数名・型・デフォルト値を含む）" },
+        "returns": { "type": "string", "description": "戻り値の型と説明" },
+        "raises": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "発生しうる例外・エラーの型名と条件"
+        },
+        "description": { "type": "string", "description": "関数・クラスの簡潔な説明" }
+      },
+      "additionalProperties": false
+    },
+
+    "history_entry": {
       "required": ["timestamp", "cycle", "action"],
       "properties": {
         "timestamp": { "type": "string", "format": "date-time" },

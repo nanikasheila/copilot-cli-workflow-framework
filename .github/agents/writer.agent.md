@@ -36,6 +36,12 @@ model: Claude Sonnet 4.6 (copilot)
 このエージェントは Board の以下のセクションに関与する。
 書き込み権限の詳細は `rules/workflow-state.md` の権限マトリクスを参照。
 
+### Board ファイルの参照
+
+オーケストレーターからのプロンプトに Board ファイルパスが含まれる。
+作業開始時に `read_file` で Board を読み取り、関連フィールドを参照すること。
+パス形式: `.copilot/boards/<feature-id>/board.json`
+
 | 操作 | 対象フィールド | 権限 |
 |---|---|---|
 | 読み取り | Board 全体 | ✅ |
@@ -47,8 +53,19 @@ model: Claude Sonnet 4.6 (copilot)
 - `feature_id` — ドキュメント対象の機能識別
 - `maturity` — 機能の成熟度（ドキュメントの詳細度を調整）
 - `artifacts.implementation` — 変更ファイル一覧と実装概要
+- `artifacts.implementation.public_api` — **公開 API のシグネチャ・戻り値・例外情報**（ドキュメントの事実正確性の第一情報源）
 - `artifacts.architecture_decision` — architect の設計方針（構造ドキュメント更新時）
 - `artifacts.review_findings` — ドキュメント関連のレビュー指摘
+
+### ソースコード確認の義務
+
+> **ルール**: ドキュメントに関数シグネチャ・例外型・戻り値型を記述する場合、必ず以下の手順に従う:
+>
+> 1. Board の `artifacts.implementation.public_api` を第一情報源として参照する
+> 2. `public_api` の情報が不十分な場合は、`read_file` で**実際のソースコード**を読み取り、正確な型・例外を確認する
+> 3. **推測で型名・例外名を記述してはならない**
+>
+> **Why**: 前回の検証で `ZeroDivisionError` を `ValueError` と誤記する問題が発生した。根本原因は Board に API 情報がなく、writer がソースコードを確認せずに推測で記述したこと。
 
 ### 出力として書き込む Board フィールド
 

@@ -47,7 +47,11 @@
             { "type": "boolean" },
             { "type": "string", "enum": ["on_escalation"] }
           ],
-          "description": "Gate が必須かどうか。on_escalation の場合、影響分析でエスカレーション判定された時のみ必須"
+          "description": "Gate が必須かどうか。on_escalation の場合、escalation_condition に合致した時のみ必須"
+        },
+        "escalation_condition": {
+          "type": "string",
+          "description": "required が on_escalation の場合の評価条件。Board の artifacts を参照する条件式を自然言語で記述する"
         },
         "description": {
           "type": "string",
