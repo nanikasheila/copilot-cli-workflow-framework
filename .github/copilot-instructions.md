@@ -24,16 +24,31 @@
 | GitHub | **推奨** | PR・マージ・コードレビューに使用 |
 | Issue トラッカー | **オプション** | `issueTracker.provider: "none"` で無効化可能 |
 
-## .github 4層構造
+## 中核概念: Feature / State / Gate / Board
 
-`.github/` は以下の4層で構成されている。各ディレクトリ内のファイルを参照すること。
+開発は **Feature（機能）** を単位として進める。各 Feature は **Board** を持ち、ライフサイクル全体を追跡する。
+
+| 概念 | 役割 | 定義場所 |
+|---|---|---|
+| **Feature** | 開発の基本単位。1 Board・1 ブランチ・複数 Cycle | `rules/development-workflow.md` |
+| **Flow State** | 開発サイクル内の現在位置（initialized → completed） | `rules/workflow-state.md` |
+| **Maturity** | 機能の成熟度（experimental → release-ready） | `rules/workflow-state.md` |
+| **Gate** | 状態遷移の通過条件。Maturity に連動して厳格さが変わる | `rules/gate-profiles.json` |
+| **Board** | エージェント間の構造化された共有コンテキスト（JSON） | `.github/board.schema.json` |
+
+詳細は各定義ファイルを参照。
+
+## .github 4層 + ランタイム構造
+
+`.github/` は以下の4層で構成され、ランタイムデータとして Board が加わる。
 
 | 層 | ディレクトリ | 役割 | 適用方法 |
 |---|---|---|---|
 | **Instructions** | `instructions/` | フォルダ・拡張子単位のガイドライン | `applyTo` パターンで自動適用 |
 | **Rules** | `rules/` | 宣言的ポリシー（何をすべきか・してはいけないか） | 常時適用 |
 | **Skills** | `skills/` | ワークフロー手順のパッケージ | エージェントがタスクに応じて自動ロード |
-| **Agents** | `agents/` | 専門特化のカスタムエージェント | ユーザーが Chat から選択 or サブエージェント呼出 |
+| **Agents** | `agents/` | 専門特化のカスタムエージェント | ユーザー選択 or サブエージェント呼出 |
+| **Board** *(runtime)* | `.copilot/boards/` | Feature ごとの共有コンテキスト | オーケストレーターが自動管理 |
 
 ## Instructions（自動適用ガイドライン）
 
@@ -45,7 +60,9 @@
 開発時のルール。必ず従うこと。ルールは**ポリシー**のみを定める。
 `rules/` ディレクトリ内の全ファイルが対象。主要なルール:
 
-- `development-workflow.md` — 開発フロー全体の定義
+- `development-workflow.md` — Feature ベースの開発フロー全体の定義
+- `workflow-state.md` — Flow State 遷移ルール・権限マトリクス・Gate 評価手順
+- `gate-profiles.json` — Maturity 別の Gate 通過条件（宣言的定義）
 - `branch-naming.md` — ブランチ命名規則
 - `commit-message.md` — コミットメッセージ規約
 - `merge-policy.md` — マージ方式
@@ -72,29 +89,24 @@
 | `manager` | 影響分析・タスク分解・計画策定 | 全変更で影響分析を実施し、実行計画を返す |
 | `architect` | 構造設計・設計判断 | ペースレイヤリング・非機能要求・データフロー観点で構造を評価 |
 
-### エージェント連携
+### エージェント連携（Board 経由）
 
-トップレベルエージェント（Copilot Chat）が `runSubagent` で各エージェントを呼び出す。
-サブエージェント間の直接呼び出しはできない。大規模タスクのフロー:
+トップレベルエージェント（Copilot Chat）が**オーケストレーター**として Board を管理し、`runSubagent` で各エージェントを呼び出す。
 
-```
-1. manager に影響分析・タスク分解を依頼 → 影響分析結果とエスカレーション判断を受領
-2. エスカレーション該当時、architect に構造評価・配置判断を依頼
-3. manager に計画策定を依頼（architect の判断を入力として含む）→ 実行計画を受領
-4. 計画に基づき developer に実装を依頼（architect の設計方針を含む）
-5. reviewer にレビューを依頼
-6. レビュー指摘があれば developer に修正指示を転送
-7. LGTM まで 5-6 を繰り返す
-8. writer にドキュメント更新を依頼（必要な場合）
-```
+- サブエージェント間の直接呼び出しはできない
+- エージェント間の情報伝達は **Board の構造化 JSON** を通じて行う
+- `flow_state` / `gates` / `maturity` / `history` はオーケストレーターのみが更新する
+- 各エージェントは Board の自 `artifacts` セクションのみに書き込む
+
+フローの詳細は `rules/development-workflow.md` を参照。
 
 ## 各層の使い分け
 
-| | instructions | rules | skills | agents |
-|---|---|---|---|---|
-| **内容** | ガイドライン | ポリシー | 手順 | 振る舞い |
-| **粒度** | ファイル/フォルダ単位 | リポジトリ全体 | タスク単位 | 役割単位 |
-| **起動** | applyTo で自動 | 常時参照 | タスクで自動ロード | ユーザー選択 or サブエージェント |
-| **例** | コーディング規約 | squash 禁止 | PR 作成手順 | レビュー専門家 |
+| | instructions | rules | skills | agents | board |
+|---|---|---|---|---|---|
+| **内容** | ガイドライン | ポリシー | 手順 | 振る舞い | ランタイムコンテキスト |
+| **粒度** | ファイル/フォルダ単位 | リポジトリ全体 | タスク単位 | 役割単位 | Feature 単位 |
+| **起動** | applyTo で自動 | 常時参照 | タスクで自動ロード | ユーザー選択 or サブエージェント | オーケストレーターが管理 |
+| **例** | コーディング規約 | squash 禁止 | PR 作成手順 | レビュー専門家 | 影響分析結果・レビュー指摘 |
 
 ```

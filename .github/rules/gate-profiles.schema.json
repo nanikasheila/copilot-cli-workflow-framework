@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Gate Profiles",
+  "description": "Maturity レベルごとの Gate 通過条件を宣言的に定義する。各 Gate の厳格さは maturity に連動する。",
+  "type": "object",
+  "required": ["profiles"],
+  "properties": {
+    "profiles": {
+      "type": "object",
+      "description": "Maturity レベルごとの Gate Profile 定義",
+      "properties": {
+        "experimental": { "$ref": "#/definitions/gate_profile" },
+        "development":  { "$ref": "#/definitions/gate_profile" },
+        "stable":       { "$ref": "#/definitions/gate_profile" },
+        "release-ready": { "$ref": "#/definitions/gate_profile" }
+      },
+      "required": ["experimental", "development", "stable", "release-ready"],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+
+  "definitions": {
+    "gate_profile": {
+      "type": "object",
+      "description": "1つの Maturity レベルに対する全 Gate の条件定義",
+      "properties": {
+        "analysis_gate":       { "$ref": "#/definitions/gate_condition" },
+        "design_gate":         { "$ref": "#/definitions/gate_condition" },
+        "plan_gate":           { "$ref": "#/definitions/gate_condition" },
+        "implementation_gate": { "$ref": "#/definitions/gate_condition" },
+        "test_gate":           { "$ref": "#/definitions/test_gate_condition" },
+        "review_gate":         { "$ref": "#/definitions/review_gate_condition" },
+        "documentation_gate":  { "$ref": "#/definitions/gate_condition" },
+        "submit_gate":         { "$ref": "#/definitions/gate_condition" }
+      },
+      "additionalProperties": false
+    },
+
+    "gate_condition": {
+      "type": "object",
+      "description": "汎用 Gate 条件",
+      "required": ["required"],
+      "properties": {
+        "required": {
+          "oneOf": [
+            { "type": "boolean" },
+            { "type": "string", "enum": ["on_escalation"] }
+          ],
+          "description": "Gate が必須かどうか。on_escalation の場合、影響分析でエスカレーション判定された時のみ必須"
+        },
+        "description": {
+          "type": "string",
+          "description": "この Gate 条件の説明"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "test_gate_condition": {
+      "type": "object",
+      "description": "テスト Gate 固有の条件",
+      "required": ["required"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "pass_rate": {
+          "type": "integer",
+          "description": "要求するテスト成功率（%）",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "coverage_min": {
+          "type": "integer",
+          "description": "要求する最低カバレッジ（%）",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "regression_required": {
+          "type": "boolean",
+          "description": "回帰テストを必須とするか",
+          "default": false
+        },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
+    "review_gate_condition": {
+      "type": "object",
+      "description": "レビュー Gate 固有の条件",
+      "required": ["required"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "logic",
+              "security_basic",
+              "security_deep",
+              "architecture",
+              "performance",
+              "test_quality"
+            ]
+          },
+          "description": "必須のレビュー観点"
+        },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

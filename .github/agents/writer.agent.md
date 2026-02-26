@@ -31,6 +31,38 @@ model: Claude Sonnet 4.6 (copilot)
 - アーキテクチャ判断（architect の責務）
 - コードレビュー（reviewer の責務）
 
+## Board 連携
+
+このエージェントは Board の以下のセクションに関与する。
+書き込み権限の詳細は `rules/workflow-state.md` の権限マトリクスを参照。
+
+| 操作 | 対象フィールド | 権限 |
+|---|---|---|
+| 読み取り | Board 全体 | ✅ |
+| 書き込み | `artifacts.documentation` | ✅ |
+| 書き込み | `flow_state` / `gates` / `maturity` | ❌（オーケストレーター専有） |
+
+### 入力として参照する Board フィールド
+
+- `feature_id` — ドキュメント対象の機能識別
+- `maturity` — 機能の成熟度（ドキュメントの詳細度を調整）
+- `artifacts.implementation` — 変更ファイル一覧と実装概要
+- `artifacts.architecture_decision` — architect の設計方針（構造ドキュメント更新時）
+- `artifacts.review_findings` — ドキュメント関連のレビュー指摘
+
+### 出力として書き込む Board フィールド
+
+ドキュメント更新結果を構造化 JSON として出力し、オーケストレーターが Board に反映する。
+
+```json
+{
+  "files": [
+    { "path": "docs/architecture/module-map.md", "action": "updated", "summary": "認証モジュールの配置を追記" },
+    { "path": "docs/architecture/adr/ADR-004.md", "action": "created", "summary": "OAuth導入のADR" }
+  ]
+}
+```
+
 ## 文書品質の原則
 
 | 原則 | 説明 |
@@ -156,3 +188,5 @@ model: Claude Sonnet 4.6 (copilot)
 - プロダクションコードの編集
 - テストコードの作成・実行
 - サブエージェントの呼び出し（`runSubagent` は使用不可）
+- Board の `flow_state` / `gates` / `maturity` への直接書き込み（オーケストレーター専有）
+- Board への機密情報（パスワード、APIキー、トークン）の記録

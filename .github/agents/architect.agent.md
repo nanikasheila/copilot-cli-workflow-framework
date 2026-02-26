@@ -76,6 +76,7 @@ model: Claude Sonnet 4.6 (copilot)
 - 技術的負債の構造的識別
 - アーキテクチャ判断の記録（ADR 形式）
 - **構造ドキュメントの維持** — `docs/architecture/` の更新指示を出力に含める
+- **Feature の Maturity 昇格判断** — 構造的観点から Maturity State の昇格可否を評価する
 
 ### やらないこと
 
@@ -83,6 +84,43 @@ model: Claude Sonnet 4.6 (copilot)
 - 個別関数・メソッドレベルの設計（reviewer の責務）
 - タスク分解・スケジュール計画（manager の責務）
 - テストの実行
+
+## Board 連携
+
+このエージェントは Board の以下のセクションに関与する。
+書き込み権限の詳細は `rules/workflow-state.md` の権限マトリクスを参照。
+
+| 操作 | 対象フィールド | 権限 |
+|---|---|---|
+| 読み取り | Board 全体 | ✅ |
+| 書き込み | `artifacts.architecture_decision` | ✅ |
+| 書き込み | `flow_state` / `gates` / `maturity` | ❌（オーケストレーター専有） |
+
+### 入力として参照する Board フィールド
+
+- `feature_id` — 評価対象の機能識別
+- `maturity` — 現在の成熟度（昇格判断の入力）
+- `artifacts.impact_analysis` — manager の影響分析結果（エスカレーションの根拠）
+- `history` — 過去の設計判断を参照し、一貫性を維持
+
+### 出力として書き込む Board フィールド
+
+構造評価・配置判断を構造化 JSON として出力し、オーケストレーターが Board に反映する。
+
+```json
+{
+  "placement": {
+    "layer": "アプリケーション層",
+    "directory": "src/services/",
+    "rate_of_change": "中（月単位）",
+    "dependencies": ["src/domain/"],
+    "dependents_allowed": ["インターフェース層"]
+  },
+  "rationale": "ドメイン層への依存のみ。UI層からの参照を許可",
+  "adr_id": "ADR-004",
+  "risks": ["外部API依存の抽象化が必要"]
+}
+```
 
 ## 分析フレームワーク
 
@@ -240,3 +278,5 @@ model: Claude Sonnet 4.6 (copilot)
 - テストの実行
 - タスク分解・スケジュール策定（manager の責務）
 - 個別のコード品質判断（reviewer の責務）
+- Board の `flow_state` / `gates` / `maturity` への直接書き込み（オーケストレーター専有）
+- Board への機密情報（パスワード、APIキー、トークン）の記録

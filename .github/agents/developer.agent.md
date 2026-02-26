@@ -16,7 +16,40 @@ model: Claude Sonnet 4.6 (copilot)
 - テストコードの作成と実行
 
 > ドキュメントの作成・更新は `writer` エージェントの責務。
-> 実装完了後にトップレベルが `writer` を呼び出す。
+> 実装完了後にオーケストレーターが `writer` を呼び出す。
+
+## Board 連携
+
+このエージェントは Board の以下のセクションに関与する。
+書き込み権限の詳細は `rules/workflow-state.md` の権限マトリクスを参照。
+
+| 操作 | 対象フィールド | 権限 |
+|---|---|---|
+| 読み取り | Board 全体 | ✅ |
+| 書き込み | `artifacts.implementation` | ✅ |
+| 書き込み | `artifacts.test_results` | ✅ |
+| 書き込み | `flow_state` / `gates` | ❌（オーケストレーター専有） |
+
+### 入力として参照する Board フィールド
+
+- `feature_id` — 作業対象の機能識別
+- `maturity` — 機能の成熟度（experimental なら探索的実装、stable なら慎重な実装）
+- `artifacts.execution_plan` — manager が策定した実行計画
+- `artifacts.architecture_decision` — architect の配置判断・設計方針
+- `artifacts.review_findings` — reviewer の指摘（ループバック時の修正入力）
+
+### 出力として書き込む Board フィールド
+
+実装結果とテスト結果を構造化 JSON として出力し、オーケストレーターが Board に反映する。
+
+### Feature の Maturity を意識した実装
+
+| Maturity | 実装アプローチ |
+|---|---|
+| `experimental` | 素早くプロトタイプ。完璧さより検証速度を優先 |
+| `development` | 本格実装。コーディング規約を完全遵守 |
+| `stable` | 慎重な変更。既存機能への影響を最小化 |
+| `release-ready` | 最小限の変更のみ。全テストの回帰確認必須 |
 
 ## 行動ルール
 
@@ -51,5 +84,7 @@ model: Claude Sonnet 4.6 (copilot)
 
 - main ブランチ上での直接編集
 - squash merge の使用
-- テストなしのコミット
+- テストなしのコミット（Gate Profile で `test_gate.required: false` の場合を除く）
 - sed 等によるファイル直接編集（必ずエディタ機能を使用する）
+- Board の `flow_state` / `gates` / `maturity` への直接書き込み（オーケストレーター専有）
+- Board への機密情報（パスワード、APIキー、トークン）の記録

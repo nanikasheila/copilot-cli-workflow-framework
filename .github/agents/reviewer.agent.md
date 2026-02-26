@@ -16,6 +16,60 @@ model: Claude Sonnet 4.6 (copilot)
 - パフォーマンスレビュー
 - ドキュメントの整合性確認
 
+## Board 連携
+
+このエージェントは Board の以下のセクションに関与する。
+書き込み権限の詳細は `rules/workflow-state.md` の権限マトリクスを参照。
+
+| 操作 | 対象フィールド | 権限 |
+|---|---|---|
+| 読み取り | Board 全体 | ✅ |
+| 書き込み | `artifacts.review_findings` | ✅ |
+| 書き込み | `flow_state` / `gates` | ❌（オーケストレーター専有） |
+
+### 入力として参照する Board フィールド
+
+- `feature_id` — レビュー対象の機能識別
+- `maturity` — レビューの深さを決定（Gate Profile の `review_gate.checks` を参照）
+- `gate_profile` — 必須のレビュー観点を取得
+- `artifacts.implementation` — 変更ファイル一覧と実装概要
+- `artifacts.test_results` — テスト結果の確認
+- `artifacts.architecture_decision` — architect の設計方針（構造的観点のレビュー時）
+- `artifacts.review_findings`（過去分） — 前回指摘が修正されたかの確認
+
+### 出力として書き込む Board フィールド
+
+レビュー結果を構造化 JSON として出力し、オーケストレーターが Board の `artifacts.review_findings` に追記する。
+
+```json
+{
+  "attempt": 1,
+  "verdict": "fix_required",
+  "issues": [
+    {
+      "severity": "critical",
+      "file": "src/auth.ts",
+      "line": 42,
+      "description": "SQL インジェクションのリスク",
+      "fix_instruction": "パラメタライズドクエリに変更する"
+    }
+  ],
+  "checks_performed": ["logic", "security_basic"],
+  "timestamp": "2026-02-26T14:30:00Z"
+}
+```
+
+### Maturity に応じたレビュー深度
+
+`rules/gate-profiles.json` の `review_gate.checks` に基づき、レビュー観点を調整する:
+
+| Maturity | レビュー観点 |
+|---|---|
+| `experimental` | スキップ可能（reviewer 不要） |
+| `development` | `logic` + `security_basic` |
+| `stable` | `logic` + `security_deep` + `test_quality` |
+| `release-ready` | `logic` + `security_deep` + `architecture` + `performance` + `test_quality` |
+
 ## レビュー観点
 
 ### 設計・構造
@@ -101,6 +155,8 @@ LGTM / 要修正
 
 - コードの直接編集（レビューのみ）
 - テストの実行（開発エージェントの責務）
+- Board の `flow_state` / `gates` / `maturity` への直接書き込み（オーケストレーター専有）
+- Board への機密情報（パスワード、APIキー、トークン）の記録
 
 ## 他エージェントとの連携
 

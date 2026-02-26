@@ -1,0 +1,439 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Board",
+  "description": "機能ライフサイクルを追跡する Board のスキーマ定義。エージェント間の構造化された共有コンテキスト。",
+  "type": "object",
+  "required": ["schema_version", "feature_id", "maturity", "cycle", "flow_state", "gate_profile", "gates", "artifacts", "history", "created_at", "updated_at"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema ファイルへの参照"
+    },
+    "schema_version": {
+      "type": "integer",
+      "description": "Board スキーマのバージョン。スキーマ変更時にインクリメントする",
+      "minimum": 1,
+      "default": 1
+    },
+    "feature_id": {
+      "type": "string",
+      "description": "機能の一意識別子。ブランチ命名規則と対応する（例: feature-auth, fix-login-error）",
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+    },
+
+    "maturity": {
+      "type": "string",
+      "description": "機能の成熟度。プロジェクト内での位置づけを示す",
+      "enum": ["experimental", "development", "stable", "release-ready", "abandoned"]
+    },
+    "maturity_history": {
+      "type": "array",
+      "description": "Maturity State の遷移履歴",
+      "items": { "$ref": "#/definitions/maturity_transition" }
+    },
+
+    "cycle": {
+      "type": "integer",
+      "description": "現在の開発サイクル番号。セッション跨ぎの再開時にインクリメントする",
+      "minimum": 1,
+      "default": 1
+    },
+    "flow_state": {
+      "type": "string",
+      "description": "現在の開発サイクル内での位置。オーケストレーターのみが書き込み可能",
+      "enum": [
+        "initialized",
+        "analyzing",
+        "designing",
+        "planned",
+        "implementing",
+        "testing",
+        "reviewing",
+        "approved",
+        "documenting",
+        "submitting",
+        "completed"
+      ]
+    },
+
+    "gate_profile": {
+      "type": "string",
+      "description": "適用する Gate Profile 名。通常は maturity に連動するが、手動オーバーライド可能",
+      "enum": ["experimental", "development", "stable", "release-ready"]
+    },
+    "gates": {
+      "type": "object",
+      "description": "各 Gate の現在の状態。オーケストレーターのみが書き込み可能",
+      "properties": {
+        "analysis":      { "$ref": "#/definitions/gate_status" },
+        "design":        { "$ref": "#/definitions/gate_status" },
+        "plan":          { "$ref": "#/definitions/gate_status" },
+        "implementation": { "$ref": "#/definitions/gate_status" },
+        "test":          { "$ref": "#/definitions/gate_status" },
+        "review":        { "$ref": "#/definitions/gate_status" },
+        "documentation": { "$ref": "#/definitions/gate_status" },
+        "submit":        { "$ref": "#/definitions/gate_status" }
+      },
+      "additionalProperties": false
+    },
+
+    "artifacts": {
+      "type": "object",
+      "description": "各エージェントの成果物。各エージェントは自セクションのみに書き込む",
+      "properties": {
+        "impact_analysis": {
+          "description": "manager の影響分析結果",
+          "oneOf": [{ "$ref": "#/definitions/artifact_impact_analysis" }, { "type": "null" }]
+        },
+        "architecture_decision": {
+          "description": "architect の構造評価・配置判断",
+          "oneOf": [{ "$ref": "#/definitions/artifact_architecture_decision" }, { "type": "null" }]
+        },
+        "execution_plan": {
+          "description": "manager の実行計画",
+          "oneOf": [{ "$ref": "#/definitions/artifact_execution_plan" }, { "type": "null" }]
+        },
+        "implementation": {
+          "description": "developer の実装結果",
+          "oneOf": [{ "$ref": "#/definitions/artifact_implementation" }, { "type": "null" }]
+        },
+        "test_results": {
+          "description": "developer のテスト結果",
+          "oneOf": [{ "$ref": "#/definitions/artifact_test_results" }, { "type": "null" }]
+        },
+        "review_findings": {
+          "type": "array",
+          "description": "reviewer のレビュー結果（試行ごとに追記）",
+          "items": { "$ref": "#/definitions/artifact_review_finding" }
+        },
+        "documentation": {
+          "description": "writer のドキュメント更新結果",
+          "oneOf": [{ "$ref": "#/definitions/artifact_documentation" }, { "type": "null" }]
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "history": {
+      "type": "array",
+      "description": "全操作の時系列ログ。サイクルを跨いで蓄積される",
+      "items": { "$ref": "#/definitions/history_entry" }
+    },
+
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Board 作成日時（ISO 8601）"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Board 最終更新日時（ISO 8601）"
+    }
+  },
+  "additionalProperties": false,
+
+  "definitions": {
+    "gate_status": {
+      "type": "object",
+      "description": "個別 Gate の状態",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["not_reached", "pending", "passed", "failed", "skipped"],
+          "description": "Gate の現在状態"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "この Gate が現在の gate_profile で必須かどうか"
+        },
+        "evaluated_by": {
+          "type": "string",
+          "description": "Gate を評価したエージェント名"
+        },
+        "results": {
+          "type": "object",
+          "description": "Gate 固有の評価結果（Gate の種類により構造が異なる）",
+          "additionalProperties": true
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "maturity_transition": {
+      "type": "object",
+      "required": ["from", "to", "timestamp", "reason"],
+      "properties": {
+        "from": {
+          "type": "string",
+          "enum": ["experimental", "development", "stable", "release-ready", "abandoned"]
+        },
+        "to": {
+          "type": "string",
+          "enum": ["experimental", "development", "stable", "release-ready", "abandoned"]
+        },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "reason": { "type": "string", "description": "昇格・降格・廃棄の理由" },
+        "cycle": { "type": "integer", "description": "遷移が発生したサイクル番号" }
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_impact_analysis": {
+      "type": "object",
+      "description": "manager が出力する影響分析",
+      "required": ["affected_files", "api_compatibility", "test_impact", "escalation"],
+      "properties": {
+        "affected_files": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "影響を受けるファイルパス一覧"
+        },
+        "api_compatibility": {
+          "type": "string",
+          "enum": ["compatible", "breaking"],
+          "description": "API 互換性の判定"
+        },
+        "test_impact": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "影響を受けるテストファイル一覧"
+        },
+        "escalation": {
+          "type": "object",
+          "required": ["required", "reason"],
+          "properties": {
+            "required": { "type": "boolean" },
+            "reason": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "summary": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_architecture_decision": {
+      "type": "object",
+      "description": "architect が出力する構造評価・配置判断",
+      "required": ["placement", "rationale"],
+      "properties": {
+        "placement": {
+          "type": "object",
+          "description": "配置判断",
+          "properties": {
+            "layer": { "type": "string", "description": "所属層" },
+            "directory": { "type": "string", "description": "配置先ディレクトリ" },
+            "rate_of_change": { "type": "string", "description": "想定される変化速度" },
+            "dependencies": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "依存先モジュール"
+            },
+            "dependents_allowed": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "依存を許可する層"
+            }
+          },
+          "additionalProperties": false
+        },
+        "rationale": { "type": "string", "description": "判断の根拠" },
+        "adr_id": { "type": "string", "description": "関連する ADR 番号（例: ADR-001）" },
+        "risks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "構造的リスク"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_execution_plan": {
+      "type": "object",
+      "description": "manager が出力する実行計画",
+      "required": ["tasks"],
+      "properties": {
+        "tasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "description", "agent"],
+            "properties": {
+              "id": { "type": "integer" },
+              "description": { "type": "string" },
+              "agent": { "type": "string", "enum": ["developer", "reviewer", "architect", "writer"] },
+              "depends_on": {
+                "type": "array",
+                "items": { "type": "integer" },
+                "description": "依存するタスク ID"
+              },
+              "input": { "type": "string", "description": "タスクの入力情報" },
+              "status": {
+                "type": "string",
+                "enum": ["pending", "in_progress", "completed", "skipped"],
+                "default": "pending"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "risks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "リスク・注意点"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_implementation": {
+      "type": "object",
+      "description": "developer が出力する実装結果",
+      "required": ["changed_files"],
+      "properties": {
+        "changed_files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path", "action"],
+            "properties": {
+              "path": { "type": "string" },
+              "action": { "type": "string", "enum": ["created", "modified", "deleted"] },
+              "summary": { "type": "string", "description": "変更概要" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "commit_sha": { "type": "string", "description": "コミットハッシュ" },
+        "summary": { "type": "string", "description": "実装概要" }
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_test_results": {
+      "type": "object",
+      "description": "developer が出力するテスト結果",
+      "required": ["command", "exit_code", "total", "passed"],
+      "properties": {
+        "command": { "type": "string", "description": "実行したテストコマンド" },
+        "exit_code": { "type": "integer" },
+        "total": { "type": "integer", "description": "テスト総数" },
+        "passed": { "type": "integer", "description": "成功数" },
+        "failed": { "type": "integer", "description": "失敗数" },
+        "skipped": { "type": "integer", "description": "スキップ数" },
+        "coverage": { "type": "number", "description": "カバレッジ（%）", "minimum": 0, "maximum": 100 },
+        "failures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "test_name": { "type": "string" },
+              "message": { "type": "string" }
+            },
+            "additionalProperties": false
+          },
+          "description": "失敗したテストの詳細"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_review_finding": {
+      "type": "object",
+      "description": "reviewer が出力するレビュー結果（試行ごと）",
+      "required": ["attempt", "verdict", "timestamp"],
+      "properties": {
+        "attempt": { "type": "integer", "description": "レビュー試行番号", "minimum": 1 },
+        "verdict": {
+          "type": "string",
+          "enum": ["lgtm", "fix_required"],
+          "description": "総合判定"
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["severity", "file", "description"],
+            "properties": {
+              "severity": { "type": "string", "enum": ["critical", "warning", "security", "info"] },
+              "file": { "type": "string" },
+              "line": { "type": "integer" },
+              "description": { "type": "string" },
+              "fix_instruction": { "type": "string", "description": "developer 向けの具体的な修正指示" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "checks_performed": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "実施したレビュー観点（例: logic, security_basic, architecture）"
+        },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_documentation": {
+      "type": "object",
+      "description": "writer が出力するドキュメント更新結果",
+      "required": ["files"],
+      "properties": {
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path", "action", "summary"],
+            "properties": {
+              "path": { "type": "string" },
+              "action": { "type": "string", "enum": ["created", "updated"] },
+              "summary": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "history_entry": {
+      "type": "object",
+      "description": "Board 操作の履歴エントリ",
+      "required": ["timestamp", "cycle", "action"],
+      "properties": {
+        "timestamp": { "type": "string", "format": "date-time" },
+        "cycle": { "type": "integer", "description": "操作が発生したサイクル番号" },
+        "agent": {
+          "type": "string",
+          "description": "操作を行ったエージェント（orchestrator を含む）"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "board_created",
+            "cycle_started",
+            "flow_state_changed",
+            "gate_evaluated",
+            "artifact_updated",
+            "maturity_changed",
+            "board_archived"
+          ],
+          "description": "操作の種類"
+        },
+        "details": {
+          "type": "object",
+          "description": "操作の詳細（action ごとに構造が異なる）",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

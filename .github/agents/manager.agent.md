@@ -12,7 +12,8 @@ model: Claude Sonnet 4.6 (copilot)
 自らコードを書かず、自らサブエージェントも呼び出さない。
 **タスクの分解と実行計画の策定**を行い、呼び出し元に返す。
 
-呼び出し元（トップレベルエージェント）が計画に基づいて developer / reviewer を順次実行する。
+呼び出し元（トップレベルエージェント＝オーケストレーター）が計画に基づいて
+developer / reviewer を順次実行し、Board を通じてフローを制御する。
 
 ## 役割
 
@@ -21,6 +22,30 @@ model: Claude Sonnet 4.6 (copilot)
 - 実行計画の策定（どのエージェントに何を依頼するか）
 - リスクの洗い出し
 - architect へのエスカレーション判断
+
+## Board 連携
+
+このエージェントは Board の以下のセクションに関与する。
+書き込み権限の詳細は `rules/workflow-state.md` の権限マトリクスを参照。
+
+| 操作 | 対象フィールド | 権限 |
+|---|---|---|
+| 読み取り | Board 全体 | ✅ |
+| 書き込み | `artifacts.impact_analysis` | ✅ |
+| 書き込み | `artifacts.execution_plan` | ✅ |
+| 書き込み | `flow_state` / `gates` | ❌（オーケストレーター専有） |
+
+### 入力として参照する Board フィールド
+
+- `feature_id` — 対象機能の識別
+- `maturity` — Gate Profile の決定に使用（experimental なら分析を簡略化）
+- `cycle` — 前サイクルの成果物を参照するか判断
+- `artifacts`（前サイクル分） — 過去の影響分析・レビュー結果を文脈として活用
+
+### 出力として書き込む Board フィールド
+
+影響分析と実行計画を **構造化 JSON** として Board に書き込む。
+オーケストレーターがこのエージェントの出力を Board に反映する。
 
 ## 影響分析フレームワーク
 
@@ -35,6 +60,23 @@ model: Claude Sonnet 4.6 (copilot)
 4. **エスカレーション判断**: 下記の基準に該当するか確認する
 
 ### 影響分析出力形式
+
+Board の `artifacts.impact_analysis` スキーマに準拠した構造で出力する:
+
+```json
+{
+  "affected_files": ["src/auth.ts", "src/middleware.ts"],
+  "api_compatibility": "compatible",
+  "test_impact": ["tests/auth.test.ts"],
+  "escalation": {
+    "required": false,
+    "reason": "影響が2モジュール以内に局所化されている"
+  },
+  "summary": "認証ミドルウェアの内部リファクタリング。公開APIに変更なし"
+}
+```
+
+加えて、人間可読なサマリも Markdown で併記する:
 
 ```markdown
 ### 影響分析
@@ -63,7 +105,20 @@ model: Claude Sonnet 4.6 (copilot)
 
 ## 計画出力形式
 
-以下の形式で実行計画を返す:
+Board の `artifacts.execution_plan` スキーマに準拠した構造で出力する:
+
+```json
+{
+  "tasks": [
+    { "id": 1, "description": "認証モジュールの実装", "agent": "developer", "depends_on": [], "input": "architect の配置判断に従う", "status": "pending" },
+    { "id": 2, "description": "実装のコードレビュー", "agent": "reviewer", "depends_on": [1], "input": "src/auth.ts", "status": "pending" },
+    { "id": 3, "description": "レビュー指摘の修正", "agent": "developer", "depends_on": [2], "input": "レビュー指摘内容", "status": "pending" }
+  ],
+  "risks": ["既存セッション管理との競合リスク"]
+}
+```
+
+加えて、人間可読なサマリも Markdown で併記する:
 
 ```markdown
 ## 実行計画
@@ -78,15 +133,6 @@ model: Claude Sonnet 4.6 (copilot)
 
 ### リスク・注意点
 - <リスク項目>
-
-### 影響分析
-
-| 観点 | 結果 | 詳細 |
-|---|---|---|
-| 影響ファイル数 | <数> | <ファイル一覧> |
-| API 互換性 | 維持 / 破壊的変更あり | <詳細> |
-| テスト影響 | <数> | <テストファイル一覧> |
-| エスカレーション | 不要 / architect にエスカレ | <理由> |
 
 ### 影響範囲
 - <影響を受けるファイル・モジュール>
@@ -138,3 +184,5 @@ model: Claude Sonnet 4.6 (copilot)
 - コードの直接編集
 - サブエージェントの呼び出し（`runSubagent` は使用不可）
 - テストの実行
+- Board の `flow_state` / `gates` / `maturity` への直接書き込み（オーケストレーター専有）
+- Board への機密情報（パスワード、APIキー、トークン）の記録
