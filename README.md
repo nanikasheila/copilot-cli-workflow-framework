@@ -9,13 +9,14 @@ GitHub Copilot のカスタムエージェント・スキル・ルール・イ�
 
 ## 構造
 
-`.github/` は **Instructions・Rules・Skills・Agents** の4層で構成されています。
+`.github/` は **Instructions・Rules・Skills・Agents** の4層 + **Board（ランタイム）** で構成されています。
 
 ```
 .github/
 ├── copilot-instructions.md    # トップレベル Copilot 設定
 ├── settings.json              # プロジェクト固有設定
 ├── settings.schema.json       # settings.json のスキーマ
+├── board.schema.json          # Board JSON スキーマ
 ├── agents/                    # カスタムエージェント
 │   ├── architect.agent.md     #   構造設計・設計判断
 │   ├── developer.agent.md     #   実装・デバッグ・テスト
@@ -30,6 +31,9 @@ GitHub Copilot のカスタムエージェント・スキル・ルール・イ�
 │   └── test.instructions.md
 ├── rules/                     # 開発ルール（常時適用）
 │   ├── development-workflow.md
+│   ├── workflow-state.md
+│   ├── gate-profiles.json
+│   ├── gate-profiles.schema.json
 │   ├── branch-naming.md
 │   ├── commit-message.md
 │   ├── merge-policy.md
@@ -44,6 +48,7 @@ GitHub Copilot のカスタムエージェント・スキル・ルール・イ�
     ├── resolve-conflict/
     ├── merge-nested-branch/
     ├── generate-gitignore/
+    ├── manage-board/
     └── skill-creator/
 ```
 
@@ -65,9 +70,13 @@ GitHub Copilot のカスタムエージェント・スキル・ルール・イ�
 3. manager に計画策定を依頼 → 実行計画を受領
 4. developer に実装を依頼
 5. reviewer にレビューを依頼
-6. LGTM まで 5-6 を繰り返す
+6. LGTM まで 4-5 を繰り返す
 7. writer にドキュメント更新を依頼（必要な場合）
+8. PR 提出 → マージ → クリーンアップ
 ```
+
+エージェント間の連携は **Board**（`.copilot/boards/<feature-id>/board.json`）を通じて行われます。
+詳細は `rules/development-workflow.md` を参照。
 
 ## 使い方
 

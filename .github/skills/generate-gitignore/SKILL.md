@@ -78,15 +78,21 @@ Set-Content -Path ".gitignore" -Value $content -NoNewline
 
 ### 5. カスタムルールの追加
 
-API 生成コンテンツの末尾に、プロジェクト固有のルールを追加する:
+API 生成コンテンツの末尾に、プロジェクト共通のルールとプロジェクト固有のルールを追加する:
 
 ```gitignore
+
+# === Worktree (always excluded) ===
+.worktrees/
 
 # === Project-specific rules ===
 .env
 .env.*
 !.env.example
 ```
+
+> `.worktrees/` は Git Worktree の作業ディレクトリであり、常に `.gitignore` に含める。
+> `rules/worktree-layout.md` で定義された配置規約に対応する。
 
 ユーザーに追加ルールが必要か確認する。
 
