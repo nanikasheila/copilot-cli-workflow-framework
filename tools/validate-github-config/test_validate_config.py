@@ -19,7 +19,6 @@ from validate_config import (
     validate_agents,
     validate_handoffs,
     validate_prompts,
-    validate_hooks,
     validate_settings,
     validate_all,
 )

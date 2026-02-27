@@ -15,7 +15,6 @@
   // ファイル保護: .github/ 配下の重要ファイルの編集前に確認を求める
   "chat.editSensitiveFiles.patterns": [
     ".github/rules/**",
-    ".github/hooks/**",
     ".github/settings.json",
     ".github/copilot-instructions.md",
     ".copilot/boards/**"

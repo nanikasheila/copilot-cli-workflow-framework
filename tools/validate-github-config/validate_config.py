@@ -2,7 +2,7 @@
 """Validate .github/ configuration files for consistency and correctness.
 
 Why: The .github/ directory contains agents, prompts, rules, instructions,
-     hooks, and skills that must reference each other correctly. Manual
+     and skills that must reference each other correctly. Manual
      checks are error-prone as the framework grows.
 How: Parse YAML frontmatters from agents and prompts, verify cross-references
      (handoffs, file links, tool lists), and report issues with actionable
@@ -249,39 +249,6 @@ def validate_prompts(
             result.warn(rel_path, "Missing 'description'")
 
 
-# -- Hooks validation --------------------------------------------------------
-
-def validate_hooks(
-    github_dir: Path,
-    result: ValidationResult,
-) -> None:
-    """Verify that expected hook files exist and are non-empty.
-
-    Why: Missing hooks silently disable context injection.
-    How: Check for the 3 info-injection hooks and the shared utility module.
-         Blocking hooks (pre_tool_use, post_tool_use, stop_check) were
-         removed — policy enforcement is handled by Rules (markdown).
-    """
-    hooks_dir = github_dir / "hooks"
-    if not hooks_dir.is_dir():
-        result.warn("hooks/", "Directory not found (optional)")
-        return
-
-    expected_hooks: list[str] = [
-        "session_start.py",
-        "subagent_start.py",
-        "pre_compact.py",
-        "hook_utils.py",
-    ]
-
-    for hook_name in expected_hooks:
-        hook_file = hooks_dir / hook_name
-        if not hook_file.exists():
-            result.warn(f"hooks/{hook_name}", "Expected hook file not found")
-        elif hook_file.stat().st_size == 0:
-            result.error(f"hooks/{hook_name}", "Hook file is empty")
-
-
 # -- Settings validation -----------------------------------------------------
 
 def validate_settings(
@@ -291,7 +258,7 @@ def validate_settings(
     """Validate .github/settings.json structure.
 
     Why: settings.json is the central configuration used by all skills and
-         hooks. Missing required fields cause cascading failures.
+         skills. Missing required fields cause cascading failures.
     How: Parse JSON and check for required top-level keys.
     """
     import json
@@ -351,9 +318,6 @@ def validate_all(repo_root: Path) -> ValidationResult:
 
     # Phase 4: Prompts (reference agents)
     validate_prompts(github_dir, agent_data, result)
-
-    # Phase 5: Hooks (safety enforcement)
-    validate_hooks(github_dir, result)
 
     return result
 
