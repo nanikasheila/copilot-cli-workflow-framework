@@ -18,6 +18,7 @@ GitHub Copilot のカスタムエージェント・スキル・ルール・イ�
 ├── settings.schema.json       # settings.json のスキーマ
 ├── board.schema.json          # Board JSON スキーマ（コア構造）
 ├── board-artifacts.schema.json # Board artifact 定義（成果物スキーマ）
+├── gate-profiles.schema.json  # Gate Profile スキーマ
 ├── agents/                    # カスタムエージェント
 │   ├── architect.agent.md     #   構造設計・設計判断
 │   ├── developer.agent.md     #   実装・デバッグ・テスト
@@ -34,7 +35,6 @@ GitHub Copilot のカスタムエージェント・スキル・ルール・イ�
 │   ├── development-workflow.md
 │   ├── workflow-state.md
 │   ├── gate-profiles.json
-│   ├── gate-profiles.schema.json
 │   ├── branch-naming.md
 │   ├── commit-message.md
 │   ├── merge-policy.md
@@ -53,11 +53,24 @@ GitHub Copilot のカスタムエージェント・スキル・ルール・イ�
     └── orchestrate-workflow/
 ```
 
+### docs/（ドキュメント）
+
+```
+docs/
+├── quickstart.md              # クイックスタートガイド
+└── architecture/              # 構造ドキュメント（architect/writer が維持）
+    ├── module-map.md          #   ディレクトリごとの責務・層の対応・依存方向
+    ├── data-flow.md           #   主要データの流れ・Source of Truth
+    ├── glossary.md            #   ドメイン固有の用語定義
+    └── adr/                   #   設計判断記録（ADR-001, ADR-002, ...）
+```
+
 ### tools/（フレームワーク外ツール）
 
 ```
 tools/
-└── skill-creator/         # スキル作成ガイド（独立ツール）
+├── skill-creator/         # スキル作成ガイド（独立ツール）
+└── validate-schemas/      # スキーマ整合性バリデーション
 ```
 
 ## エージェント
@@ -92,13 +105,15 @@ tools/
 2. `settings.json` をプロジェクトに合わせて編集（または `initialize-project` スキルで初期化）
 3. Copilot Chat でエージェントを活用
 
+> **初めての方へ**: 詳細なウォークスルーは [docs/quickstart.md](docs/quickstart.md) を参照してください。
+
 ## ツール利用ポリシー
 
 | ツール | 必須度 | 備考 |
 |---|---|---|
 | Git | **必須** | すべての変更は Git で管理 |
 | GitHub | **推奨** | PR・マージ・コードレビューに使用 |
-| Issue トラッカー | **オプション** | Linear / GitHub Issues / Jira 等、`provider: "none"` で無効化可能 |
+| Issue トラッカー | **オプション** | Linear / GitHub Issues に対応。`provider: "none"` で無効化可能 |
 
 ## ライセンス
 

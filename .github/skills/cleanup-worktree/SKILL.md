@@ -53,10 +53,25 @@ git pull origin main
 
 `issueTracker.provider` が `"none"` の場合はこのステップをスキップする。
 
+#### Linear（`provider: "linear"`）
+
 ```
-mcp_<issueTracker.mcpServer>_update_issue:
+mcp_<issueTracker.mcpServer>_save_issue:
   id: "<UUID>"       # start-feature で記録した id（UUID）を使用。identifier ではない
   state: "Done"
+```
+
+#### GitHub Issues（`provider: "github"`）
+
+PR の `body` に `Closes #<number>` を含めていれば、マージ時に自動クローズされる。
+自動クローズされなかった場合は手動で対応する:
+
+```
+mcp_io_github_git_issue_write:
+  owner: "<github.owner>"
+  repo: "<github.repo>"
+  issue_number: <number>
+  state: "closed"
 ```
 
 ## 一括クリーンアップ

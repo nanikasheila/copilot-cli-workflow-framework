@@ -45,7 +45,7 @@ URL から `owner` と `repo` を抽出する。
 | `github.owner` | ✅ Git remote から | 「GitHub owner は `<検出値>` でよいですか？」 |
 | `github.repo` | ✅ Git remote から | 「リポジトリ名は `<検出値>` でよいですか？」 |
 | `github.mergeMethod` | ❌ | 「マージ方式は？（merge / squash / rebase）」 |
-| `issueTracker.provider` | ❌ | 「Issue トラッカーは？（linear / github / jira / none）」 |
+| `issueTracker.provider` | ❌ | 「Issue トラッカーは？（linear / github / none）」 |
 | `issueTracker.mcpServer` | ❌ | 「Issue トラッカーの MCP サーバー名は？」 |
 | `issueTracker.team` | ❌ | 「チーム名は？」 |
 | `issueTracker.projectId` | ❌ | 「プロジェクト ID は？」 |
@@ -72,7 +72,7 @@ URL から `owner` と `repo` を抽出する。
     "mergeMethod": "<merge|squash|rebase>"
   },
   "issueTracker": {
-    "provider": "<linear|github|jira|none>",
+    "provider": "<linear|github|none>",
     "mcpServer": "<MCP サーバー名>",
     "team": "<チーム名>",
     "projectId": "<プロジェクトID>",
@@ -159,7 +159,7 @@ settings.json の先頭に `"$schema": "./settings.schema.json"` を含めると
 | `github.owner` | string | ✅ | GitHub リポジトリのオーナー |
 | `github.repo` | string | ✅ | GitHub リポジトリ名 |
 | `github.mergeMethod` | string | ✅ | マージ方式（`merge` / `squash` / `rebase`） |
-| `issueTracker.provider` | string | オプション | Issue トラッカー種別（`linear` / `github` / `jira` / `none`） |
+| `issueTracker.provider` | string | オプション | Issue トラッカー種別（`linear` / `github` / `none`） |
 | `issueTracker.mcpServer` | string | ⚠️ | MCP サーバー名（provider が `none` 以外の場合必要） |
 | `issueTracker.team` | string | ⚠️ | チーム名（provider が `none` 以外の場合必要） |
 | `issueTracker.projectId` | string | ❌ | プロジェクト ID（任意） |
