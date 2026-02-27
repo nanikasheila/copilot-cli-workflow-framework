@@ -25,8 +25,12 @@ model: Claude Sonnet 4.6 (copilot)
 
 ### Board ファイルの参照
 
+> **SubagentStart Hook による自動注入**: セッション開始時に Board の要約（feature_id,
+> flow_state, maturity, cycle, gate_profile, アクティブな gate 状態）が
+> `additionalContext` として自動注入される。詳細な artifact 参照が必要な場合のみ
+> `read_file` で Board を読み取る。
+
 オーケストレーターからのプロンプトに Board ファイルパスが含まれる。
-作業開始時に `read_file` で Board を読み取り、関連フィールドを参照すること。
 パス形式: `.copilot/boards/<feature-id>/board.json`
 
 | 操作 | 対象フィールド | 権限 |
