@@ -95,17 +95,15 @@ def load_gate_profiles(repo_root: Path) -> Optional[dict[str, Any]]:
         return None
 
 
-def find_active_boards(repo_root: Path) -> list[dict[str, Any]]:
-    """Find all active Board JSON files and return their parsed content.
+def _scan_boards_dir(boards_dir: Path, base_for_relative: Path) -> list[dict[str, Any]]:
+    """Scan a single .copilot/boards/ directory for active Boards.
 
-    Why: Hooks need to know the current Feature context without manual read_file.
-    How: Scan .copilot/boards/ (excluding _archived) for board.json files.
+    Why: Board discovery logic is reused for both repo root and worktrees.
+    How: Iterate subdirectories (excluding _archived), load board.json files.
     """
-    boards_dir = repo_root / ".copilot" / "boards"
-    if not boards_dir.is_dir():
-        return []
-
     boards: list[dict[str, Any]] = []
+    if not boards_dir.is_dir():
+        return boards
     for board_dir in boards_dir.iterdir():
         if not board_dir.is_dir() or board_dir.name.startswith("_"):
             continue
@@ -113,10 +111,40 @@ def find_active_boards(repo_root: Path) -> list[dict[str, Any]]:
         if board_file.is_file():
             try:
                 data = json.loads(board_file.read_text(encoding="utf-8"))
-                data["_board_path"] = str(board_file.relative_to(repo_root))
+                data["_board_path"] = str(
+                    board_file.relative_to(base_for_relative)
+                ).replace("\\", "/")
                 boards.append(data)
             except (json.JSONDecodeError, OSError):
                 continue
+    return boards
+
+
+def find_active_boards(repo_root: Path) -> list[dict[str, Any]]:
+    """Find all active Board JSON files and return their parsed content.
+
+    Why: Hooks need to know the current Feature context without manual read_file.
+    How: Scan .copilot/boards/ at repo root AND inside each worktree under
+         .worktrees/. Worktree boards are the primary location during
+         feature development.
+    """
+    boards: list[dict[str, Any]] = []
+
+    # 1. Repo-root boards
+    boards.extend(_scan_boards_dir(
+        repo_root / ".copilot" / "boards", repo_root
+    ))
+
+    # 2. Worktree boards
+    worktrees_dir = repo_root / ".worktrees"
+    if worktrees_dir.is_dir():
+        for wt_dir in worktrees_dir.iterdir():
+            if not wt_dir.is_dir():
+                continue
+            boards.extend(_scan_boards_dir(
+                wt_dir / ".copilot" / "boards", repo_root
+            ))
+
     return boards
 
 
@@ -179,6 +207,32 @@ def is_main_branch(branch: Optional[str]) -> bool:
     return branch in ("main", "master")
 
 
+def resolve_worktree_root(
+    file_path: Optional[str],
+    repo_root: Path,
+) -> Optional[Path]:
+    """Resolve the worktree root directory for a given file path.
+
+    Why: Multiple hooks need to determine which worktree a file belongs to
+         for branch detection, path normalization, and change detection.
+    How: If file_path is inside .worktrees/<name>/, return that directory.
+         Return None if the file is not inside a worktree.
+    """
+    if not file_path:
+        return None
+    try:
+        path = Path(file_path).resolve()
+        worktrees_dir = repo_root.resolve() / ".worktrees"
+        rel = path.relative_to(worktrees_dir)
+        worktree_name = rel.parts[0]
+        worktree_root = worktrees_dir / worktree_name
+        if worktree_root.is_dir():
+            return worktree_root
+    except (ValueError, IndexError):
+        pass
+    return None
+
+
 def get_branch_for_path(
     file_path: Optional[str],
     repo_root: Path,
@@ -189,23 +243,57 @@ def get_branch_for_path(
          than the repo root. Each worktree has its own HEAD / branch.
          Without this, hooks always see the repo-root branch (usually main)
          and incorrectly block edits inside worktrees.
-    How: If file_path is inside a .worktrees/ directory, run git rev-parse
-         from that worktree root. Otherwise fall back to repo_root.
+    How: Delegate to resolve_worktree_root to find the worktree, then run
+         git rev-parse from there. Otherwise fall back to repo_root.
     """
-    if file_path:
-        path = Path(file_path).resolve()
-        repo_root_resolved = repo_root.resolve()
-        worktrees_dir = repo_root_resolved / ".worktrees"
-        try:
-            rel = path.relative_to(worktrees_dir)
-            # First component of the relative path is the worktree name
-            worktree_name = rel.parts[0]
-            worktree_root = worktrees_dir / worktree_name
-            if worktree_root.is_dir():
-                branch = get_current_branch(worktree_root)
-                if branch:
-                    return branch
-        except (ValueError, IndexError):
-            pass  # Not inside .worktrees/
+    wt_root = resolve_worktree_root(file_path, repo_root)
+    if wt_root:
+        branch = get_current_branch(wt_root)
+        if branch:
+            return branch
 
     return get_current_branch(repo_root)
+
+
+def get_worktree_branches(repo_root: Path) -> dict[str, str]:
+    """Get a mapping of worktree name to its current branch.
+
+    Why: SessionStart and PreCompact need to report branch info for all
+         active worktrees, not just the repo root.
+    How: Iterate .worktrees/ and run git rev-parse in each.
+    """
+    branches: dict[str, str] = {}
+    worktrees_dir = repo_root / ".worktrees"
+    if not worktrees_dir.is_dir():
+        return branches
+    for wt_dir in worktrees_dir.iterdir():
+        if not wt_dir.is_dir():
+            continue
+        branch = get_current_branch(wt_dir)
+        if branch:
+            branches[wt_dir.name] = branch
+    return branches
+
+
+def normalize_worktree_path(
+    file_path: str,
+    repo_root: Path,
+) -> str:
+    """Normalize a worktree file path to its repo-relative equivalent.
+
+    Why: PostToolUse checks if a file is in .github/ or .copilot/ by
+         looking at the path relative to repo root. But worktree files
+         have paths like .worktrees/<name>/.copilot/... which don't match.
+    How: Strip the .worktrees/<name>/ prefix to get the logical repo path.
+    """
+    try:
+        resolved = Path(file_path).resolve()
+        worktrees_dir = repo_root.resolve() / ".worktrees"
+        rel = resolved.relative_to(worktrees_dir)
+        # Skip the worktree name (first component) to get the inner path
+        inner_parts = rel.parts[1:]
+        if inner_parts:
+            return str(Path(*inner_parts)).replace("\\", "/")
+    except (ValueError, IndexError):
+        pass
+    return file_path

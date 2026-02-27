@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from hook_utils import (
     find_repo_root,
     load_settings,
+    normalize_worktree_path,
     read_hook_input,
     write_hook_output,
 )
@@ -70,7 +71,13 @@ def is_watched_json(file_path: str, repo_root: Path) -> bool:
 
     Why: Only run validation on framework config files, not user code.
     How: Resolve the path relative to repo root and check prefix.
+         For worktree paths (.worktrees/<name>/...), strip the worktree
+         prefix first to get the logical repo-relative path.
     """
+    if not file_path.rstrip("/\\").endswith(".json") and not file_path.endswith(".json"):
+        # Quick pre-check before expensive path resolution
+        pass
+
     try:
         resolved = Path(file_path).resolve()
         relative = resolved.relative_to(repo_root.resolve())
@@ -81,7 +88,14 @@ def is_watched_json(file_path: str, repo_root: Path) -> bool:
     if not relative_str.endswith(".json"):
         return False
 
-    return any(relative_str.startswith(d + "/") or relative_str.startswith(d + "\\")
+    # Why: Worktree paths start with .worktrees/<name>/... Normalize them
+    #      to the logical repo path for prefix matching.
+    if relative_str.startswith(".worktrees/"):
+        relative_str = normalize_worktree_path(file_path, repo_root)
+        if not relative_str.endswith(".json"):
+            return False
+
+    return any(relative_str.startswith(d + "/")
                for d in WATCHED_DIRS)
 
 

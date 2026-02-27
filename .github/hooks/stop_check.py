@@ -20,6 +20,7 @@ from hook_utils import (
     find_repo_root,
     get_current_branch,
     get_uncommitted_summary,
+    get_worktree_branches,
     has_uncommitted_changes,
     is_main_branch,
     read_hook_input,
@@ -28,7 +29,7 @@ from hook_utils import (
 
 
 def check_uncommitted(repo_root: Path, branch: str | None) -> list[str]:
-    """Check for uncommitted changes in the current worktree.
+    """Check for uncommitted changes in the repo root worktree.
 
     Why: Uncommitted changes are lost if the session ends without saving.
     How: Run git status and report any modified/untracked files.
@@ -36,7 +37,6 @@ def check_uncommitted(repo_root: Path, branch: str | None) -> list[str]:
     issues: list[str] = []
 
     if is_main_branch(branch):
-        # On main branch, uncommitted changes are not from a Feature workflow
         return issues
 
     if has_uncommitted_changes(repo_root):
@@ -47,6 +47,34 @@ def check_uncommitted(repo_root: Path, branch: str | None) -> list[str]:
             f"```\n{summary}\n```\n"
             f"Consider committing or stashing these changes."
         )
+
+    return issues
+
+
+def check_worktree_uncommitted(repo_root: Path) -> list[str]:
+    """Check for uncommitted changes in all worktrees.
+
+    Why: Active worktrees may have unsaved work that would be lost on
+         session end. The repo-root check only covers the main worktree.
+    How: Iterate .worktrees/, run git status in each, report changes.
+    """
+    issues: list[str] = []
+    worktrees_dir = repo_root / ".worktrees"
+    if not worktrees_dir.is_dir():
+        return issues
+
+    wt_branches = get_worktree_branches(repo_root)
+    for wt_name, wt_branch in wt_branches.items():
+        wt_path = worktrees_dir / wt_name
+        if has_uncommitted_changes(wt_path):
+            summary = get_uncommitted_summary(wt_path)
+            file_count = len(summary.strip().splitlines()) if summary else 0
+            issues.append(
+                f"Worktree '{wt_name}' (branch '{wt_branch}') has "
+                f"uncommitted changes ({file_count} file(s)).\n"
+                f"```\n{summary}\n```\n"
+                f"Consider committing or stashing these changes."
+            )
 
     return issues
 
@@ -126,6 +154,7 @@ def main() -> None:
 
     all_issues: list[str] = []
     all_issues.extend(check_uncommitted(repo_root, branch))
+    all_issues.extend(check_worktree_uncommitted(repo_root))
     all_issues.extend(check_board_consistency(boards))
 
     if all_issues:
