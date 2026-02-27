@@ -1,4 +1,3 @@
-````skill
 ---
 name: manage-board
 description: Board の作成・読み込み・状態遷移・Gate 評価・history 追記・アーカイブを手順化する。オーケストレーターが Board 操作時に参照するスキル。
@@ -308,5 +307,3 @@ git push origin --delete <branch-name> 2>/dev/null || true
 
 - `artifact_updated`（成果物ごとの記録）
 - 中間的な `flow_state_changed`（スキップした状態の記録）
-
-````

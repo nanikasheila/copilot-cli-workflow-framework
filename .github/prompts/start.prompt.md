@@ -1,12 +1,11 @@
 ---
 description: "新しい Feature の作業を開始する（Issue 作成・ブランチ・worktree 準備）"
-agent: developer
-tools: ["read", "edit", "execute", "search", "todo"]
+tools : ["execute", "read", "agent", "edit", "search", "todo"]
 ---
 
 # Feature 開始
 
-新しい Feature の作業を開始してください。
+あなたはオーケストレーターとして、新しい Feature の作業開始を管理してください。
 
 ## 手順
 
@@ -16,9 +15,16 @@ tools: ["read", "edit", "execute", "search", "todo"]
 4. ブランチを作成し、worktree を準備する
 5. Board を初期化する
 
+## サブエージェント方針
+
+- 実装作業が必要な場合は `developer` サブエージェントに委任する
+- 自身はオーケストレーターとして全体の進行を管理し、Board の状態遷移を制御する
+- サブエージェント呼び出し時は Board コンテキストをプロンプトに含める（`orchestrate-workflow` スキル参照）
+
 ## コンテキスト
 
 - 設定ファイル: [settings.json](../settings.json)
 - スキル: [start-feature](../skills/start-feature/SKILL.md)
+- オーケストレーション: [orchestrate-workflow](../skills/orchestrate-workflow/SKILL.md)
 - ルール: [branch-naming.md](../rules/branch-naming.md)
 - ルール: [worktree-layout.md](../rules/worktree-layout.md)

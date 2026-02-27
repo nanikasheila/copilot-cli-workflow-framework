@@ -1,9 +1,9 @@
 {
   // Copilot Chat 関連設定
   "chat.agent.thinking.collapsedTools": false,
-  "chat.promptFilesLocations": [
-    { "path": ".github/prompts" }
-  ],
+  "chat.promptFilesLocations": {
+    ".github/prompts": true
+  },
 
   // Prompt File をセッション開始時に推奨表示する
   "chat.promptFilesRecommendations": [

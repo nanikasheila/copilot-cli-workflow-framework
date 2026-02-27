@@ -1,26 +1,30 @@
 ---
 description: "タスクの影響分析と実行計画を策定する"
-agent: manager
-tools: ["read", "search", "todo"]
+tools : ["read", "agent", "search", "todo"]
 ---
 
 # 影響分析・実行計画
 
-ユーザーの要件に対して影響分析を行い、実行計画を策定してください。
+あなたはオーケストレーターとして、影響分析と実行計画の策定を管理してください。
 
 ## 手順
 
-1. 要件を分析し、変更対象のモジュールを特定する
-2. 依存グラフを調査し、影響範囲を評価する
-3. API 互換性・テスト影響を確認する
-4. `architect` へのエスカレーション要否を判断する
-5. タスクを分解し、実行計画を構造化 JSON + Markdown で出力する
+1. `manager` サブエージェントに影響分析と計画策定を委任する
+2. 構造的リスクが検出された場合は `architect` サブエージェントに設計評価を委任する
+3. 計画結果を Board に記録し、ユーザーに提示する
 
 ## 出力に含めるもの
 
 - 影響分析（affected_files, api_compatibility, test_impact, escalation）
 - 実行計画（tasks, risks）— 各タスクに担当エージェントと依存関係を記載
 
+## サブエージェント方針
+
+- 影響分析・計画策定は `manager` サブエージェントに委任する
+- 構造リスクがある場合は `architect` サブエージェントにエスカレーションする
+- 計画承認後、実装は `developer` サブエージェントに委任する
+- 自身はオーケストレーターとして全体の進行を管理する
+
 ## コンテキスト
 
-- エージェント定義: [manager](../agents/manager.agent.md)
+- オーケストレーション: [orchestrate-workflow](../skills/orchestrate-workflow/SKILL.md)

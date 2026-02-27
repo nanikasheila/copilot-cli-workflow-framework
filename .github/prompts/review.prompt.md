@@ -1,14 +1,19 @@
 ---
 description: "現在の変更に対してコードレビューを実行する"
-agent: reviewer
-tools: ["read", "search", "problems", "usages"]
+tools : ["read", "agent", "search", "todo"]
 ---
 
 # コードレビュー
 
-現在の変更差分に対してコードレビューを実行してください。
+あなたはオーケストレーターとして、コードレビューを管理してください。
 
-## レビュー観点
+## 手順
+
+1. `reviewer` サブエージェントにレビューを委任する
+2. レビュー結果を受け取り、Board に記録する
+3. 修正が必要な場合は `developer` サブエージェントに修正指示を委任する
+
+## レビュー観点（reviewer に伝達）
 
 1. **設計・構造**: モジュール分割、責務分離、既存パターンとの整合性
 2. **ロジック・正確性**: 計算ロジック、エッジケース、エラーハンドリング
@@ -18,9 +23,15 @@ tools: ["read", "search", "problems", "usages"]
 ## 出力形式
 
 - Critical / Warning / Security / Info の分類で指摘を構造化する
-- 修正が必要な場合は `developer` エージェントに渡せる修正指示を含める
+- 修正が必要な場合は `developer` サブエージェントへの委任指示を含める
+
+## サブエージェント方針
+
+- レビュー実行は `reviewer` サブエージェントに委任する
+- 修正実行は `developer` サブエージェントに委任する
+- 自身はオーケストレーターとして Board の状態遷移と Gate 評価を管理する
 
 ## コンテキスト
 
-- エージェント定義: [reviewer](../agents/reviewer.agent.md)
+- オーケストレーション: [orchestrate-workflow](../skills/orchestrate-workflow/SKILL.md)
 - ルール: [common.instructions.md](../instructions/common.instructions.md)
