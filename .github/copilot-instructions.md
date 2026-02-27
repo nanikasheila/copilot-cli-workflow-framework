@@ -49,7 +49,7 @@
 | **Prompts** | `prompts/` | 頻出ワークフローのスラッシュコマンド | `/` コマンドで手動起動 |
 | **Skills** | `skills/` | ワークフロー手順のパッケージ | エージェントがタスクに応じて自動ロード |
 | **Agents** | `agents/` | 専門特化のカスタムエージェント | ユーザー選択 or サブエージェント呼出 |
-| **Hooks** | `hooks/` | ライフサイクルフックによる確定的自動化（設定＋スクリプト） | VS Code がイベント駆動で自動実行 |
+| **Hooks** | `hooks/` | コンテキスト自動注入（情報提供のみ、ブロックなし） | VS Code がイベント駆動で自動実行 |
 | **Board** *(runtime)* | `.copilot/boards/` | Feature ごとの共有コンテキスト | オーケストレーターが自動管理 |
 
 ## Instructions（自動適用ガイドライン）
@@ -128,26 +128,23 @@
 
 フローのポリシーは `rules/development-workflow.md`、具体的手順は `skills/orchestrate-workflow/` を参照。
 
-## Hooks（コード駆動の自動化）
+## Hooks（コンテキスト自動注入）
 
 Hooks は VS Code のエージェントライフサイクルイベントでスクリプトを自動実行する。
-Instructions/Rules が「確率的」なガイダンスであるのに対し、Hooks は「確定的」なコード実行を提供する。
+**情報注入のみ**に特化し、ブロック・強制は行わない（ポリシー遵守は Rules に委ねる）。
 
 | Hook | イベント | 役割 |
 |---|---|---|
 | `session_start.py` | SessionStart | settings・Board・Git 状態をコンテキストに自動注入 |
 | `subagent_start.py` | SubagentStart | agent_type 別に Board コンテキストを自動注入 |
-| `pre_tool_use.py` | PreToolUse | main 直接編集ブロック・命名規則検証・危険コマンド防止 |
-| `post_tool_use.py` | PostToolUse | `.github/` `.copilot/` 内 JSON 編集後の自動バリデーション |
 | `pre_compact.py` | PreCompact | コンテキスト圧縮前に Board 重要状態を保全 |
-| `stop_check.py` | Stop | 未コミット変更・Board 整合性チェック |
 
 設定・スクリプト: `.github/hooks/`
 
-### Hooks と他の層の関係
+### Hooks の設計方針
 
-- Hooks は既存の 4 層を**置き換えない** — Instructions/Rules は引き続き LLM へのガイダンスとして必要
-- Hooks は Rules で定義されたポリシーの一部を**確定的に強制**する（main ブランチ保護など）
+- Hooks は**情報提供のみ** — deny / ask による強制は行わない
+- ポリシーの遵守は **Rules（マークdown）** が LLM へのガイダンスとして担う
 - Hooks は Skills の手動手順の一部を**自動化**する（Board コンテキスト注入など）
 
 ## 各層の使い分け
@@ -157,6 +154,6 @@ Instructions/Rules が「確率的」なガイダンスであるのに対し、H
 | **内容** | ガイドライン | ポリシー | スラッシュコマンド | 手順 | 振る舞い | 確定的自動化 | ランタイムコンテキスト |
 | **粒度** | ファイル/フォルダ単位 | リポジトリ全体 | ワークフロー単位 | タスク単位 | 役割単位 | イベント単位 | Feature 単位 |
 | **起動** | applyTo で自動 | 常時参照 | `/` コマンドで手動 | タスクで自動ロード | ユーザー選択 or サブエージェント | VS Code イベント駆動 | オーケストレーターが管理 |
-| **例** | コーディング規約 | squash 禁止 | `/start` `/review` | PR 作成手順 | レビュー専門家 | main 編集ブロック | 影響分析結果・レビュー指摘 |
+| **例** | コーディング規約 | squash 禁止 | `/start` `/review` | PR 作成手順 | レビュー専門家 | コンテキスト注入 | 影響分析結果・レビュー指摘 |
 
 ```
