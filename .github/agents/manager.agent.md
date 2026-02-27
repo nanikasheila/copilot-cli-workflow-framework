@@ -39,12 +39,8 @@ developer / reviewer を順次実行し、Board を通じてフローを制御�
 
 ### Board ファイルの参照
 
-> **SubagentStart Hook による自動注入**: セッション開始時に Board の要約（feature_id,
-> flow_state, maturity, cycle, gate_profile, アクティブな gate 状態）が
-> `additionalContext` として自動注入される。詳細な artifact 参照が必要な場合のみ
-> `read_file` で Board を読み取る。
-
 オーケストレーターからのプロンプトに Board ファイルパスが含まれる。
+`read_file` で Board を読み取り、現在の状態を確認する。
 パス形式: `.copilot/boards/<feature-id>/board.json`
 
 | 操作 | 対象フィールド | 権限 |

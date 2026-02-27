@@ -14,12 +14,8 @@ description: Feature の開発フロー全体のオーケストレーション�
 
 ## オーケストレーション手順
 
-> **Hooks による自動化**: SessionStart Hook が settings・Board・Git 状態を
-> セッション開始時に自動注入するため、手順 1 の手動 read_file は不要になるケースが多い。
-> Board の JSON 編集後は PostToolUse Hook が自動でバリデーションを実行する。
-
 ```
-1. Board を確認する（SessionStart Hook が注入済み。詳細参照が必要な場合のみ read_file）
+1. Board を確認する（read_file で Board JSON を読み取る）
 2. 現在の flow_state と gate_profile を確認する
 3. 次の Gate 条件を gate-profiles.json から取得する
 4. Gate が required: false なら skip、required: true なら該当エージェントを呼び出す
@@ -31,24 +27,15 @@ description: Feature の開発フロー全体のオーケストレーション�
 ```
 
 > Board 操作の詳細手順は `skills/manage-board/SKILL.md` を参照。
-> Board JSON 編集後のバリデーションは PostToolUse Hook が自動実行する。
 
 ## サブエージェントへの Board パス伝達
-
-> **Hooks による自動化**: `SubagentStart` Hook (`.github/hooks/subagent_start.py`) が
-> `agent_type` に応じた Board コンテキストを自動注入する。サブエージェントは
-> セッション開始時点で Board の要約を受け取るため、`read_file` による Board 読み込みが
-> 不要になるケースが多い。詳細な artifact 参照が必要な場合のみ `read_file` を使用する。
 
 サブエージェントを `runSubagent` で呼び出す際、プロンプトに以下を含める:
 
 ```
 Board ファイル: .copilot/boards/<feature-id>/board.json
-※ SubagentStart Hook により Board 要約は自動注入済み。
-  詳細な artifact 参照が必要な場合のみ read_file で Board を読み取ってください。
+read_file で Board を読み取り、現在の状態を確認してください。
 ```
-
-Board の内容をプロンプトに転記する必要はない。
 
 ## 各フェーズの手順
 
