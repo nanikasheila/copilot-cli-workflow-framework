@@ -35,7 +35,7 @@ description: Feature の開発フロー全体のオーケストレーション�
 
 ## サブエージェントへの Board パス伝達
 
-> **Hooks による自動化**: `SubagentStart` Hook (`tools/hooks/subagent_start.py`) が
+> **Hooks による自動化**: `SubagentStart` Hook (`.github/hooks/subagent_start.py`) が
 > `agent_type` に応じた Board コンテキストを自動注入する。サブエージェントは
 > セッション開始時点で Board の要約を受け取るため、`read_file` による Board 読み込みが
 > 不要になるケースが多い。詳細な artifact 参照が必要な場合のみ `read_file` を使用する。

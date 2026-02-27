@@ -19,8 +19,15 @@ GitHub Copilot のカスタムエージェント・スキル・ルール・イ�
 ├── board.schema.json          # Board JSON スキーマ（コア構造）
 ├── board-artifacts.schema.json # Board artifact 定義（成果物スキーマ）
 ├── gate-profiles.schema.json  # Gate Profile スキーマ
-├── hooks/                     # Copilot Hooks 設定
-│   └── copilot-hooks.json     #   Hook イベント定義（6イベント）
+├── hooks/                     # Copilot Hooks（設定＋スクリプト）
+│   ├── copilot-hooks.json     #   Hook イベント定義（6イベント）
+│   ├── hook_utils.py          #   共有ユーティリティ
+│   ├── session_start.py       #   SessionStart: プロジェクトコンテキスト自動注入
+│   ├── subagent_start.py      #   SubagentStart: Board コンテキスト自動注入
+│   ├── pre_tool_use.py        #   PreToolUse: main 保護・安全性検証
+│   ├── post_tool_use.py       #   PostToolUse: JSON 自動バリデーション
+│   ├── pre_compact.py         #   PreCompact: Board 状態保全
+│   └── stop_check.py          #   Stop: 未コミット検出・Board 整合性チェック
 ├── agents/                    # カスタムエージェント
 │   ├── architect.agent.md     #   構造設計・設計判断
 │   ├── developer.agent.md     #   実装・デバッグ・テスト
@@ -71,14 +78,6 @@ docs/
 
 ```
 tools/
-├── hooks/                 # Copilot Hooks スクリプト
-│   ├── hook_utils.py      #   共有ユーティリティ
-│   ├── session_start.py   #   SessionStart: プロジェクトコンテキスト自動注入
-│   ├── subagent_start.py  #   SubagentStart: Board コンテキスト自動注入
-│   ├── pre_tool_use.py    #   PreToolUse: main 保護・安全性検証
-│   ├── post_tool_use.py   #   PostToolUse: JSON 自動バリデーション
-│   ├── pre_compact.py     #   PreCompact: Board 状態保全
-│   └── stop_check.py      #   Stop: 未コミット検出・Board 整合性チェック
 ├── skill-creator/         # スキル作成ガイド（独立ツール）
 └── validate-schemas/      # スキーマ整合性バリデーション
 ```

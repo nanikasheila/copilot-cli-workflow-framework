@@ -48,7 +48,7 @@
 | **Rules** | `rules/` | 宣言的ポリシー（何をすべきか・してはいけないか） | 常時適用 |
 | **Skills** | `skills/` | ワークフロー手順のパッケージ | エージェントがタスクに応じて自動ロード |
 | **Agents** | `agents/` | 専門特化のカスタムエージェント | ユーザー選択 or サブエージェント呼出 |
-| **Hooks** | `hooks/` + `tools/hooks/` | ライフサイクルフックによる確定的自動化 | VS Code がイベント駆動で自動実行 |
+| **Hooks** | `hooks/` | ライフサイクルフックによる確定的自動化（設定＋スクリプト） | VS Code がイベント駆動で自動実行 |
 | **Board** *(runtime)* | `.copilot/boards/` | Feature ごとの共有コンテキスト | オーケストレーターが自動管理 |
 
 ## Instructions（自動適用ガイドライン）
@@ -115,8 +115,7 @@ Instructions/Rules が「確率的」なガイダンスであるのに対し、H
 | `pre_compact.py` | PreCompact | コンテキスト圧縮前に Board 重要状態を保全 |
 | `stop_check.py` | Stop | 未コミット変更・Board 整合性チェック |
 
-設定: `.github/hooks/copilot-hooks.json`
-スクリプト: `tools/hooks/`
+設定・スクリプト: `.github/hooks/`
 
 ### Hooks と他の層の関係
 
