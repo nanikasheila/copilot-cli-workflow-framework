@@ -24,6 +24,30 @@ description: 変更をコミットし、PR を作成してマージする。work
 - `github.repo` — GitHub リポジトリ名（以降 `<repo>` と表記）
 - `github.mergeMethod` — マージ方式（以降 `<mergeMethod>` と表記）
 
+### 0.5. 事前安全チェック（旧 stop_check 相当）
+
+PR 提出前に以下を確認する。未コミットの変更が残った状態での PR 作成を防止する。
+
+```bash
+cd .worktrees/<ブランチ名>
+
+# 1. ブランチ確認 — main でないこと
+git branch --show-current
+
+# 2. 未追跡・未コミット変更の確認
+git status --short
+```
+
+| 確認項目 | 対処 |
+|---|---|
+| main ブランチ上にいる | **中断** — worktree に移動してから再実行 |
+| 未追跡ファイルがある | `git add` でステージするか、`.gitignore` に追加 |
+| ステージ済み未コミットの変更がある | 手順 1 のコミットで解消される |
+| Board の `flow_state` が `submitting` でない | Board を確認し、Gate を通過してから再実行 |
+
+> **Why**: 旧 stop_check Hook がセッション終了時に未コミットを検出していた。
+> **How**: PR 提出フローの入口でチェックすることで、同等の安全性を手続きとして確保する。
+
 ### 1. コミット
 
 ```bash

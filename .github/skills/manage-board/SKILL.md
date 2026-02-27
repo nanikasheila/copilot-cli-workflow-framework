@@ -24,6 +24,31 @@ description: Board の作成・読み込み・状態遷移・Gate 評価・histo
 > `../../.github/board.schema.json` のように参照する。worktree の深さに依存する
 > パス（`../../../../../...`）は使わない。省略が推奨。
 
+## 書き込み後バリデーション（旧 post_tool_use 相当）
+
+Board JSON を編集した後は、**毎回**以下のバリデーションを実行する。
+これは旧 PostToolUse Hook が自動実行していたスキーマ検証を、手続きとして明示化したものである。
+
+### チェック項目
+
+| # | 項目 | 有効な値 |
+|---|---|---|
+| 1 | `flow_state` | `initialized`, `analyzing`, `designing`, `planned`, `implementing`, `testing`, `reviewing`, `approved`, `documenting`, `submitting`, `completed` |
+| 2 | `gates.*.status` | `not_reached`, `passed`, `skipped`, `blocked`, `pending` |
+| 3 | `maturity` | `experimental`, `development`, `stable`, `release-ready`, `sandbox`, `abandoned` |
+| 4 | `gate_profile` | `maturity` と同値であること |
+| 5 | `updated_at` | 直前の操作時刻に更新されていること |
+| 6 | `history` | 最新エントリが直前の操作と整合していること |
+
+### 手順
+
+1. Board ファイルを `read_file` で再読み込みする
+2. 上記チェック項目を目視確認する
+3. 不整合がある場合は**即座に修正**し、`history` に修正エントリを追記する
+
+> **Why**: 旧 post_tool_use Hook が Board 編集のたびに自動バリデーションを実行していた。
+> **How**: Board への書き込み操作のたびにこのチェックを実行することで、不正な状態を早期に検出する。
+
 ## 操作一覧
 
 ### 1. Board 初期化

@@ -14,28 +14,94 @@ description: Feature の開発フロー全体のオーケストレーション�
 
 ## オーケストレーション手順
 
+### 安全チェック（全フェーズ共通）
+
+各フェーズの実行前に、オーケストレーターは以下の安全チェックを行う。
+これは旧 Hooks が自動実行していた保護機能を、手続きとして明示化したものである。
+
+#### ブランチ検証（旧 pre_tool_use 相当）
+
+```bash
+# 現在のブランチを確認
+git branch --show-current
+```
+
+- **main ブランチ上ではファイル変更を行ってはならない**
+- main 上にいる場合は worktree に移動してから作業を開始する
+- この検証は**ファイル編集を伴う全フェーズ（実装・テスト・ドキュメント）の開始前に必ず実行**する
+
+#### Board 整合性検証（旧 post_tool_use 相当）
+
+Board JSON を編集した後は、以下を確認する:
+
+1. `flow_state` が `rules/workflow-state.md` の許可される遷移一覧に含まれる有効な値であること
+2. `gates` の各 `status` が `not_reached` / `passed` / `skipped` / `blocked` / `pending` のいずれかであること
+3. `history` の最新エントリが直前の操作と整合していること
+4. `updated_at` が更新されていること
+
+> **Why**: 旧 post_tool_use Hook が Board スキーマバリデーションを自動実行していた。
+> **How**: Board 編集のたびにこのチェックリストを実行する。異常値の場合は即座に修正する。
+
+### フロー実行手順
+
 ```
 1. Board を確認する（read_file で Board JSON を読み取る）
 2. 現在の flow_state と gate_profile を確認する
 3. 次の Gate 条件を gate-profiles.json から取得する
 4. Gate が required: false なら skip、required: true なら該当エージェントを呼び出す
 5. エージェントの出力を Board の artifacts に書き込む
-6. Gate を評価し、gates.<name>.status を更新する
-7. 通過 → flow_state を遷移、history に記録
-8. 不通過 → 前の状態にループバック、history に記録
-9. completed に到達するまで 2-8 を繰り返す
+6. **Board 整合性検証**を実行する
+7. Gate を評価し、gates.<name>.status を更新する
+8. 通過 → flow_state を遷移、history に記録
+9. 不通過 → 前の状態にループバック、history に記録
+10. completed に到達するまで 2-9 を繰り返す
 ```
 
 > Board 操作の詳細手順は `skills/manage-board/SKILL.md` を参照。
 
-## サブエージェントへの Board パス伝達
+### コンテキスト保全（旧 pre_compact 相当）
 
-サブエージェントを `runSubagent` で呼び出す際、プロンプトに以下を含める:
+コンテキストウィンドウが圧迫された場合、LLM はコンパクション（要約）を行う。
+Board の状態が失われないよう、以下の手順に従う:
+
+1. **Board は常に最新状態をファイルに永続化する** — メモリ上のみで保持しない
+2. **フェーズ完了ごとに Board を保存する** — Gate 評価結果を Board に書き込んでからフェーズを完了する
+3. **コンパクション後の復帰手順**: Board ファイルを `read_file` で再読み込みすれば、直前の状態を完全に復元できる
+
+> **Why**: 旧 pre_compact Hook が Board 状態をコンパクション前に additionalContext に保全していた。
+> **How**: Board をファイルに即座に永続化することで、コンパクション後も read_file で復帰可能にする。
+
+## サブエージェントへの Board コンテキスト伝達
+
+サブエージェントは worktree 内の相対パスを解決できない場合がある。
+Board コンテキストの伝達は**プロンプトへの直接埋め込み**を基本とする。
+
+### 手順
+
+1. オーケストレーターが `read_file` で Board JSON を読み取る
+2. 以下の**必須フィールド**をサブエージェントのプロンプトに直接記載する:
 
 ```
-Board ファイル: .copilot/boards/<feature-id>/board.json
-read_file で Board を読み取り、現在の状態を確認してください。
+## Board コンテキスト
+- feature_id: <feature_id>
+- maturity: <maturity>
+- flow_state: <flow_state>
+- cycle: <cycle>
+- gate_profile: <gate_profile>
+
+### 関連 Artifacts
+<呼び出すエージェントに関連する artifacts のサマリを記載>
+
+### Board ファイルパス（詳細参照用）
+絶対パス: <worktree の絶対パス>/.copilot/boards/<feature-id>/board.json
+相対パス: .copilot/boards/<feature-id>/board.json
 ```
+
+3. エージェントが artifact の詳細を参照する必要がある場合は、絶対パスで `read_file` する
+
+> **Why**: 検証で判明 — サブエージェントは worktree 内の相対パスを解決できない。
+> **How**: Board 内容をプロンプトに直接埋め込むことで、パス解決に依存せず確実に伝達する。
+> 絶対パスも併記することで、詳細参照が必要な場合のフォールバックを提供する。
 
 ## 各フェーズの手順
 
