@@ -255,10 +255,12 @@ def validate_hooks(
     github_dir: Path,
     result: ValidationResult,
 ) -> None:
-    """Verify that expected hook files exist and are executable Python.
+    """Verify that expected hook files exist and are non-empty.
 
-    Why: Missing hooks silently disable safety enforcement.
-    How: Check for the 6 standard hook files and the shared utility module.
+    Why: Missing hooks silently disable context injection.
+    How: Check for the 3 info-injection hooks and the shared utility module.
+         Blocking hooks (pre_tool_use, post_tool_use, stop_check) were
+         removed — policy enforcement is handled by Rules (markdown).
     """
     hooks_dir = github_dir / "hooks"
     if not hooks_dir.is_dir():
@@ -268,10 +270,7 @@ def validate_hooks(
     expected_hooks: list[str] = [
         "session_start.py",
         "subagent_start.py",
-        "pre_tool_use.py",
-        "post_tool_use.py",
         "pre_compact.py",
-        "stop_check.py",
         "hook_utils.py",
     ]
 
