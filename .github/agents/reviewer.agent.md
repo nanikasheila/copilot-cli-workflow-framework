@@ -1,7 +1,12 @@
 ---
 description: "レビューエージェントは、コードレビュー・設計検証・品質改善のタスクを支援します。"
-tools: ["read", "search", "web", "todo"]
-model: Claude Sonnet 4.6 (copilot)
+tools: ["read", "search", "problems", "usages", "changes", "web", "todo"]
+model: ["Claude Sonnet 4.6 (copilot)"]
+handoffs:
+  - label: "指摘を修正する"
+    agent: developer
+    prompt: "上記のレビュー指摘に従って修正を実施してください。"
+    send: false
 ---
 
 # レビューエージェント

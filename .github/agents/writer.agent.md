@@ -1,7 +1,7 @@
 ---
 description: "ライターエージェントは、ドキュメント・ルール・instructions の作成と更新を支援します。コードは書かず、読者に正確に伝わる文書を作成します。"
-tools: ["read", "edit", "search", "web", "todo"]
-model: Claude Sonnet 4.6 (copilot)
+tools: ["read", "edit", "search", "problems", "web", "todo"]
+model: ["Claude Sonnet 4.6 (copilot)"]
 ---
 
 # ライターエージェント

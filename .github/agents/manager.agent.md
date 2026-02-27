@@ -1,7 +1,16 @@
 ---
 description: "マネージャーエージェントは、タスクの分解と実行計画の策定を支援します。計画のみを行い、実行はトップレベルエージェントが担当します。"
-tools: ["read", "search", "todo"]
-model: Claude Sonnet 4.6 (copilot)
+tools: ["read", "search", "problems", "usages", "todo"]
+model: ["Claude Sonnet 4.6 (copilot)"]
+handoffs:
+  - label: "実装を開始する"
+    agent: developer
+    prompt: "上記の実行計画に従って実装を開始してください。"
+    send: false
+  - label: "構造設計を依頼する"
+    agent: architect
+    prompt: "上記の影響分析で構造的リスクが検出されました。構造評価と設計判断を実施してください。"
+    send: false
 ---
 
 # マネージャーエージェント

@@ -1,7 +1,12 @@
 ---
 description: "開発エージェントは、コーディング・デバッグ・実装関連のタスクを支援します。"
-tools: ["vscode", "execute", "read", "edit", "search", "web", "todo"]
-model: Claude Sonnet 4.6 (copilot)
+tools: ["read", "edit", "execute", "search", "problems", "usages", "web", "todo"]
+model: ["Claude Sonnet 4.6 (copilot)"]
+handoffs:
+  - label: "コードレビューを依頼する"
+    agent: reviewer
+    prompt: "上記の実装内容に対してコードレビューを実施してください。"
+    send: false
 ---
 
 # 開発エージェント
