@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from hook_utils import (
     find_repo_root,
+    get_branch_for_path,
     get_current_branch,
     is_main_branch,
     load_settings,
@@ -198,8 +199,16 @@ def main() -> None:
     cwd = hook_input.get("cwd")
 
     repo_root = find_repo_root(cwd)
-    branch = get_current_branch(repo_root)
     settings = load_settings(repo_root)
+
+    # Why: In worktree setups, the repo root is on main but the file
+    #      being edited may be in a worktree on a feature branch.
+    # How: Extract file path from tool_input and resolve the branch
+    #      from the worktree directory if applicable.
+    file_path = tool_input.get("filePath") or tool_input.get("file_path")
+    if not file_path and tool_name == "run_in_terminal":
+        file_path = cwd  # Use terminal cwd for branch resolution
+    branch = get_branch_for_path(file_path, repo_root)
 
     # Check 1: Main branch protection (highest priority)
     result = check_main_branch_protection(tool_name, tool_input, branch, repo_root)
