@@ -30,9 +30,9 @@ handoffs:
 
 ### Board ファイルの参照
 
-オーケストレーターからのプロンプトに Board ファイルパスが含まれる。
-`read_file` で Board を読み取り、現在の状態を確認する。
-パス形式: `.copilot/boards/<feature-id>/board.json`
+オーケストレーターからのプロンプトに Board の主要フィールド（feature_id, maturity, flow_state, cycle,
+関連 artifacts のサマリ）が直接埋め込まれる。
+詳細な artifact 参照が必要な場合は、プロンプトに含まれる絶対パスで `read_file` する。
 
 | 操作 | 対象フィールド | 権限 |
 |---|---|---|
