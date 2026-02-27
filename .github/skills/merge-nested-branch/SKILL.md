@@ -46,5 +46,5 @@ git push origin <親フルブランチ名>
 サブB PR（base=親） → コンフリクト解消 → マージ
 親 PR（base=main）  → マージ
 全ブランチ cleanup
-全 Linear Issue → Done
+全 Issue → Done
 ```

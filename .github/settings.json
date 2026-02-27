@@ -14,7 +14,12 @@
   },
   "project": {
     "name": "copilot-project-template",
-    "language": "markdown"
+    "language": "markdown",
+    "test": {
+      "command": "python tools/skill-creator/scripts/quick_validate.py",
+      "directory": "tools/skill-creator/scripts/",
+      "pattern": "*.py"
+    }
   },
   "agents": {
     "model": "Claude Sonnet 4.6 (copilot)"

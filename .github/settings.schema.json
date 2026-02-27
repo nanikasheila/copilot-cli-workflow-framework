@@ -41,7 +41,7 @@
         "provider": {
           "type": "string",
           "description": "Issue トラッカーの種類",
-          "enum": ["linear", "github", "jira", "none"],
+          "enum": ["linear", "github", "none"],
           "default": "none"
         },
         "mcpServer": {
