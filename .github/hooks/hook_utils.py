@@ -177,3 +177,35 @@ def is_main_branch(branch: Optional[str]) -> bool:
     How: Match against common main branch names.
     """
     return branch in ("main", "master")
+
+
+def get_branch_for_path(
+    file_path: Optional[str],
+    repo_root: Path,
+) -> Optional[str]:
+    """Get the branch associated with a file path, handling worktrees.
+
+    Why: In worktree setups, edited files may reside in a different worktree
+         than the repo root. Each worktree has its own HEAD / branch.
+         Without this, hooks always see the repo-root branch (usually main)
+         and incorrectly block edits inside worktrees.
+    How: If file_path is inside a .worktrees/ directory, run git rev-parse
+         from that worktree root. Otherwise fall back to repo_root.
+    """
+    if file_path:
+        path = Path(file_path).resolve()
+        repo_root_resolved = repo_root.resolve()
+        worktrees_dir = repo_root_resolved / ".worktrees"
+        try:
+            rel = path.relative_to(worktrees_dir)
+            # First component of the relative path is the worktree name
+            worktree_name = rel.parts[0]
+            worktree_root = worktrees_dir / worktree_name
+            if worktree_root.is_dir():
+                branch = get_current_branch(worktree_root)
+                if branch:
+                    return branch
+        except (ValueError, IndexError):
+            pass  # Not inside .worktrees/
+
+    return get_current_branch(repo_root)
