@@ -187,6 +187,30 @@ def check_branch_naming(
     return None
 
 
+def extract_file_path_from_tool(tool_name: str, tool_input: dict) -> str | None:
+    """Extract the most representative file path from tool input.
+
+    Why: Different tools store filePath in different locations. In particular,
+         multi_replace_string_in_file nests filePath inside a replacements
+         array, not at the top level. Without this extraction, the Hook
+         falls back to repo root and incorrectly detects 'main' branch.
+    How: Check top-level filePath first, then tool-specific nested locations.
+    """
+    # Top-level filePath (covers create_file, replace_string_in_file, etc.)
+    file_path = tool_input.get("filePath") or tool_input.get("file_path")
+    if file_path:
+        return file_path
+
+    # multi_replace_string_in_file: filePath is in replacements[].filePath
+    if tool_name == "multi_replace_string_in_file":
+        replacements = tool_input.get("replacements", [])
+        if replacements and isinstance(replacements[0], dict):
+            return replacements[0].get("filePath")
+
+    # run_in_terminal: no filePath, caller should use cwd
+    return None
+
+
 def main() -> None:
     """Evaluate tool invocation against safety policies.
 
@@ -203,9 +227,9 @@ def main() -> None:
 
     # Why: In worktree setups, the repo root is on main but the file
     #      being edited may be in a worktree on a feature branch.
-    # How: Extract file path from tool_input and resolve the branch
-    #      from the worktree directory if applicable.
-    file_path = tool_input.get("filePath") or tool_input.get("file_path")
+    # How: Extract file path from tool_input (handling nested structures)
+    #      and resolve the branch from the worktree directory if applicable.
+    file_path = extract_file_path_from_tool(tool_name, tool_input)
     if not file_path and tool_name == "run_in_terminal":
         file_path = cwd  # Use terminal cwd for branch resolution
     branch = get_branch_for_path(file_path, repo_root)

@@ -19,6 +19,7 @@ from hook_utils import (
     find_active_boards,
     find_repo_root,
     get_current_branch,
+    get_worktree_branches,
     load_gate_profiles,
     load_settings,
     read_hook_input,
@@ -149,6 +150,12 @@ def main() -> None:
     branch = get_current_branch(repo_root)
     if branch:
         context_parts.append(f"Current branch: {branch}")
+
+    # Worktree branches
+    wt_branches = get_worktree_branches(repo_root)
+    if wt_branches:
+        wt_lines = [f"  {name}: {br}" for name, br in wt_branches.items()]
+        context_parts.append(f"Worktrees:\n" + "\n".join(wt_lines))
 
     # Active boards
     boards = find_active_boards(repo_root)

@@ -19,6 +19,7 @@ from hook_utils import (
     find_active_boards,
     find_repo_root,
     get_current_branch,
+    get_worktree_branches,
     load_settings,
     read_hook_input,
     write_hook_output,
@@ -30,6 +31,7 @@ def build_preservation_context(
     settings: dict | None,
     boards: list[dict],
     branch: str | None,
+    worktree_branches: dict[str, str] | None = None,
 ) -> str:
     """Build a compact context string that captures the essential state.
 
@@ -70,6 +72,11 @@ def build_preservation_context(
     # Git state
     if branch:
         lines.append(f"Current branch: {branch}")
+
+    # Worktree branches (critical for knowing active feature work)
+    if worktree_branches:
+        wt_lines = [f"  {name}: {br}" for name, br in worktree_branches.items()]
+        lines.append("Worktrees:\n" + "\n".join(wt_lines))
 
     # Board state (critical for workflow continuity)
     if boards:
@@ -125,8 +132,11 @@ def main() -> None:
     settings = load_settings(repo_root)
     boards = find_active_boards(repo_root)
     branch = get_current_branch(repo_root)
+    wt_branches = get_worktree_branches(repo_root)
 
-    context = build_preservation_context(repo_root, settings, boards, branch)
+    context = build_preservation_context(
+        repo_root, settings, boards, branch, wt_branches
+    )
 
     write_hook_output({
         "systemMessage": context,
