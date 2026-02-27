@@ -1,5 +1,5 @@
 {
-  "$schema": "./gate-profiles.schema.json",
+  "$schema": "../gate-profiles.schema.json",
   "profiles": {
     "experimental": {
       "analysis_gate":       { "required": false, "description": "実験段階では影響分析をスキップ可能" },

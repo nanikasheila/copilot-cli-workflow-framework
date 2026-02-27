@@ -16,7 +16,8 @@ GitHub Copilot のカスタムエージェント・スキル・ルール・イ�
 ├── copilot-instructions.md    # トップレベル Copilot 設定
 ├── settings.json              # プロジェクト固有設定
 ├── settings.schema.json       # settings.json のスキーマ
-├── board.schema.json          # Board JSON スキーマ
+├── board.schema.json          # Board JSON スキーマ（コア構造）
+├── board-artifacts.schema.json # Board artifact 定義（成果物スキーマ）
 ├── agents/                    # カスタムエージェント
 │   ├── architect.agent.md     #   構造設計・設計判断
 │   ├── developer.agent.md     #   実装・デバッグ・テスト
@@ -49,7 +50,14 @@ GitHub Copilot のカスタムエージェント・スキル・ルール・イ�
     ├── merge-nested-branch/
     ├── generate-gitignore/
     ├── manage-board/
-    └── skill-creator/
+    └── orchestrate-workflow/
+```
+
+### tools/（フレームワーク外ツール）
+
+```
+tools/
+└── skill-creator/         # スキル作成ガイド（独立ツール）
 ```
 
 ## エージェント

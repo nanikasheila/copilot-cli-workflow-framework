@@ -12,25 +12,32 @@
 | **Maturity State** | 機能のプロジェクト内での成熟度 |
 | **Gate** | Flow State 遷移の通過条件 |
 | **Gate Profile** | Maturity に応じた Gate 条件のセット |
+| **Gate キー** | Board では短縮名（`analysis`, `design` 等）、gate-profiles.json では `_gate` サフィックス付き（`analysis_gate` 等）。変換規則: `{name}` ↔ `{name}_gate` |
 | **Cycle** | 1回の開発サイクル（作業開始〜完了の1ループ） |
 
 ## Flow State 遷移図
 
 ```
 initialized ──[analysis_gate]──► analyzing
+initialized ──────────────────► planned         ※ analysis スキップ時（現行プロファイルでは未使用）
+initialized ──────────────────► implementing    ※ experimental ショートカット
 analyzing   ──[design_gate]────► designing      ※ スキップ可
 analyzing   ──[plan_gate]──────► planned         ※ design_gate スキップ時
 designing   ──[plan_gate]──────► planned
-planned     ──[impl_gate]─────► implementing
+planned     ──[implementation_gate]► implementing
 implementing──[test_gate]──────► testing
+implementing──[review_gate]───► reviewing       ※ test_gate スキップ時
+implementing──────────────────► approved         ※ experimental（test/review スキップ）
 testing     ──[review_gate]───► reviewing
-reviewing   ──[lgtm]──────────► approved
-reviewing   ──[fix_required]──► implementing    ※ ループバック
-approved    ──[doc_gate]──────► documenting      ※ スキップ可
-approved    ──[submit_gate]───► submitting       ※ doc_gate スキップ時
+reviewing   ──(lgtm)──────────► approved        ※ () = verdict
+reviewing   ──(fix_required)──► implementing    ※ ループバック
+approved    ──[documentation_gate]► documenting  ※ スキップ可
+approved    ──[submit_gate]───► submitting       ※ documentation_gate スキップ時
 documenting ──[submit_gate]───► submitting
 submitting  ──────────────────► completed
 ```
+
+> 凡例: `[]` = Gate、`()` = reviewer verdict
 
 ### 許可される遷移一覧
 
@@ -39,12 +46,13 @@ submitting  ──────────────────► completed
 | `initialized` | `analyzing` | `analysis_gate` | Gate Profile で `required: true` の場合は影響分析を実施 |
 | `initialized` | `planned` | — | Gate Profile で `analysis_gate.required: false` の場合（experimental） |
 | `initialized` | `implementing` | — | Gate Profile で analysis/plan 両方 `required: false` の場合（experimental） |
-| `analyzing` | `designing` | `design_gate` | エスカレーション判定で architect が必要な場合 |
+| `analyzing` | `designing` | `design_gate` | エスカレーション判定で architect が必要な場合（`gate-profiles.json` の `design_gate.required` 値に従う） |
 | `analyzing` | `planned` | `plan_gate` | エスカレーション不要で計画策定に進む場合 |
 | `designing` | `planned` | `plan_gate` | architect の評価完了後 |
 | `planned` | `implementing` | `implementation_gate` | 実行計画に基づき実装開始 |
 | `implementing` | `testing` | `test_gate` | 実装完了。テストが必要な場合 |
 | `implementing` | `reviewing` | `review_gate` | Gate Profile で `test_gate.required: false` の場合 |
+| `implementing` | `approved` | — | Gate Profile で test/review 両方 `required: false` の場合（experimental） |
 | `testing` | `reviewing` | `review_gate` | テスト通過後 |
 | `reviewing` | `approved` | — | reviewer が LGTM を出した場合 |
 | `reviewing` | `implementing` | — | reviewer が `fix_required` を出した場合（ループバック） |
@@ -165,29 +173,43 @@ sandbox ──► abandoned   ※ sandbox は他の Maturity に昇格不可
 | `history` | **write** | — | — | — | — | — |
 | 全フィールド | read | read | read | read | read | read |
 
-## Gate 評価手順
+## Gate 評価
 
-Gate 評価はオーケストレーターが以下の手順で実施する:
+Gate 評価の規則:
+- 各 Gate は `gate-profiles.json` の `required` 値に従い実行またはスキップする
+- Gate 評価結果は Board に記録する（監査証跡）
+- 具体的な Board 操作手順は skills 層で定義する
 
-1. `rules/gate-profiles.json` から現在の `gate_profile` に対応するプロファイルを読み込む
-2. 該当するデフォルト Gate 条件を取得する
-3. Board の `artifacts` から Gate 評価に必要なデータを参照する
-4. 条件を満たすかどうかを判定する
-5. `gates.<gate_name>` を更新する（`passed` / `failed` / `skipped`）
-6. `history` に Gate 評価のエントリを追記する
-7. `passed` または `skipped` の場合のみ `flow_state` を遷移させる
+### Gate スキップ時の振る舞い
+
+- Gate が `required: false` の場合、該当エージェントを呼び出さずスキップ扱いとする
+- スキップされた Gate は Board に記録する（監査証跡のため）
+- スキップされた Gate に対応する artifacts は空（null）のままでよい
+
+> 具体的な Board 操作手順は skills 層で定義する。
 
 ### Gate 失敗時の振る舞い
 
-| Gate | 失敗時のアクション |
-|---|---|
-| `analysis_gate` | 再分析を実施 |
-| `design_gate` | architect に再評価を依頼 |
-| `test_gate` | `implementing` にループバックし、修正後に再テスト |
-| `review_gate` | `implementing` にループバックし、修正後に再レビュー |
-| `documentation_gate` | writer に再作成を依頼 |
-| `submit_gate` | エラー原因を確認し、`rules/error-handling.md` に従う |
-| `submit_gate`（`blocked`） | 遷移不可。sandbox では `approved` で作業を終了し、クリーンアップに進む |
+- 失敗した Gate は再評価が必要
+- ループバック先は許可される遷移テーブルに従う
+- `submit_gate` が `blocked` の場合、`approved` で作業終了としクリーンアップに進む
+
+> 具体的なループバック手順は skills 層で定義する。
+
+## History アクション語彙
+
+`history[].action` には以下の標準値を使用する:
+
+| action | 意味 | 使用タイミング |
+|---|---|---|
+| `board_created` | Board を新規作成した | Feature 開始時 |
+| `flow_state_changed` | Flow State が遷移した | Gate 通過・ループバック時 |
+| `gate_evaluated` | Gate を評価した | Gate の passed / skipped / failed / blocked |
+| `cycle_started` | 新しいサイクルを開始した | Feature 再開時 |
+| `artifact_updated` | 成果物を更新した | エージェントが artifacts に書き込んだ時 |
+| `maturity_changed` | Maturity State が変更された | 昇格・降格時 |
+| `board_archived` | Board をアーカイブした | completed 後のクリーンアップ |
+| `board_destroyed` | Board を削除した | sandbox クリーンアップ |
 
 ## Board ファイル配置
 

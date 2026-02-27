@@ -54,7 +54,7 @@ Feature 開始時に Board を作成する。
     "execution_plan": null,
     "implementation": null,
     "test_results": null,
-    "review_findings": [],
+    "review_findings": null,
     "documentation": null
   },
   "history": [
@@ -122,7 +122,8 @@ Gate 条件を `gate-profiles.json` から読み取り、評価する:
    - `"on_escalation"` → **エスカレーション評価条件**（後述）を判定
    - `"blocked"` → Gate を `blocked` にし、遷移を構造的に禁止する。sandbox の場合は `approved` で作業終了しクリーンアップへ
 3. Gate 通過条件を確認:
-   - `test_gate`: `pass_rate` と `coverage_min` を `artifacts.test_results` と比較
+   - `test_gate`: `pass_rate` と `coverage_min` を `artifacts.test_results` と比較。
+     さらに `regression_required: true`（gate-profiles.json）の場合は `artifacts.test_results.regression` が存在し `{ "executed": true, "passed": true }` であることを確認する。回帰テスト範囲: cycle >= 2 では前サイクルの修正項目 + `affected_files` 関連テスト。cycle: 1（初回）では `affected_files` 関連テストのみを対象とする。
    - `review_gate`: `verdict` が `lgtm` であること
    - その他: 対応するエージェントが成果物を出力していること
 4. `gates.<name>` を更新:
@@ -146,6 +147,7 @@ Gate 条件を `gate-profiles.json` から読み取り、評価する:
 |---|---|---|
 | `design_gate`（development） | `artifacts.impact_analysis.escalation.required == true` | manager の影響分析結果 |
 | `design_gate`（stable） | 上記 **OR** `artifacts.impact_analysis.affected_files` が 2 件以上 | manager の影響分析結果 |
+| `design_gate`（sandbox） | `artifacts.impact_analysis.escalation.required == true` | manager の影響分析結果（development と同条件） |
 
 判定手順:
 1. `artifacts.impact_analysis` を読み取る

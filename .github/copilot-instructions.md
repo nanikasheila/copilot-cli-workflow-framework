@@ -60,8 +60,8 @@
 開発時のルール。必ず従うこと。ルールは**ポリシー**のみを定める。
 `rules/` ディレクトリ内の全ファイルが対象。主要なルール:
 
-- `development-workflow.md` — Feature ベースの開発フロー全体の定義
-- `workflow-state.md` — Flow State 遷移ルール・権限マトリクス・Gate 評価手順
+- `development-workflow.md` — Feature ベースの開発フローのポリシー
+- `workflow-state.md` — Flow State 遷移ルール・権限マトリクス
 - `gate-profiles.json` — Maturity 別の Gate 通過条件（宣言的定義）
 - `branch-naming.md` — ブランチ命名規則
 - `commit-message.md` — コミットメッセージ規約
@@ -98,7 +98,7 @@
 - `flow_state` / `gates` / `maturity` / `history` はオーケストレーターのみが更新する
 - 各エージェントは Board の自 `artifacts` セクションのみに書き込む
 
-フローの詳細は `rules/development-workflow.md` を参照。
+フローのポリシーは `rules/development-workflow.md`、具体的手順は `skills/orchestrate-workflow/` を参照。
 
 ## 各層の使い分け
 

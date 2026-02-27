@@ -1,0 +1,249 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Board Artifacts",
+  "description": "Board の artifact 定義。各エージェントが出力する成果物のスキーマ。board.schema.json から $ref で参照される。",
+
+  "definitions": {
+    "artifact_impact_analysis": {
+      "type": "object",
+      "description": "manager が出力する影響分析",
+      "required": ["affected_files", "api_compatibility", "test_impact", "escalation"],
+      "properties": {
+        "affected_files": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "影響を受けるファイルパス一覧"
+        },
+        "api_compatibility": {
+          "type": "string",
+          "enum": ["compatible", "breaking"],
+          "description": "API 互換性の判定"
+        },
+        "test_impact": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "影響を受けるテストファイル一覧"
+        },
+        "escalation": {
+          "type": "object",
+          "required": ["required", "reason"],
+          "properties": {
+            "required": { "type": "boolean" },
+            "reason": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "summary": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_architecture_decision": {
+      "type": "object",
+      "description": "architect が出力する構造評価・配置判断",
+      "required": ["placement", "rationale"],
+      "properties": {
+        "placement": {
+          "type": "object",
+          "description": "配置判断",
+          "properties": {
+            "layer": { "type": "string", "description": "所属層" },
+            "directory": { "type": "string", "description": "配置先ディレクトリ" },
+            "rate_of_change": { "type": "string", "description": "想定される変化速度" },
+            "dependencies": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "依存先モジュール"
+            },
+            "dependents_allowed": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "依存を許可する層"
+            }
+          },
+          "additionalProperties": false
+        },
+        "rationale": { "type": "string", "description": "判断の根拠" },
+        "adr_id": { "type": "string", "description": "関連する ADR 番号（例: ADR-001）" },
+        "risks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "構造的リスク"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_execution_plan": {
+      "type": "object",
+      "description": "manager が出力する実行計画",
+      "required": ["tasks"],
+      "properties": {
+        "tasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "description", "agent"],
+            "properties": {
+              "id": { "type": "integer" },
+              "description": { "type": "string" },
+              "agent": { "type": "string", "enum": ["developer", "reviewer", "architect", "writer"] },
+              "depends_on": {
+                "type": "array",
+                "items": { "type": "integer" },
+                "description": "依存するタスク ID"
+              },
+              "input": { "type": "string", "description": "タスクの入力情報" },
+              "status": {
+                "type": "string",
+                "enum": ["pending", "in_progress", "completed", "skipped"],
+                "default": "pending"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "risks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "リスク・注意点"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_implementation": {
+      "type": "object",
+      "description": "developer が出力する実装結果",
+      "required": ["changed_files"],
+      "properties": {
+        "changed_files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path", "action"],
+            "properties": {
+              "path": { "type": "string" },
+              "action": { "type": "string", "enum": ["created", "modified", "deleted"] },
+              "summary": { "type": "string", "description": "変更概要" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "public_api": {
+          "type": "array",
+          "description": "公開関数・クラスのシグネチャ一覧。writer がドキュメントを正確に書くために必須",
+          "items": { "$ref": "#/definitions/api_signature" }
+        },
+        "commit_sha": { "type": "string", "description": "コミットハッシュ" },
+        "summary": { "type": "string", "description": "実装概要" }
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_test_results": {
+      "type": "object",
+      "description": "developer が出力するテスト結果",
+      "required": ["command", "exit_code", "total", "passed"],
+      "properties": {
+        "command": { "type": "string", "description": "実行したテストコマンド" },
+        "exit_code": { "type": "integer" },
+        "total": { "type": "integer", "description": "テスト総数" },
+        "passed": { "type": "integer", "description": "成功数" },
+        "failed": { "type": "integer", "description": "失敗数" },
+        "skipped": { "type": "integer", "description": "スキップ数" },
+        "coverage": { "type": "number", "description": "カバレッジ（%）", "minimum": 0, "maximum": 100 },
+        "failures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "test_name": { "type": "string" },
+              "message": { "type": "string" }
+            },
+            "additionalProperties": false
+          },
+          "description": "失敗したテストの詳細"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_review_finding": {
+      "type": "object",
+      "description": "reviewer が出力するレビュー結果（試行ごと）",
+      "required": ["attempt", "verdict", "timestamp"],
+      "properties": {
+        "attempt": { "type": "integer", "description": "レビュー試行番号", "minimum": 1 },
+        "verdict": {
+          "type": "string",
+          "enum": ["lgtm", "fix_required"],
+          "description": "総合判定"
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["severity", "file", "description"],
+            "properties": {
+              "severity": { "type": "string", "enum": ["critical", "warning", "security", "info"] },
+              "file": { "type": "string" },
+              "line": { "type": "integer" },
+              "description": { "type": "string" },
+              "fix_instruction": { "type": "string", "description": "developer 向けの修正指示" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "checks_performed": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "実施したレビュー観点（例: logic, security_basic, architecture）"
+        },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_documentation": {
+      "type": "object",
+      "description": "writer が出力するドキュメント更新結果",
+      "required": ["files"],
+      "properties": {
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path", "action", "summary"],
+            "properties": {
+              "path": { "type": "string" },
+              "action": { "type": "string", "enum": ["created", "updated"] },
+              "summary": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "api_signature": {
+      "type": "object",
+      "description": "公開関数・クラスのシグネチャ情報",
+      "required": ["name", "file", "signature"],
+      "properties": {
+        "name": { "type": "string", "description": "関数・クラス名" },
+        "file": { "type": "string", "description": "定義ファイルパス" },
+        "signature": { "type": "string", "description": "完全なシグネチャ（引数名・型・デフォルト値を含む）" },
+        "returns": { "type": "string", "description": "戻り値の型と説明" },
+        "raises": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "発生しうる例外・エラーの型名と条件"
+        },
+        "description": { "type": "string", "description": "関数・クラスの簡潔な説明" }
+      },
+      "additionalProperties": false
+    }
+  }
+}
