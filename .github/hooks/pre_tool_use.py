@@ -37,9 +37,11 @@ FILE_EDIT_TOOLS: set[str] = {
 
 # Why: These terminal command patterns indicate direct main-branch modification.
 # How: Regex patterns matched against terminal command strings.
+#      Use [^;&|\n]* instead of .* to prevent matching across command
+#      boundaries (e.g. '; git pull origin main' after an unrelated push).
 DANGEROUS_TERMINAL_PATTERNS: list[re.Pattern[str]] = [
-    re.compile(r"git\s+push\s+.*\bmain\b", re.IGNORECASE),
-    re.compile(r"git\s+commit\b.*(?:--allow-empty)?", re.IGNORECASE),
+    re.compile(r"git\s+push\s+[^;&|\n]*\bmain\b", re.IGNORECASE),
+    re.compile(r"git\s+commit\b[^;&|\n]*(?:--allow-empty)?", re.IGNORECASE),
     re.compile(r"rm\s+-rf\s+/", re.IGNORECASE),
     re.compile(r"Remove-Item\s+-Recurse\s+-Force\s+[/\\]", re.IGNORECASE),
     re.compile(r"DROP\s+TABLE", re.IGNORECASE),
@@ -154,15 +156,20 @@ def check_branch_naming(
 
     command = tool_input.get("command", "")
 
-    # Detect branch creation commands
+    # Why: Only match actual branch *creation* commands, not deletion
+    #      (-d/-D/--delete), rename (-m/-M), or listing (-v/-a/-r/--list).
+    # How: Use (?!-) negative lookahead so flags like -d are not captured
+    #      as branch names.
     branch_create_match = re.search(
-        r"git\s+(?:branch|checkout\s+-b|switch\s+-c)\s+(\S+)",
+        r"git\s+(?:checkout\s+-b|switch\s+-c|branch)\s+(?!-)[\w/.\-]+",
         command, re.IGNORECASE
     )
     if not branch_create_match:
         return None
 
-    branch_name = branch_create_match.group(1)
+    # Why: Extract just the branch name token from the matched command.
+    # How: Split matched string on whitespace and take the last token.
+    branch_name = branch_create_match.group(0).split()[-1]
 
     if not settings:
         return None
