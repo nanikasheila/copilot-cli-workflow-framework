@@ -211,6 +211,46 @@ def extract_file_path_from_tool(tool_name: str, tool_input: dict) -> str | None:
     return None
 
 
+# Why: Regex patterns to extract the effective working directory from
+#      terminal commands. VS Code passes workspace root as cwd, but
+#      the actual working directory may differ due to cd / Push-Location /
+#      git -C in the command string.
+# How: Match common directory-changing patterns, capturing the path.
+#      Ordered from most specific to least specific.
+_TERMINAL_CWD_PATTERNS: list[re.Pattern[str]] = [
+    # cd "path" or cd 'path' (with quotes)
+    re.compile(r'''cd\s+["']([^"']+)["']'''),
+    # cd path (without quotes, until ; & | or end of string)
+    re.compile(r"cd\s+([^\s;&|]+)"),
+    # Push-Location "path" or Push-Location 'path'
+    re.compile(r'''Push-Location\s+["']([^"']+)["']''', re.IGNORECASE),
+    # Push-Location path
+    re.compile(r"Push-Location\s+([^\s;&|]+)", re.IGNORECASE),
+    # git -C "path" or git -C 'path'
+    re.compile(r'''git\s+-C\s+["']([^"']+)["']'''),
+    # git -C path
+    re.compile(r"git\s+-C\s+([^\s]+)"),
+]
+
+
+def extract_terminal_effective_cwd(command: str) -> str | None:
+    """Extract the effective working directory from a terminal command string.
+
+    Why: VS Code's PreToolUse hook receives the workspace root as cwd, but
+         the terminal command often starts with 'cd <worktree_path>' or uses
+         'git -C <path>'. Without parsing these, the hook incorrectly
+         resolves the branch to main and blocks legitimate worktree commits.
+    How: Match the command against known directory-changing patterns (cd,
+         Push-Location, git -C). Return the first matched directory path.
+         Return None if no directory change is detected.
+    """
+    for pattern in _TERMINAL_CWD_PATTERNS:
+        match = pattern.search(command)
+        if match:
+            return match.group(1).strip()
+    return None
+
+
 def main() -> None:
     """Evaluate tool invocation against safety policies.
 
@@ -227,11 +267,19 @@ def main() -> None:
 
     # Why: In worktree setups, the repo root is on main but the file
     #      being edited may be in a worktree on a feature branch.
-    # How: Extract file path from tool_input (handling nested structures)
-    #      and resolve the branch from the worktree directory if applicable.
+    # How: Extract file path from tool_input (handling nested structures),
+    #      parse terminal commands for directory changes (cd, git -C), and
+    #      resolve the branch from the worktree directory if applicable.
     file_path = extract_file_path_from_tool(tool_name, tool_input)
     if not file_path and tool_name == "run_in_terminal":
-        file_path = cwd  # Use terminal cwd for branch resolution
+        # Why: VS Code passes workspace root as cwd, not the terminal's
+        #      actual directory. Commands like 'cd worktree ; git commit'
+        #      would be misidentified as main branch operations.
+        # How: Parse the command string for cd / Push-Location / git -C
+        #      to discover the real working directory.
+        command = tool_input.get("command", "")
+        effective_cwd = extract_terminal_effective_cwd(command)
+        file_path = effective_cwd or cwd
     branch = get_branch_for_path(file_path, repo_root)
 
     # Check 1: Main branch protection (highest priority)
