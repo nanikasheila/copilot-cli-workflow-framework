@@ -14,7 +14,7 @@
 
 ```bash
 # このリポジトリをクローン（または ZIP ダウンロード）
-git clone https://github.com/nanikasheila/copilot-project-template.git /tmp/template
+git clone https://github.com/nanikasheila/copilot-workflow-framework.git /tmp/template
 
 # 自分のプロジェクトに .github/ をコピー
 cp -r /tmp/template/.github /path/to/your-project/
@@ -132,6 +132,27 @@ PR を提出してください
 - Worktree・ブランチのクリーンアップ
 - Board のアーカイブ
 
+## 既存プロジェクトの評価（オプション）
+
+既存プロジェクトに `.github/` を移植した場合、プロジェクトの現状を包括的に評価できる:
+
+```
+/assess
+```
+
+`assessor` エージェントが以下の 6 カテゴリを自動で評価し、構造化レポートを出力する:
+
+| カテゴリ | 評価内容 |
+|---|---|
+| プロジェクト構造 | ディレクトリ構成・モジュール分割・レイヤー構造 |
+| テスト状況 | テストファイル・フレームワーク・カバレッジ |
+| コード品質 | 静的解析・型安全性・エラーハンドリング |
+| ドキュメント | README・コードコメント・アーキテクチャドキュメント |
+| DevOps / CI | CI/CD 設定・ビルドスクリプト・環境管理 |
+| セキュリティ | 秘密情報管理・入力検証・依存関係脆弱性 |
+
+評価後、改善が必要な場合は `manager` → `developer` の通常フローで改善を進められる。
+
 ## エージェント一覧
 
 Copilot Chat の参加者メニューから各エージェントを直接呼び出せる:
@@ -141,6 +162,7 @@ Copilot Chat の参加者メニューから各エージェントを直接呼び�
 | developer | `@developer` | コーディング・テスト |
 | reviewer | `@reviewer` | コードレビュー |
 | architect | `@architect` | 構造設計・設計判断 |
+| assessor | `@assessor` | プロジェクト全体評価（移植直後の包括評価） |
 | manager | `@manager` | タスク分解・影響分析 |
 | writer | `@writer` | ドキュメント |
 

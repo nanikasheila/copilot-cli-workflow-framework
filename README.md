@@ -1,6 +1,6 @@
-# copilot-project-template
+# copilot-workflow-framework
 
-Reusable `.github` configuration template for Copilot-powered development workflows.
+Reusable `.github` configuration framework for Copilot-powered development workflows.
 
 ## 概要
 
@@ -21,6 +21,7 @@ GitHub Copilot のカスタムエージェント・スキル・ルール・イ�
 ├── gate-profiles.schema.json  # Gate Profile スキーマ
 ├── agents/                    # カスタムエージェント
 │   ├── architect.agent.md     #   構造設計・設計判断
+│   ├── assessor.agent.md      #   プロジェクト全体評価
 │   ├── developer.agent.md     #   実装・デバッグ・テスト
 │   ├── manager.agent.md       #   影響分析・タスク分解・計画策定
 │   ├── reviewer.agent.md      #   コードレビュー・品質・セキュリティ検証
@@ -31,6 +32,13 @@ GitHub Copilot のカスタムエージェント・スキル・ルール・イ�
 │   ├── typescript.instructions.md
 │   ├── python.instructions.md
 │   └── test.instructions.md
+├── prompts/                   # スラッシュコマンド（`/` で手動起動）
+│   ├── assess.prompt.md       #   /assess — プロジェクト全体評価
+│   ├── cleanup.prompt.md      #   /cleanup — worktree・ブランチクリーンアップ
+│   ├── plan.prompt.md         #   /plan — 影響分析・実行計画策定
+│   ├── review.prompt.md       #   /review — コードレビュー
+│   ├── start.prompt.md        #   /start — 新規 Feature 開始
+│   └── submit.prompt.md       #   /submit — PR 作成・マージ
 ├── rules/                     # 開発ルール（常時適用）
 │   ├── development-workflow.md
 │   ├── workflow-state.md
@@ -42,6 +50,7 @@ GitHub Copilot のカスタムエージェント・スキル・ルール・イ�
 │   ├── issue-tracker-workflow.md
 │   └── error-handling.md
 └── skills/                    # ワークフロー手順（タスクに応じて自動ロード）
+    ├── assess-project/
     ├── initialize-project/
     ├── start-feature/
     ├── submit-pull-request/
@@ -69,8 +78,9 @@ docs/
 
 ```
 tools/
-├── skill-creator/         # スキル作成ガイド（独立ツール）
-└── validate-schemas/      # スキーマ整合性バリデーション
+├── skill-creator/             # スキル作成ガイド（独立ツール）
+├── validate-github-config/    # .github 設定のバリデーション
+└── validate-schemas/          # スキーマ整合性バリデーション
 ```
 
 ## エージェント
@@ -78,6 +88,7 @@ tools/
 | エージェント | 役割 | 備考 |
 |---|---|---|
 | `architect` | 構造設計・設計判断 | ペースレイヤリング・非機能要求・データフロー観点で構造を評価 |
+| `assessor` | プロジェクト全体評価 | 移植直後の包括評価（構造・テスト・品質・ドキュメント・DevOps）。コード変更は行わない |
 | `developer` | 実装・デバッグ・テスト | 実装モードとテストモードを切り替えて作業 |
 | `manager` | 影響分析・タスク分解・計画策定 | 全変更で影響分析を実施し、必要時 architect にエスカレーション |
 | `reviewer` | コードレビュー・品質・セキュリティ検証 | 修正指示を構造化して出力。セキュリティ観点を常時チェック |
@@ -86,6 +97,7 @@ tools/
 ### エージェント連携フロー
 
 ```
+■ 通常の開発フロー
 1. manager に影響分析・タスク分解を依頼
 2. エスカレーション該当時、architect に構造評価・配置判断を依頼
 3. manager に計画策定を依頼 → 実行計画を受領
@@ -94,6 +106,11 @@ tools/
 6. LGTM まで 4-5 を繰り返す
 7. writer にドキュメント更新を依頼（必要な場合）
 8. PR 提出 → マージ → クリーンアップ
+
+■ プロジェクト評価フロー（移植直後）
+1. assessor にプロジェクト全体評価を依頼
+2. 構造的課題がある場合、architect に詳細分析を依頼
+3. manager に改善計画の策定を依頼
 ```
 
 エージェント間の連携は **Board**（`.copilot/boards/<feature-id>/board.json`）を通じて行われます。

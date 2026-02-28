@@ -2,7 +2,7 @@
   "$schema": "./settings.schema.json",
   "github": {
     "owner": "nanikasheila",
-    "repo": "copilot-project-template",
+    "repo": "copilot-workflow-framework",
     "mergeMethod": "merge"
   },
   "issueTracker": {
@@ -13,7 +13,7 @@
     "format": "<user>/<type>-<description>"
   },
   "project": {
-    "name": "copilot-project-template",
+    "name": "copilot-workflow-framework",
     "language": "markdown",
     "test": {
       "command": "python tools/skill-creator/scripts/quick_validate.py",

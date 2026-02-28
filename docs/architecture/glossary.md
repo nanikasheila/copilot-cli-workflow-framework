@@ -14,6 +14,7 @@
 | **Gate Profile** | Maturity に対応する Gate 条件のセット。`gate-profiles.json` で宣言的に定義 |
 | **Cycle** | 1回の開発サイクル（作業開始〜完了の1ループ）。セッション跨ぎで自動インクリメント |
 | **Orchestrator** | トップレベルエージェント（Copilot Chat）。Board の `flow_state` / `gates` / `maturity` を管理する唯一の主体 |
+| **Assessor** | 既存プロジェクトの包括的評価を行う専門エージェント。コード変更は行わず、評価と改善提案のみを出力する |
 | **sandbox** | main マージを構造的に禁止する検証専用の Maturity State |
 
 ## プロジェクト用語
