@@ -48,5 +48,4 @@ jobs:
 
       - name: Run tests
         run: |
-          python -m pytest tools/ -v --tb=short 2>/dev/null || \
-          python -m unittest discover -s tools -p "test_*.py" -v
+          python tools/validate-github-config/test_validate_config.py
