@@ -30,17 +30,9 @@ git branch --show-current
 - main 上にいる場合は worktree に移動してから作業を開始する
 - この検証は**ファイル編集を伴う全フェーズ（実装・テスト・ドキュメント）の開始前に必ず実行**する
 
-#### Board 整合性検証（旧 post_tool_use 相当）
+#### Board 整合性検証
 
-Board JSON を編集した後は、以下を確認する:
-
-1. `flow_state` が `rules/workflow-state.md` の許可される遷移一覧に含まれる有効な値であること
-2. `gates` の各 `status` が `not_reached` / `passed` / `skipped` / `blocked` / `pending` のいずれかであること
-3. `history` の最新エントリが直前の操作と整合していること
-4. `updated_at` が更新されていること
-
-> **Why**: 旧 post_tool_use Hook が Board スキーマバリデーションを自動実行していた。
-> **How**: Board 編集のたびにこのチェックリストを実行する。異常値の場合は即座に修正する。
+Board JSON を編集した後は、skills/manage-board/SKILL.md の「書き込み後バリデーション」セクションに従い検証を実行する。
 
 ### フロー実行手順
 

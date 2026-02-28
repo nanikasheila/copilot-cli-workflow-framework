@@ -1,0 +1,52 @@
+﻿name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-schemas:
+    name: Validate .github schemas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate JSON schemas
+        run: python tools/validate-schemas/validate_schemas.py
+
+  validate-config:
+    name: Validate .github config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate settings and config
+        run: python tools/validate-github-config/validate_config.py
+
+  test:
+    name: Python unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run tests
+        run: |
+          python -m pytest tools/ -v --tb=short 2>/dev/null || \
+          python -m unittest discover -s tools -p "test_*.py" -v
