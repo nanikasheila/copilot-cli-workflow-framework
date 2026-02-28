@@ -83,6 +83,7 @@
 | `/review` | reviewer | 現在の変更に対するコードレビュー |
 | `/plan` | manager | 影響分析と実行計画の策定 |
 | `/cleanup` | developer | マージ後の worktree・ブランチクリーンアップ |
+| `/assess` | assessor | 既存プロジェクトの全体評価（構造・テスト・品質） |
 
 ## Skills（自動ロードされるワークフロー手順）
 
@@ -102,6 +103,7 @@
 | `writer` | ドキュメント・リリース管理 | — | 技術文書・.github/ 整備・リリースノート・バージョニング |
 | `manager` | 影響分析・タスク分解・計画策定 | → developer, → architect | 全変更で影響分析を実施し、実行計画を返す |
 | `architect` | 構造設計・設計判断 | → manager | ペースレイヤリング・非機能要求・データフロー観点で構造を評価 |
+| `assessor` | プロジェクト全体評価 | → manager, → architect | 移植直後の包括的評価。コード変更は行わず評価・提案のみ |
 
 ### エージェント連携（Board 経由 + Handoffs）
 
@@ -124,6 +126,8 @@
 | architect | manager | 設計判断完了後 → タスク分解 |
 | developer | reviewer | 実装完了後 → コードレビュー |
 | reviewer | developer | レビュー指摘あり → 修正実施 |
+| assessor | manager | 評価完了後 → 改善計画策定 |
+| assessor | architect | 構造的課題検出時 → 詳細構造分析 |
 
 フローのポリシーは `rules/development-workflow.md`、具体的手順は `skills/orchestrate-workflow/` を参照。
 
