@@ -22,6 +22,12 @@
     }
   },
   "agents": {
-    "model": "Claude Sonnet 4.6 (copilot)"
+    "model": "Claude Sonnet 4.6 (copilot)",
+    "developer": {},
+    "reviewer": {},
+    "writer": {},
+    "manager": {},
+    "architect": {},
+    "assessor": {}
   }
 }

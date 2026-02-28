@@ -57,7 +57,8 @@ URL から `owner` と `repo` を抽出する。
 | `project.test.command` | ❌ | 「テストコマンドは？（例: node --test, npm test, pytest）」 |
 | `project.test.directory` | ❌ | 「テストディレクトリは？（例: tests/, __tests__/）」 |
 | `project.test.pattern` | ❌ | 「テストファイルのパターンは？（例: *.test.js, test_*.py）」 |
-| `agents.model` | ❌ | 「エージェントのモデルは？（例: Claude Sonnet 4.5 (copilot)）」 |
+| `agents.model` | ❌ | 「エージェントのデフォルトモデルは？（例: Claude Sonnet 4.6 (copilot)）」 |
+| 各エージェント個別 model | ❌ | 「エージェントごとにモデルを変えますか？」（変える場合: developer, reviewer 等の model を個別に質問） |
 
 ### 4. settings.json の生成
 
@@ -93,18 +94,28 @@ URL から `owner` と `repo` を抽出する。
     }
   },
   "agents": {
-    "model": "<モデル名>"
+    "model": "<デフォルトモデル名>",
+    "developer": { "model": "<個別モデル名（省略可）>" },
+    "reviewer": { "model": "<個別モデル名（省略可）>" },
+    "writer": { "model": "<個別モデル名（省略可）>" },
+    "manager": { "model": "<個別モデル名（省略可）>" },
+    "architect": { "model": "<個別モデル名（省略可）>" },
+    "assessor": { "model": "<個別モデル名（省略可）>" }
   }
 }
 ```
 
 ### 5. エージェントファイルの更新
 
-`agents.model` の値を全エージェントファイルの `model:` フロントマターに反映する:
+各エージェントのモデルを全エージェントファイルの `model:` フロントマターに反映する:
+
+モデルの解決優先度:
+1. `agents.<agent-name>.model` が設定されていればその値を使用
+2. 未設定なら `agents.model`（デフォルト）の値を使用
 
 ```
 .github/agents/*.agent.md の YAML frontmatter 内:
-  model: "<agents.model の値>"
+  model: "<解決されたモデル名>"
 ```
 
 対象ファイル:
@@ -172,7 +183,8 @@ settings.json の先頭に `"$schema": "./settings.schema.json"` を含めると
 | `project.test.command` | string | ❌ | テスト実行コマンド（例: `node --test`, `pytest`） |
 | `project.test.directory` | string | ❌ | テストディレクトリ（例: `tests/`） |
 | `project.test.pattern` | string | ❌ | テストファイルパターン（例: `*.test.js`） |
-| `agents.model` | string | ❌ | エージェントが使用するモデル名（全エージェント共通） |
+| `agents.model` | string | ❌ | エージェントが使用するデフォルトモデル名 |
+| `agents.<name>.model` | string | ❌ | エージェント個別のモデル名（省略時は `agents.model` を使用） |
 
 ## Issue トラッカーが不要な場合
 

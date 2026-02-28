@@ -35,6 +35,7 @@ GitHub Copilot のカスタムエージェント・スキル・ルール・イ�
 ├── prompts/                   # スラッシュコマンド（`/` で手動起動）
 │   ├── assess.prompt.md       #   /assess — プロジェクト全体評価
 │   ├── cleanup.prompt.md      #   /cleanup — worktree・ブランチクリーンアップ
+│   ├── model.prompt.md        #   /model — エージェントのモデル変更
 │   ├── plan.prompt.md         #   /plan — 影響分析・実行計画策定
 │   ├── review.prompt.md       #   /review — コードレビュー
 │   ├── start.prompt.md        #   /start — 新規 Feature 開始
@@ -96,21 +97,25 @@ tools/
 
 ### エージェント連携フロー
 
+トップレベルの Copilot Chat が**オーケストレーター**として機能し、Board を管理しながら各エージェントを呼び出します。
+
 ```
 ■ 通常の開発フロー
-1. manager に影響分析・タスク分解を依頼
-2. エスカレーション該当時、architect に構造評価・配置判断を依頼
-3. manager に計画策定を依頼 → 実行計画を受領
-4. developer に実装を依頼
-5. reviewer にレビューを依頼
-6. LGTM まで 4-5 を繰り返す
-7. writer にドキュメント更新を依頼（必要な場合）
-8. PR 提出 → マージ → クリーンアップ
+1. ユーザーがオーケストレーターに作業を指示
+2. オーケストレーターが manager に影響分析・タスク分解を依頼
+3. エスカレーション該当時、architect に構造評価・配置判断を依頼
+4. manager に計画策定を依頼 → 実行計画を受領
+5. developer に実装を依頼
+6. reviewer にレビューを依頼
+7. LGTM まで 5-6 を繰り返す
+8. writer にドキュメント更新を依頼（必要な場合）
+9. PR 提出 → マージ → クリーンアップ
 
 ■ プロジェクト評価フロー（移植直後）
-1. assessor にプロジェクト全体評価を依頼
-2. 構造的課題がある場合、architect に詳細分析を依頼
-3. manager に改善計画の策定を依頼
+1. ユーザーがオーケストレーターに評価を指示
+2. オーケストレーターが assessor にプロジェクト全体評価を依頼
+3. 構造的課題がある場合、architect に詳細分析を依頼
+4. manager に改善計画の策定を依頼
 ```
 
 エージェント間の連携は **Board**（`.copilot/boards/<feature-id>/board.json`）を通じて行われます。

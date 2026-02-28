@@ -14,7 +14,7 @@
 | `issueTracker` | Issue トラッカー設定（provider, team, prefix 等） | オプション |
 | `branch` | ブランチ命名設定（user, format） | オプション |
 | `project` | プロジェクト情報（name, language, entryPoint, test） | ✅ |
-| `agents` | エージェント設定（model） | オプション |
+| `agents` | エージェント設定（デフォルトmodel・エージェント個別model） | オプション |
 
 ### ツール利用ポリシー
 
@@ -75,6 +75,7 @@ Feature / Flow State / Maturity / Gate / Board の定義と関係は `rules/deve
 | `/plan` | manager | 影響分析と実行計画の策定 |
 | `/cleanup` | developer | マージ後の worktree・ブランチクリーンアップ |
 | `/assess` | assessor | 既存プロジェクトの全体評価（構造・テスト・品質） |
+| `/model` | — | エージェントのモデル変更（個別・一括・デフォルトに戻す） |
 
 ## Skills（自動ロードされるワークフロー手順）
 

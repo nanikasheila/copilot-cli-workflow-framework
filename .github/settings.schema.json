@@ -131,15 +131,46 @@
     },
     "agents": {
       "type": "object",
-      "description": "エージェント設定",
+      "description": "エージェント設定。model はデフォルトモデル。各エージェント名のキーで個別にモデルを上書き可能",
       "properties": {
         "model": {
           "type": "string",
-          "description": "エージェントのモデル名（例: Claude Sonnet 4.5 (copilot)）"
+          "description": "全エージェント共通のデフォルトモデル名（例: Claude Sonnet 4.6 (copilot)）"
+        },
+        "developer": {
+          "$ref": "#/$defs/agentConfig"
+        },
+        "reviewer": {
+          "$ref": "#/$defs/agentConfig"
+        },
+        "writer": {
+          "$ref": "#/$defs/agentConfig"
+        },
+        "manager": {
+          "$ref": "#/$defs/agentConfig"
+        },
+        "architect": {
+          "$ref": "#/$defs/agentConfig"
+        },
+        "assessor": {
+          "$ref": "#/$defs/agentConfig"
         }
       },
       "additionalProperties": false
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$defs": {
+    "agentConfig": {
+      "type": "object",
+      "description": "個別エージェントの設定。省略時は agents.model のデフォルト値を使用",
+      "properties": {
+        "model": {
+          "type": "string",
+          "description": "このエージェント固有のモデル名。省略時はデフォルトモデルを使用"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
 }
