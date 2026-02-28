@@ -24,19 +24,10 @@
 | GitHub | **推奨** | PR・マージ・コードレビューに使用 |
 | Issue トラッカー | **オプション** | `issueTracker.provider: "none"` で無効化可能 |
 
-## 中核概念: Feature / State / Gate / Board
+## 中核概念
 
-開発は **Feature（機能）** を単位として進める。各 Feature は **Board** を持ち、ライフサイクル全体を追跡する。
+Feature / Flow State / Maturity / Gate / Board の定義と関係は `rules/development-workflow.md` を参照。
 
-| 概念 | 役割 | 定義場所 |
-|---|---|---|
-| **Feature** | 開発の基本単位。1 Board・1 ブランチ・複数 Cycle | `rules/development-workflow.md` |
-| **Flow State** | 開発サイクル内の現在位置（initialized → completed） | `rules/workflow-state.md` |
-| **Maturity** | 機能の成熟度（experimental → release-ready、sandbox は検証専用） | `rules/workflow-state.md` |
-| **Gate** | 状態遷移の通過条件。Maturity に連動して厳格さが変わる | `rules/gate-profiles.json` |
-| **Board** | エージェント間の構造化された共有コンテキスト（JSON） | `.github/board.schema.json` |
-
-詳細は各定義ファイルを参照。
 
 ## .github 5層 + ランタイム構造
 
@@ -114,22 +105,11 @@
 - `flow_state` / `gates` / `maturity` / `history` はオーケストレーターのみが更新する
 - 各エージェントは Board の自 `artifacts` セクションのみに書き込む
 
-#### Handoffs（段階的ワークフロー遷移）
+#### Handoffs
 
-各エージェントは `handoffs:` でワークフローの次ステップを定義する。
-レスポンス完了後にボタンとして表示され、ユーザーが確認してから次のエージェントに遷移する。
-
-| 遷移元 | 遷移先 | トリガー |
-|---|---|---|
-| manager | developer | 実行計画策定後 → 実装開始 |
-| manager | architect | 構造的リスク検出時 → 設計評価 |
-| architect | manager | 設計判断完了後 → タスク分解 |
-| developer | reviewer | 実装完了後 → コードレビュー |
-| reviewer | developer | レビュー指摘あり → 修正実施 |
-| assessor | manager | 評価完了後 → 改善計画策定 |
-| assessor | architect | 構造的課題検出時 → 詳細構造分析 |
-
+各エージェントの `.agent.md` に `handoffs:` で遷移先が定義されている。
 フローのポリシーは `rules/development-workflow.md`、具体的手順は `skills/orchestrate-workflow/` を参照。
+
 
 ## 各層の使い分け
 
