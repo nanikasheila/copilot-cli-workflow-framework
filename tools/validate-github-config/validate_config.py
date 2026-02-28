@@ -31,8 +31,8 @@ VALID_AGENT_TOOLS: set[str] = {
     "usages", "changes", "web", "todo",
 }
 
-# Why: Prompt files share a subset of agent tools.
-VALID_PROMPT_TOOLS: set[str] = VALID_AGENT_TOOLS
+# Why: Prompt files use agent tools plus the "agent" tool for sub-agent invocation.
+VALID_PROMPT_TOOLS: set[str] = VALID_AGENT_TOOLS | {"agent"}
 
 
 # -- Types -------------------------------------------------------------------
