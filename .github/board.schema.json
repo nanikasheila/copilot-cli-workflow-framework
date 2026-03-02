@@ -82,8 +82,12 @@
       "type": "object",
       "description": "各エージェントの成果物。各エージェントは自セクションのみに書き込む。詳細スキーマは board-artifacts.schema.json を参照",
       "properties": {
+        "requirements": {
+          "description": "analyst の要求分析結果（USDM 準拠）",
+          "oneOf": [{ "$ref": "board-artifacts.schema.json#/definitions/artifact_requirements" }, { "type": "null" }]
+        },
         "impact_analysis": {
-          "description": "planner の影響分析結果",
+          "description": "impact-analyst の影響分析結果",
           "oneOf": [{ "$ref": "board-artifacts.schema.json#/definitions/artifact_impact_analysis" }, { "type": "null" }]
         },
         "architecture_decision": {
@@ -98,9 +102,17 @@
           "description": "developer の実装結果",
           "oneOf": [{ "$ref": "board-artifacts.schema.json#/definitions/artifact_implementation" }, { "type": "null" }]
         },
+        "test_design": {
+          "description": "test-designer のテストケース設計",
+          "oneOf": [{ "$ref": "board-artifacts.schema.json#/definitions/artifact_test_design" }, { "type": "null" }]
+        },
         "test_results": {
           "description": "developer のテスト結果",
           "oneOf": [{ "$ref": "board-artifacts.schema.json#/definitions/artifact_test_results" }, { "type": "null" }]
+        },
+        "test_verification": {
+          "description": "test-verifier のテスト検証結果",
+          "oneOf": [{ "$ref": "board-artifacts.schema.json#/definitions/artifact_test_verification" }, { "type": "null" }]
         },
         "review_findings": {
           "type": "array",
