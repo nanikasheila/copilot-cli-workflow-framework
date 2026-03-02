@@ -154,6 +154,18 @@
         },
         "assessor": {
           "$ref": "#/$defs/agentConfig"
+        },
+        "analyst": {
+          "$ref": "#/$defs/agentConfig"
+        },
+        "impact-analyst": {
+          "$ref": "#/$defs/agentConfig"
+        },
+        "test-designer": {
+          "$ref": "#/$defs/agentConfig"
+        },
+        "test-verifier": {
+          "$ref": "#/$defs/agentConfig"
         }
       },
       "additionalProperties": false
