@@ -15,6 +15,13 @@
 - Issue トラッカーの利用はオプション（`settings.json` の `issueTracker.provider` で制御）
 - Git の利用は必須、GitHub の利用は推奨
 
+## CLI 固有の原則
+
+- **Rules の明示ロード**: `rules/` は CLI で自動ロードされないため、各フェーズ開始前に必要ルールを `view` で確認する。フェーズ別の必要ルールは `skills/orchestrate-workflow/SKILL.md` を参照
+- **SQL セッション内ミラー**: Board JSON の状態を SQL テーブルにミラーリングし、高速なクエリ・バリデーションに活用する。Board JSON が永続的真実のソース。詳細は `skills/manage-board/SKILL.md` を参照
+- **並列実行の活用**: `explore` エージェントによる事前調査の並列化、`task` エージェントによるビルド・テスト実行の非同期化を積極的に活用する。並列実行マップは `skills/orchestrate-workflow/SKILL.md` を参照
+- **Session Store の活用**: 過去セッションの知見（類似 Feature の成果物、過去の設計判断）を `session_store` データベースから検索し、新規 Feature に活用する
+
 ## 中核概念
 
 | 概念 | 定義 | 詳細 |
@@ -47,7 +54,8 @@
 - トップレベルエージェント（Copilot CLI）が**オーケストレーター**として Board を管理する
 - `flow_state` / `gates` / `maturity` / `history` はオーケストレーターのみが更新する
 - 各エージェントは `artifacts` 内の自セクションのみに書き込む
-- エージェント間の情報伝達は **Board の構造化 JSON** を通じて行う
+- エージェント間の情報伝達は **Board の構造化 JSON**（および SQL ミラー）を通じて行う
+- 独立したフェーズでは `explore` / `task` エージェントの**並列実行**を活用する
 
 > オーケストレーション手順の詳細は skills 層で定義する。
 
