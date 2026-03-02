@@ -25,6 +25,8 @@
 | Git | **必須** | すべての変更は Git で管理する |
 | GitHub | **推奨** | PR・マージ・コードレビューに使用 |
 | Issue トラッカー | **オプション** | `issueTracker.provider: "none"` で無効化可能 |
+| SQL ツール | **推奨** | Board 状態のセッション内ミラー・高速クエリ・バリデーションに使用 |
+| task ツール | **推奨** | エージェント並列実行・事前調査の並列化に使用 |
 
 ## 開発ルール（Rules）
 
@@ -44,6 +46,7 @@
 
 > **重要**: `rules/` ディレクトリは CLI では自動ロードされない。
 > 上記ルールの内容を遵守するために、作業開始時に関連ルールを `view` で確認すること。
+> 各エージェントの仕様に「必要ルール」セクションがあり、そのエージェントが参照すべきルールを明記している。
 
 ## 中核概念
 
@@ -125,6 +128,62 @@ Feature / Flow State / Maturity / Gate / Board の定義と関係は `rules/deve
 
 フローのポリシーは `rules/development-workflow.md`、具体的手順は `skills/orchestrate-workflow/` を参照。
 
+#### 並列実行戦略
+
+CLI の `task` ツールは複数エージェントの並列実行をサポートする。
+以下のルールに従い、安全に並列化する:
+
+| 並列可否 | エージェントタイプ | 理由 |
+|---|---|---|
+| ✅ 並列安全 | `explore` | 読み取り専用。複数同時起動可 |
+| ✅ 並列安全 | `code-review` | 読み取り専用。複数同時起動可 |
+| ⚠️ 条件付き | `task` | ビルド・テスト実行。副作用あるが独立なら可 |
+| ❌ 逐次のみ | `general-purpose` | ファイル編集の副作用あり。競合リスク |
+
+**並列化できるフェーズの例**:
+- 事前調査: 複数 `explore` エージェントでコードベースの異なる側面を同時調査
+- 影響分析の準備: `explore` で依存グラフ・テストファイル・API を並列検索
+- テスト実行: `task` エージェントでビルド・テストを実行しつつ、`explore` でレビュー準備
+
+**逐次が必須のフェーズ**:
+- 実装（developer）→ テスト（developer）→ レビュー（reviewer）の順序依存
+- Board の flow_state 遷移（常に逐次）
+
+## SQL によるセッション内 Board 管理
+
+CLI の SQL ツールを活用し、Board JSON のセッション内ミラーを維持する。
+Board JSON が永続的な真実のソース、SQL がセッション内の高速クエリ・バリデーション層として機能する。
+
+### SQL テーブル構造
+
+Board をセッション内で管理するための SQL テーブル定義は `skills/manage-board/SKILL.md` を参照。
+
+### 活用パターン
+
+| パターン | 説明 |
+|---|---|
+| **状態クエリ** | `SELECT * FROM gates WHERE status = 'not_reached'` で次に評価すべき Gate を即座に特定 |
+| **バリデーション** | Gate 遷移前に SQL で整合性を検証（JSON パース不要） |
+| **履歴検索** | `SELECT * FROM board_history WHERE action = 'gate_evaluated'` で Gate 評価履歴を高速取得 |
+| **クロスセッション** | `session_store` の `search_index` で過去の類似 Feature の成果物を参照 |
+| **Todo 連携** | `execution_plan` のタスクを `todos` テーブルにロードし、進捗を SQL で追跡 |
+
+### Session Store の活用
+
+過去セッションの知見を活用する。新規 Feature 開始時に以下のクエリで関連情報を検索:
+
+```sql
+-- 過去の類似作業を検索（session_store: read-only）
+SELECT content, session_id, source_type
+FROM search_index
+WHERE search_index MATCH '<feature関連キーワード>'
+ORDER BY rank LIMIT 10;
+
+-- 同じファイルを編集した過去セッションを検索
+SELECT s.id, s.summary, sf.file_path
+FROM session_files sf JOIN sessions s ON sf.session_id = s.id
+WHERE sf.file_path LIKE '%<対象パス>%';
+```
 
 ## 各層の使い分け
 

@@ -290,6 +290,129 @@ git push origin --delete <branch-name> 2>/dev/null || true
 > これは意図的な設計 — sandbox の痕跡を残さないことが目的。
 > 検証で得た知見を残す必要がある場合は、削除前に別途メモを取ること。
 
+## SQL によるセッション内 Board ミラー（CLI 固有）
+
+CLI の SQL ツールを活用し、Board JSON のセッション内ミラーを SQL テーブルで維持する。
+Board JSON が永続的な真実のソース（git 管理可能）、SQL がセッション内の高速クエリ・バリデーション層。
+
+### テーブル定義
+
+Board をセッション開始時に SQL にロードし、JSON 更新と同時に SQL も更新する。
+
+```sql
+-- Board のコア状態
+CREATE TABLE board_state (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
+-- 初期ロード例:
+-- INSERT INTO board_state VALUES ('feature_id', '<feature-id>');
+-- INSERT INTO board_state VALUES ('maturity', 'development');
+-- INSERT INTO board_state VALUES ('flow_state', 'initialized');
+-- INSERT INTO board_state VALUES ('cycle', '1');
+-- INSERT INTO board_state VALUES ('gate_profile', 'development');
+
+-- Gate 状態の個別追跡
+CREATE TABLE gates (
+  name TEXT PRIMARY KEY,
+  status TEXT NOT NULL DEFAULT 'not_reached',
+  required TEXT,
+  evaluated_by TEXT,
+  timestamp TEXT
+);
+-- 初期ロード例:
+-- INSERT INTO gates VALUES ('analysis', 'not_reached', NULL, NULL, NULL);
+-- INSERT INTO gates VALUES ('design', 'not_reached', NULL, NULL, NULL);
+-- ... 全8 Gate
+
+-- Artifact 状態サマリ（JSON 本体は Board JSON に保持）
+CREATE TABLE artifacts (
+  name TEXT PRIMARY KEY,
+  agent TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'empty',
+  summary TEXT,
+  timestamp TEXT
+);
+-- 初期ロード例:
+-- INSERT INTO artifacts VALUES ('impact_analysis', 'manager', 'empty', NULL, NULL);
+-- INSERT INTO artifacts VALUES ('architecture_decision', 'architect', 'empty', NULL, NULL);
+-- INSERT INTO artifacts VALUES ('execution_plan', 'manager', 'empty', NULL, NULL);
+-- INSERT INTO artifacts VALUES ('implementation', 'developer', 'empty', NULL, NULL);
+-- INSERT INTO artifacts VALUES ('test_results', 'developer', 'empty', NULL, NULL);
+-- INSERT INTO artifacts VALUES ('review_findings', 'reviewer', 'empty', NULL, NULL);
+-- INSERT INTO artifacts VALUES ('documentation', 'writer', 'empty', NULL, NULL);
+
+-- 操作履歴（Board JSON の history 配列のミラー）
+CREATE TABLE board_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  timestamp TEXT NOT NULL,
+  cycle INTEGER NOT NULL,
+  agent TEXT,
+  action TEXT NOT NULL,
+  details TEXT
+);
+```
+
+### Board → SQL ロード手順
+
+Board 初期化時または既存 Board のセッション開始時に実行:
+
+1. Board JSON を `view` で読み取る
+2. 上記テーブルを `CREATE TABLE IF NOT EXISTS` で作成
+3. Board の各フィールドを SQL に INSERT する
+4. 以降の Board 更新時は JSON と SQL の**両方**を更新する
+
+### SQL バリデーションクエリ
+
+Board JSON 書き込み後のバリデーションを SQL で高速化:
+
+```sql
+-- flow_state の有効性チェック
+SELECT CASE
+  WHEN value IN ('initialized','analyzing','designing','planned','implementing',
+                  'testing','reviewing','approved','documenting','submitting','completed')
+  THEN 'valid' ELSE 'INVALID: ' || value
+END AS check_result
+FROM board_state WHERE key = 'flow_state';
+
+-- gate_profile と maturity の一致チェック
+SELECT CASE
+  WHEN bs1.value = bs2.value THEN 'valid'
+  ELSE 'MISMATCH: maturity=' || bs1.value || ' gate_profile=' || bs2.value
+END AS check_result
+FROM board_state bs1, board_state bs2
+WHERE bs1.key = 'maturity' AND bs2.key = 'gate_profile';
+
+-- 次に評価すべき Gate を特定
+SELECT name, status FROM gates WHERE status = 'not_reached' LIMIT 1;
+
+-- Gate 評価の進捗サマリ
+SELECT status, COUNT(*) as count FROM gates GROUP BY status;
+```
+
+### execution_plan → todos 連携
+
+manager の実行計画を SQL の `todos` テーブルにロードし、進捗を追跡する:
+
+```sql
+-- execution_plan のタスクを todos にロード
+INSERT INTO todos (id, title, description, status) VALUES
+  ('task-1', '<タスク説明>', '<agent>: <詳細>', 'pending'),
+  ('task-2', '<タスク説明>', '<agent>: <詳細>', 'pending');
+
+-- 依存関係を todo_deps にロード
+INSERT INTO todo_deps (todo_id, depends_on) VALUES ('task-2', 'task-1');
+
+-- 実行可能なタスクを取得（依存が全て done）
+SELECT t.* FROM todos t
+WHERE t.status = 'pending'
+AND NOT EXISTS (
+  SELECT 1 FROM todo_deps td
+  JOIN todos dep ON td.depends_on = dep.id
+  WHERE td.todo_id = t.id AND dep.status != 'done'
+);
+```
+
 ## 簡略化ガイドライン
 
 ### 必須の history エントリ
@@ -307,3 +430,8 @@ git push origin --delete <branch-name> 2>/dev/null || true
 
 - `artifact_updated`（成果物ごとの記録）
 - 中間的な `flow_state_changed`（スキップした状態の記録）
+
+### SQL テーブルの省略
+
+Maturity が `experimental` の場合、SQL ミラーの維持は省略可能。
+Board JSON のみで運用し、SQL は必要に応じて参照クエリのみ使用する。
