@@ -71,20 +71,20 @@ Feature / Flow State / Maturity / Gate / Board の定義と関係は `rules/deve
 `applyTo` パターンに一致するファイルを扱うとき、自動的にコンテキストに追加される。
 共通規約に加え、言語・ファイルタイプ別のガイドラインが `instructions/` 配下にある。
 
-## Prompts（ワークフローテンプレート）
+## Prompts（非推奨 → Skills に移行済み）
 
-頻出ワークフローのプロンプトテンプレート。
-`prompts/` ディレクトリ内の `.prompt.md` ファイルが1つのテンプレートに対応する。
+> **CLI ではプロンプトファイルは使用できない。** すべてのプロンプトは対応する Skill に移行済み。
+> `prompts/` ディレクトリは VS Code 拡張機能との互換性のために残置しているが、CLI では Skills を使用すること。
 
-| テンプレート | 対象エージェント | 用途 |
-|---|---|---|
-| `start.prompt.md` | developer | 新規 Feature の作業開始（Issue・ブランチ・worktree） |
-| `submit.prompt.md` | developer | コミット・PR 作成・マージ |
-| `review.prompt.md` | reviewer | 現在の変更に対するコードレビュー |
-| `plan.prompt.md` | manager | 影響分析と実行計画の策定 |
-| `cleanup.prompt.md` | developer | マージ後の worktree・ブランチクリーンアップ |
-| `assess.prompt.md` | assessor | 既存プロジェクトの全体評価（構造・テスト・品質） |
-| `model.prompt.md` | — | エージェントのモデル変更（個別・一括・デフォルトに戻す） |
+| 旧プロンプト | 移行先スキル |
+|---|---|
+| `start.prompt.md` | `start-feature` |
+| `submit.prompt.md` | `submit-pull-request` |
+| `review.prompt.md` | `review-code` |
+| `plan.prompt.md` | `analyze-and-plan` |
+| `cleanup.prompt.md` | `cleanup-worktree` |
+| `assess.prompt.md` | `assess-project` |
+| `model.prompt.md` | `configure-model` |
 
 ## Skills（自動ロードされるワークフロー手順）
 
@@ -92,6 +92,22 @@ Feature / Flow State / Maturity / Gate / Board の定義と関係は `rules/deve
 スキルは「どう実行するか」の**具体的手順**をパッケージ化したもの。
 すべてのスキルは `.github/settings.json` から設定を読み取る。
 `skills/` ディレクトリ内の各フォルダが1つのスキルに対応する。
+
+| スキル | 用途 | 旧プロンプト対応 |
+|---|---|---|
+| `start-feature` | Issue 作成・ブランチ・worktree 準備 | `start.prompt.md` |
+| `submit-pull-request` | コミット・PR 作成・マージ | `submit.prompt.md` |
+| `review-code` | コードレビュー実行・修正委任 | `review.prompt.md` |
+| `analyze-and-plan` | 要求分析・影響分析・計画策定 | `plan.prompt.md` |
+| `cleanup-worktree` | マージ後の worktree・ブランチ削除 | `cleanup.prompt.md` |
+| `assess-project` | プロジェクト全体評価 | `assess.prompt.md` |
+| `configure-model` | エージェントモデル変更 | `model.prompt.md` |
+| `orchestrate-workflow` | Feature 開発フロー全体のオーケストレーション | — |
+| `manage-board` | Board の CRUD・状態遷移・Gate 評価 | — |
+| `initialize-project` | 新規プロジェクトの初期設定 | — |
+| `generate-gitignore` | .gitignore 生成 | — |
+| `resolve-conflict` | PR マージ時のコンフリクト解消 | — |
+| `merge-nested-branch` | 入れ子ブランチの順序マージ | — |
 
 ## Agents（カスタムエージェント）
 
