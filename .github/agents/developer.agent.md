@@ -70,7 +70,7 @@ task(agent_type="task", prompt="以下のテストコマンドを実行せよ: <
 
 - `feature_id` — 作業対象の機能識別
 - `maturity` — 機能の成熟度（experimental なら探索的実装、stable なら慎重な実装）
-- `artifacts.execution_plan` — manager が策定した実行計画
+- `artifacts.execution_plan` — planner が策定した実行計画
 - `artifacts.architecture_decision` — architect の配置判断・設計方針
 - `artifacts.review_findings` — reviewer の指摘（ループバック時の修正入力）
 

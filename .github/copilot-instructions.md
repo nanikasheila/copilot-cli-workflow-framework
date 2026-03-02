@@ -102,11 +102,11 @@ Feature / Flow State / Maturity / Gate / Board の定義と関係は `rules/deve
 | `developer` | 実装・デバッグ | コード変更の実行者。テストコードも test-designer の仕様に基づき実装 |
 | `reviewer` | コードレビュー・品質・セキュリティ検証 | 修正指示を構造化して出力。セキュリティ観点を常時チェック |
 | `writer` | ドキュメント・リリース管理 | 技術文書・.github/ 整備・リリースノート・バージョニング |
-| `manager` | タスク分解・計画策定 | analyst + impact-analyst の結果を入力に実行計画を策定 |
+| `planner` | タスク分解・計画策定 | analyst + impact-analyst の結果を入力に実行計画を策定 |
 | `architect` | 構造設計・設計判断 | ペースレイヤリング・非機能要求・データフロー観点で構造を評価 |
 | `assessor` | プロジェクト全体評価 | 移植直後の包括的評価。コード変更は行わず評価・提案のみ |
 | `analyst` | 要求分析・受け入れ基準策定 | 読み取り専用。FR/NFR/AC/EC を構造化。impact-analyst と並列実行可 |
-| `impact-analyst` | 影響分析・依存グラフ・リスク評価 | 読み取り専用。analyst と並列実行可。manager から分離 |
+| `impact-analyst` | 影響分析・依存グラフ・リスク評価 | 読み取り専用。analyst と並列実行可。planner から分離 |
 | `test-designer` | テストケース設計 | 読み取り専用。要求ベースで TC 導出。実装バイアス排除 |
 | `test-verifier` | テスト検証・品質判定 | 実装者と独立。第三者的にテスト充足性・品質を検証 |
 
@@ -125,7 +125,7 @@ Feature / Flow State / Maturity / Gate / Board の定義と関係は `rules/deve
 
 | エージェントタイプ | 用途 | 対応するカスタムエージェント |
 |---|---|---|
-| `general-purpose` | 完全なツールセットが必要な実装・分析 | developer, manager, architect, writer, assessor |
+| `general-purpose` | 完全なツールセットが必要な実装・分析 | developer, planner, architect, writer, assessor |
 | `general-purpose`（読み取り専用） | 高品質な読み取り分析 | analyst, impact-analyst, test-designer, test-verifier |
 | `code-review` | コードレビュー（差分検出・品質分析） | reviewer |
 | `explore` | 高速な事前調査・コードベース検索 | （事前調査用） |

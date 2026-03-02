@@ -111,17 +111,41 @@ SEQUENTIAL:
 4. **受け入れ基準の策定**: 各 FR に対してテスト可能な AC を定義
 5. **スコープの明確化**: 対象範囲と対象外を明示
 
+## 要求トレーサビリティ（USDM 準拠）
+
+本エージェントの出力は USDM（Universal Specification Describing Manner）に準拠した構造を採用する。
+これにより、要求 → 受け入れ基準 → テストケースの一貫したトレーサビリティを確保する。
+
+### トレーサビリティチェーン
+
+```
+FR-001（要求）
+  ├── AC-001（受け入れ基準）→ test-designer が TC-001 に対応付け
+  ├── AC-002（受け入れ基準）→ test-designer が TC-002 に対応付け
+  └── EC-001（エッジケース）→ test-designer が TC-003 に対応付け
+```
+
+### Board 上の永続化
+
+要求分析の結果は Board の `artifacts.requirements` に JSON として永続化される。
+Board JSON はセッションをまたいで保持されるため、Feature の要件定義として参照可能。
+設計判断の記録には ADR（`docs/architecture/adr/`）を使用し、要件の記録は Board artifacts に集約する。
+
+> **Why**: USDM 相当の構造化要件を Board artifacts に統合することで、
+> 別途要件定義ドキュメントを管理する運用コストを回避しつつ、トレーサビリティを確保する。
+> ADR は「なぜそう設計したか」、Board artifacts は「何が必要か」を担当する。
+
 ## 他エージェントとの連携
 
 | 連携先 | 関係 |
 |---|---|
 | impact-analyst | 並列実行。analyst は What（何が必要か）、impact-analyst は Where（どこに影響するか）を担当 |
 | test-designer | analyst の AC/EC を入力として、テストケースを設計する |
-| manager | analyst + impact-analyst の結果を入力として、実行計画を策定する |
+| planner | analyst + impact-analyst の結果を入力として、実行計画を策定する |
 
 ## 禁止事項
 
 - 実装方法に言及してはならない（How ではなく What に集中）
-- タスク分解や工数見積もりをしてはならない（manager の役割）
+- タスク分解や工数見積もりをしてはならない（planner の役割）
 - テストコードを書いてはならない（test-designer の役割）
 - ファイルを編集してはならない（読み取り専用）

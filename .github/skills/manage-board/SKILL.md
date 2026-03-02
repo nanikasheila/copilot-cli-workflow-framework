@@ -169,9 +169,9 @@ Gate 条件を `gate-profiles.json` から読み取り、評価する:
 
 | Gate | 条件 | 参照フィールド |
 |---|---|---|
-| `design_gate`（development） | `artifacts.impact_analysis.escalation.required == true` | manager の影響分析結果 |
-| `design_gate`（stable） | 上記 **OR** `artifacts.impact_analysis.affected_files` が 2 件以上 | manager の影響分析結果 |
-| `design_gate`（sandbox） | `artifacts.impact_analysis.escalation.required == true` | manager の影響分析結果（development と同条件） |
+| `design_gate`（development） | `artifacts.impact_analysis.escalation.required == true` | planner の影響分析結果 |
+| `design_gate`（stable） | 上記 **OR** `artifacts.impact_analysis.affected_files` が 2 件以上 | planner の影響分析結果 |
+| `design_gate`（sandbox） | `artifacts.impact_analysis.escalation.required == true` | planner の影響分析結果（development と同条件） |
 
 判定手順:
 1. `artifacts.impact_analysis` を読み取る
@@ -334,9 +334,9 @@ CREATE TABLE artifacts (
   timestamp TEXT
 );
 -- 初期ロード例:
--- INSERT INTO artifacts VALUES ('impact_analysis', 'manager', 'empty', NULL, NULL);
+-- INSERT INTO artifacts VALUES ('impact_analysis', 'planner', 'empty', NULL, NULL);
 -- INSERT INTO artifacts VALUES ('architecture_decision', 'architect', 'empty', NULL, NULL);
--- INSERT INTO artifacts VALUES ('execution_plan', 'manager', 'empty', NULL, NULL);
+-- INSERT INTO artifacts VALUES ('execution_plan', 'planner', 'empty', NULL, NULL);
 -- INSERT INTO artifacts VALUES ('implementation', 'developer', 'empty', NULL, NULL);
 -- INSERT INTO artifacts VALUES ('test_results', 'developer', 'empty', NULL, NULL);
 -- INSERT INTO artifacts VALUES ('review_findings', 'reviewer', 'empty', NULL, NULL);
@@ -392,7 +392,7 @@ SELECT status, COUNT(*) as count FROM gates GROUP BY status;
 
 ### execution_plan → todos 連携
 
-manager の実行計画を SQL の `todos` テーブルにロードし、進捗を追跡する:
+planner の実行計画を SQL の `todos` テーブルにロードし、進捗を追跡する:
 
 ```sql
 -- execution_plan のタスクを todos にロード
