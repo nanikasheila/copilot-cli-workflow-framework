@@ -56,13 +56,13 @@ task ツール（agent_type: impact-analyst）:
 
 | 評価項目 | 判断基準 |
 |---|---|
-| 構造的リスク | impact-analyst の `escalation_needed` が `true` |
+| 構造的リスク | impact-analyst の `escalation.required` が `true` |
 | 要求の明確性 | analyst の AC/EC が十分に定義されているか |
 | 影響範囲 | 影響ファイル数、API 変更の有無 |
 
 ### 3. 構造リスクがある場合: architect エスカレーション
 
-`escalation_needed: true` の場合、`architect` エージェントに設計評価を委任する:
+`escalation.required: true` の場合、`architect` エージェントに設計評価を委任する:
 
 ```
 task ツール（agent_type: architect）:
@@ -73,10 +73,10 @@ task ツール（agent_type: architect）:
 
 ### 4. 計画策定
 
-`manager` エージェントに計画策定を委任する:
+`planner` エージェントに計画策定を委任する:
 
 ```
-task ツール（agent_type: manager）:
+task ツール（agent_type: planner）:
 - 要求分析結果: <analyst の出力>
 - 影響分析結果: <impact-analyst の出力>
 - 構造評価: <architect の出力（存在する場合）>
@@ -88,7 +88,7 @@ task ツール（agent_type: manager）:
 Board の以下のセクションを更新する:
 - `artifacts.requirements` — analyst の出力
 - `artifacts.impact_analysis` — impact-analyst の出力
-- `artifacts.plan` — manager の出力
+- `artifacts.plan` — planner の出力
 - `history` — 分析・計画策定の記録を追記
 
 ### 6. ユーザーへの報告
