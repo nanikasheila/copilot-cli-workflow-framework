@@ -6,7 +6,7 @@
   "definitions": {
     "artifact_impact_analysis": {
       "type": "object",
-      "description": "planner が出力する影響分析",
+      "description": "impact-analyst が出力する影響分析",
       "required": ["affected_files", "api_compatibility", "test_impact", "escalation"],
       "properties": {
         "affected_files": {
@@ -87,7 +87,7 @@
             "properties": {
               "id": { "type": "integer" },
               "description": { "type": "string" },
-              "agent": { "type": "string", "enum": ["developer", "reviewer", "architect", "writer"] },
+              "agent": { "type": "string", "enum": ["developer", "reviewer", "architect", "writer", "analyst", "impact-analyst", "planner", "test-designer", "test-verifier", "assessor"] },
               "depends_on": {
                 "type": "array",
                 "items": { "type": "integer" },
@@ -222,6 +222,209 @@
             },
             "additionalProperties": false
           }
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_requirements": {
+      "type": "object",
+      "description": "analyst が出力する要求分析結果（USDM 準拠の構造化要件）",
+      "required": ["summary", "functional_requirements"],
+      "properties": {
+        "summary": { "type": "string", "description": "要求の概要（1-2文）" },
+        "functional_requirements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "description", "priority"],
+            "properties": {
+              "id": { "type": "string", "description": "要求 ID（例: FR-001）" },
+              "description": { "type": "string", "description": "機能の説明" },
+              "acceptance_criteria": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "受け入れ基準（例: AC-001: 具体的な検証条件）"
+              },
+              "priority": { "type": "string", "enum": ["must", "should", "could"] }
+            },
+            "additionalProperties": false
+          }
+        },
+        "non_functional_requirements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "category", "description"],
+            "properties": {
+              "id": { "type": "string", "description": "要求 ID（例: NFR-001）" },
+              "category": { "type": "string", "enum": ["performance", "security", "compatibility", "usability"] },
+              "description": { "type": "string" },
+              "metric": { "type": "string", "description": "計測可能な基準" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "edge_cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "scenario", "expected_behavior"],
+            "properties": {
+              "id": { "type": "string", "description": "エッジケース ID（例: EC-001）" },
+              "scenario": { "type": "string" },
+              "expected_behavior": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "assumptions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "前提条件のリスト"
+        },
+        "out_of_scope": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "スコープ外の明示"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_test_design": {
+      "type": "object",
+      "description": "test-designer が出力するテストケース設計",
+      "required": ["summary", "test_cases", "coverage_matrix"],
+      "properties": {
+        "summary": { "type": "string", "description": "テスト設計の概要" },
+        "test_strategy": { "type": "string", "description": "テスト戦略の説明" },
+        "test_cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "category", "requirement_ref", "description", "expected_output", "priority"],
+            "properties": {
+              "id": { "type": "string", "description": "テストケース ID（例: TC-001）" },
+              "category": { "type": "string", "enum": ["happy_path", "boundary", "error", "edge_case", "regression", "security"] },
+              "requirement_ref": { "type": "string", "description": "対応する要求 ID（例: FR-001 / AC-001）" },
+              "description": { "type": "string" },
+              "preconditions": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "input": { "type": "string", "description": "入力データ・操作" },
+              "expected_output": { "type": "string", "description": "期待される出力・状態" },
+              "priority": { "type": "string", "enum": ["critical", "high", "medium", "low"] }
+            },
+            "additionalProperties": false
+          }
+        },
+        "coverage_matrix": {
+          "type": "object",
+          "description": "要求 ID → テストケース ID のマッピング",
+          "additionalProperties": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "test_infrastructure": {
+          "type": "object",
+          "description": "テストインフラの情報",
+          "properties": {
+            "new_fixtures_needed": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "existing_helpers": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_test_verification": {
+      "type": "object",
+      "description": "test-verifier が出力するテスト検証結果",
+      "required": ["summary", "verdict"],
+      "properties": {
+        "summary": { "type": "string", "description": "テスト検証の概要" },
+        "verdict": {
+          "type": "string",
+          "enum": ["pass", "fail", "conditional_pass"],
+          "description": "総合判定"
+        },
+        "test_execution": {
+          "type": "object",
+          "properties": {
+            "total": { "type": "integer" },
+            "passed": { "type": "integer" },
+            "failed": { "type": "integer" },
+            "skipped": { "type": "integer" },
+            "execution_time": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "coverage": {
+          "type": "object",
+          "properties": {
+            "line_coverage": { "type": "string" },
+            "branch_coverage": { "type": "string" },
+            "meets_requirement": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        "traceability": {
+          "type": "object",
+          "description": "テストケース設計 vs 実装のトレーサビリティ",
+          "properties": {
+            "designed": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "設計されたテストケース ID"
+            },
+            "implemented": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "実装されたテストケース ID"
+            },
+            "missing": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "未実装のテストケース ID"
+            },
+            "coverage_rate": { "type": "string", "description": "テストケースカバレッジ率" }
+          },
+          "additionalProperties": false
+        },
+        "quality_issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "description", "severity"],
+            "properties": {
+              "type": { "type": "string", "enum": ["missing_test", "weak_assertion", "false_positive", "flaky"] },
+              "description": { "type": "string" },
+              "test_case_ref": { "type": "string" },
+              "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"] }
+            },
+            "additionalProperties": false
+          }
+        },
+        "regression": {
+          "type": "object",
+          "properties": {
+            "all_passed": { "type": "boolean" },
+            "failures": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
