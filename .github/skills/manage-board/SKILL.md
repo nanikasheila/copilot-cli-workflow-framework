@@ -73,11 +73,14 @@ Feature 開始時に Board を作成する。
     "submit":         { "status": "not_reached" }
   },
   "artifacts": {
+    "requirements": null,
     "impact_analysis": null,
     "architecture_decision": null,
     "execution_plan": null,
     "implementation": null,
+    "test_design": null,
     "test_results": null,
+    "test_verification": null,
     "review_findings": null,
     "documentation": null
   },
@@ -334,11 +337,14 @@ CREATE TABLE artifacts (
   timestamp TEXT
 );
 -- 初期ロード例:
--- INSERT INTO artifacts VALUES ('impact_analysis', 'planner', 'empty', NULL, NULL);
+-- INSERT INTO artifacts VALUES ('requirements', 'analyst', 'empty', NULL, NULL);
+-- INSERT INTO artifacts VALUES ('impact_analysis', 'impact-analyst', 'empty', NULL, NULL);
 -- INSERT INTO artifacts VALUES ('architecture_decision', 'architect', 'empty', NULL, NULL);
 -- INSERT INTO artifacts VALUES ('execution_plan', 'planner', 'empty', NULL, NULL);
 -- INSERT INTO artifacts VALUES ('implementation', 'developer', 'empty', NULL, NULL);
+-- INSERT INTO artifacts VALUES ('test_design', 'test-designer', 'empty', NULL, NULL);
 -- INSERT INTO artifacts VALUES ('test_results', 'developer', 'empty', NULL, NULL);
+-- INSERT INTO artifacts VALUES ('test_verification', 'test-verifier', 'empty', NULL, NULL);
 -- INSERT INTO artifacts VALUES ('review_findings', 'reviewer', 'empty', NULL, NULL);
 -- INSERT INTO artifacts VALUES ('documentation', 'writer', 'empty', NULL, NULL);
 
