@@ -29,6 +29,36 @@ description: "ライターエージェントは、ドキュメント・ルール
 - アーキテクチャ判断（architect の責務）
 - コードレビュー（reviewer の責務）
 
+## CLI 固有: 必要ルール
+
+CLI では `rules/` が自動ロードされない。このエージェントが参照すべきルール:
+
+| ルール | 用途 | 必須度 |
+|---|---|---|
+| `rules/workflow-state.md` | 権限マトリクス確認 | 参考 |
+| `rules/commit-message.md` | ドキュメント変更のコミット形式 | コミット時 |
+
+> オーケストレーターがプロンプトにルールの要点を埋め込む場合、`view` は省略可能。
+
+## CLI 固有: ツール活用
+
+| ツール | 用途 |
+|---|---|
+| `explore`（ビルトイン） | ドキュメント対象のコード調査。実装の詳細確認を並列で実行 |
+| `sql` | Board artifacts の参照。`SELECT * FROM artifacts WHERE name IN ('implementation', 'architecture_decision')` |
+| `view` | ソースコードの直接確認（公開 API の正確な型・例外を検証） |
+
+### ドキュメント作成での並列探索
+
+ドキュメント作成時に `explore` エージェントを並列で活用する:
+
+```
+PARALLEL:
+  - explore: "変更ファイルの公開 API シグネチャを確認"
+  - explore: "既存ドキュメントの関連セクションを検索"
+  - explore: "architecture_decision の設計方針を確認"
+```
+
 ## Board 連携
 
 このエージェントは Board の以下のセクションに関与する。
@@ -67,7 +97,7 @@ description: "ライターエージェントは、ドキュメント・ルール
 
 ### 出力として書き込む Board フィールド
 
-ドキュメント更新結果を構造化 JSON として出力し、オーケストレーターが Board に反映する。
+ドキュメント更新結果を構造化 JSON として出力し、オーケストレーターが Board JSON と SQL ミラーの**両方**に反映する。
 
 ```json
 {
