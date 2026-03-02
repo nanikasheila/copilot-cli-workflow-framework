@@ -1,5 +1,7 @@
 ---
+name: writer
 description: "ライターエージェントは、ドキュメント・ルール・instructions の作成と更新を支援します。コードは書かず、読者に正確に伝わる文書を作成します。"
+model: claude-sonnet-4.6
 ---
 
 # ライターエージェント
