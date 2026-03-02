@@ -53,15 +53,14 @@
 Feature / Flow State / Maturity / Gate / Board の定義と関係は `rules/development-workflow.md` を参照。
 
 
-## .github 5層 + ランタイム構造
+## .github 4層 + ランタイム構造
 
-`.github/` は以下の5層と **Board（ランタイム）** で構成される。
+`.github/` は以下の4層と **Board（ランタイム）** で構成される。
 
 | 層 | ディレクトリ | 役割 | 適用方法 |
 |---|---|---|---|
 | **Instructions** | `instructions/` | フォルダ・拡張子単位のガイドライン | `applyTo` パターンで自動適用 |
 | **Rules** | `rules/` | 宣言的ポリシー（何をすべきか・してはいけないか） | `copilot-instructions.md` で参照先を明示。作業時に `view` で確認 |
-| **Prompts** | `prompts/` | 頻出ワークフローのプロンプトテンプレート | ユーザーまたはオーケストレーターが手動で参照 |
 | **Skills** | `skills/` | ワークフロー手順のパッケージ | エージェントがタスクに応じて自動ロード |
 | **Agents** | `agents/` | 専門特化のカスタムエージェント | `/agent` コマンドで選択 or `task` ツールで呼び出し |
 | **Board** *(runtime)* | `.copilot/boards/` | Feature ごとの共有コンテキスト | オーケストレーターが自動管理 |
@@ -70,21 +69,6 @@ Feature / Flow State / Maturity / Gate / Board の定義と関係は `rules/deve
 
 `applyTo` パターンに一致するファイルを扱うとき、自動的にコンテキストに追加される。
 共通規約に加え、言語・ファイルタイプ別のガイドラインが `instructions/` 配下にある。
-
-## Prompts（非推奨 → Skills に移行済み）
-
-> **CLI ではプロンプトファイルは使用できない。** すべてのプロンプトは対応する Skill に移行済み。
-> `prompts/` ディレクトリは VS Code 拡張機能との互換性のために残置しているが、CLI では Skills を使用すること。
-
-| 旧プロンプト | 移行先スキル |
-|---|---|
-| `start.prompt.md` | `start-feature` |
-| `submit.prompt.md` | `submit-pull-request` |
-| `review.prompt.md` | `review-code` |
-| `plan.prompt.md` | `analyze-and-plan` |
-| `cleanup.prompt.md` | `cleanup-worktree` |
-| `assess.prompt.md` | `assess-project` |
-| `model.prompt.md` | `configure-model` |
 
 ## Skills（自動ロードされるワークフロー手順）
 
@@ -217,11 +201,11 @@ WHERE sf.file_path LIKE '%<対象パス>%';
 
 ## 各層の使い分け
 
-| | instructions | rules | prompts | skills | agents | board |
-|---|---|---|---|---|---|---|
-| **内容** | ガイドライン | ポリシー | ワークフローテンプレート | 手順 | 振る舞い | ランタイムコンテキスト |
-| **粒度** | ファイル/フォルダ単位 | リポジトリ全体 | ワークフロー単位 | タスク単位 | 役割単位 | Feature 単位 |
-| **起動** | applyTo で自動 | 作業時に view で参照 | ユーザーが手動参照 | タスクで自動ロード | `/agent` or `task` ツール | オーケストレーターが管理 |
-| **例** | コーディング規約 | squash 禁止 | start / review | PR 作成手順 | レビュー専門家 | 影響分析結果・レビュー指摘 |
+| | instructions | rules | skills | agents | board |
+|---|---|---|---|---|---|
+| **内容** | ガイドライン | ポリシー | 手順 | 振る舞い | ランタイムコンテキスト |
+| **粒度** | ファイル/フォルダ単位 | リポジトリ全体 | タスク単位 | 役割単位 | Feature 単位 |
+| **起動** | applyTo で自動 | 作業時に view で参照 | タスクで自動ロード | `/agent` or `task` ツール | オーケストレーターが管理 |
+| **例** | コーディング規約 | squash 禁止 | PR 作成手順 | レビュー専門家 | 影響分析結果・レビュー指摘 |
 
 ```
