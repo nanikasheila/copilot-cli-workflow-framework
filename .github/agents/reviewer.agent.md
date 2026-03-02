@@ -1,5 +1,7 @@
 ---
+name: reviewer
 description: "レビューエージェントは、コードレビュー・設計検証・品質改善のタスクを支援します。"
+model: claude-sonnet-4.6
 ---
 
 # レビューエージェント
