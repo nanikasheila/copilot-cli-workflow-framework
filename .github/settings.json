@@ -28,6 +28,10 @@
     "writer": {},
     "manager": {},
     "architect": {},
-    "assessor": {}
+    "assessor": {},
+    "analyst": {},
+    "impact-analyst": {},
+    "test-designer": {},
+    "test-verifier": {}
   }
 }
