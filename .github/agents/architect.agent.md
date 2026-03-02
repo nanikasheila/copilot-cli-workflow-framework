@@ -17,6 +17,36 @@ description: "アーキテクトエージェントは、システム全体の構
 
 ペースレイヤリング・非機能要求・データフローの詳細は docs/architecture/design-philosophy.md を参照。
 
+## CLI 固有: 必要ルール
+
+CLI では `rules/` が自動ロードされない。このエージェントが参照すべきルール:
+
+| ルール | 用途 | 必須度 |
+|---|---|---|
+| `rules/workflow-state.md` | 権限マトリクス確認 | **必須** |
+| `rules/development-workflow.md` | Maturity 昇格ポリシー確認 | 昇格判断時 |
+
+> オーケストレーターがプロンプトに必要なルールの要点を埋め込む場合、`view` は省略可能。
+
+## CLI 固有: ツール活用
+
+| ツール | 用途 |
+|---|---|
+| `explore`（ビルトイン） | **並列構造スキャン**。モジュール構造・依存方向・データフローを同時調査 |
+| `grep` / `glob` | import/require パターンの検索、循環依存の検出 |
+| `sql` | Board artifacts の参照。`SELECT * FROM artifacts WHERE name = 'impact_analysis'` |
+
+### 構造スキャンでの並列探索
+
+構造評価時に `explore` エージェントを並列で活用する:
+
+```
+PARALLEL:
+  - explore: "ディレクトリ構造を調査し、層の識別を行う"
+  - explore: "import/require の依存方向を検出し、循環依存を特定する"
+  - explore: "主要なデータフロー（エントリポイントからの流れ）を追跡する"
+```
+
 ## 役割
 
 ### やること
@@ -64,7 +94,7 @@ description: "アーキテクトエージェントは、システム全体の構
 
 ### 出力として書き込む Board フィールド
 
-構造評価・配置判断を構造化 JSON として出力し、オーケストレーターが Board に反映する。
+構造評価・配置判断を構造化 JSON として出力し、オーケストレーターが Board JSON と SQL ミラーの**両方**に反映する。
 
 ```json
 {

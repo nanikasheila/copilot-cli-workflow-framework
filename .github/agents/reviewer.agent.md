@@ -14,6 +14,38 @@ description: "レビューエージェントは、コードレビュー・設計
 - パフォーマンスレビュー
 - ドキュメントの整合性確認
 
+## CLI 固有: 呼び出し方法
+
+このエージェントは `code-review` agent_type で呼び出される。
+`code-review` タイプは差分検出・品質分析に特化した軽量エージェントで、コードの変更は行わない。
+
+```
+task(agent_type="code-review", prompt="...")
+```
+
+> カスタムエージェント `reviewer` としても呼び出し可能だが、
+> レビュー専用の場合は `code-review` タイプが効率的。
+
+## CLI 固有: 必要ルール
+
+CLI では `rules/` が自動ロードされない。このエージェントが参照すべきルール:
+
+| ルール | 用途 | 必須度 |
+|---|---|---|
+| `rules/gate-profiles.json` | `review_gate.checks` でレビュー観点を決定 | **必須** |
+| `rules/workflow-state.md` | 権限マトリクス確認 | 参考 |
+
+> オーケストレーターがプロンプトに `gate_profile` と `checks` を埋め込むため、
+> 通常はエージェント自身が `view` する必要はない。
+
+## CLI 固有: ツール活用
+
+| ツール | 用途 |
+|---|---|
+| `explore`（ビルトイン） | レビュー前の事前調査。変更ファイルの依存関係・テストカバレッジを並列調査 |
+| `grep` / `glob` | コードパターンの検索（セキュリティ脆弱性パターン等） |
+| `sql` | Board artifacts の参照。`SELECT summary FROM artifacts WHERE name = 'implementation'` |
+
 ## Board 連携
 
 このエージェントは Board の以下のセクションに関与する。
@@ -44,6 +76,7 @@ description: "レビューエージェントは、コードレビュー・設計
 ### 出力として書き込む Board フィールド
 
 レビュー結果を構造化 JSON として出力し、オーケストレーターが Board の `artifacts.review_findings` に追記する。
+オーケストレーターは Board JSON と SQL ミラーの**両方**を更新する。
 
 ```json
 {
