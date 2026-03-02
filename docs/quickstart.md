@@ -14,7 +14,7 @@
 
 ```bash
 # このリポジトリをクローン（または ZIP ダウンロード）
-git clone https://github.com/nanikasheila/copilot-workflow-framework.git /tmp/template
+git clone https://github.com/nanikasheila/copilot-cli-workflow-framework.git /tmp/template
 
 # 自分のプロジェクトに .github/ をコピー
 cp -r /tmp/template/.github /path/to/your-project/
@@ -107,17 +107,23 @@ experimental ではショートカットが有効:
 この機能を development に昇格してください
 ```
 
-昇格後は以下の全フェーズを順に実行:
+昇格後は以下のフェーズを実行する。`task` ツールによる並列実行でコンテキストを分離しつつ、効率的に進行する:
 
 ```
-1. manager が影響分析     → Board に記録
-2. architect が構造評価    → 必要時のみ（エスカレーション判定）
-3. manager が実行計画策定  → Board に記録
-4. developer が実装        → Board に記録
-5. developer がテスト      → Board に記録
-6. reviewer がレビュー     → LGTM or 修正指示
-7. writer がドキュメント更新 → 必要時のみ
+Phase 1:  analyst が要求分析       ┐
+          impact-analyst が影響分析  ┘  ← task ツールで並列実行
+Phase 2:  architect が構造評価      → 必要時のみ（エスカレーション判定）
+Phase 3:  manager が実行計画策定    → Board に記録
+Phase 4:  developer が実装         ┐
+          test-designer がテスト設計 ┘  ← task ツールで並列実行
+Phase 5:  test-verifier が独立検証   → 実装者≠検証者の分離
+Phase 6:  reviewer がレビュー       → LGTM or 修正指示
+Phase 7:  writer がドキュメント更新  → 必要時のみ
 ```
+
+> **並列実行とコンテキスト分離**: 各エージェントは `task` ツール経由で独立したコンテキストウィンドウで実行される。
+> これにより、メインのコンテキストを汚さずに専門タスクを並列処理できる。
+> Phase 1 では analyst と impact-analyst が同時に起動し、Phase 4 では developer と test-designer が同時に作業する。
 
 ## STEP 4: PR 提出とマージ（1分）
 
@@ -134,13 +140,13 @@ PR を提出してください
 
 ## 既存プロジェクトの評価（オプション）
 
-既存プロジェクトに `.github/` を移植した場合、プロジェクトの現状を包括的に評価できる:
+既存プロジェクトに `.github/` を移植した場合、`assess-project` スキルでプロジェクトの現状を包括的に評価できる:
 
 ```
-/assess
+プロジェクトを評価してください
 ```
 
-`assessor` エージェントが以下の 6 カテゴリを自動で評価し、構造化レポートを出力する:
+`assess-project` スキルが自動的にロードされ、`assessor` エージェントが以下の 6 カテゴリを評価し、構造化レポートを出力する:
 
 | カテゴリ | 評価内容 |
 |---|---|
@@ -153,21 +159,41 @@ PR を提出してください
 
 評価後、改善が必要な場合は `manager` → `developer` の通常フローで改善を進められる。
 
+## スキル一覧
+
+主要な操作はスキルとして定義されており、Copilot CLI が文脈に応じて自動的にロードする:
+
+| スキル | 概要 |
+|---|---|
+| `start-feature` | Issue 作成・ブランチ・worktree を準備して作業開始 |
+| `submit-pull-request` | 変更をコミットし PR を作成・マージ |
+| `assess-project` | プロジェクト全体の包括的評価 |
+| `orchestrate-workflow` | 開発フロー全体のオーケストレーション |
+| `manage-board` | Board の作成・状態遷移・Gate 評価 |
+| `cleanup-worktree` | マージ後の worktree・ブランチ・Issue の整理 |
+
+> スキルは自然言語で指示するだけで自動起動する。例: 「新しい機能を始めたい」→ `start-feature` が起動。
+
 ## エージェント一覧
 
-`/agent` コマンドから各エージェントを選択して呼び出せる:
+オーケストレーターが `task` ツール経由で各エージェントを独立したコンテキストウィンドウで呼び出す:
 
 | エージェント | 用途 |
 |---|---|
-| developer | コーディング・テスト |
-| reviewer | コードレビュー |
+| analyst | 要求分析・受け入れ基準策定 |
+| impact-analyst | 依存関係・影響範囲・リスク評価 |
 | architect | 構造設計・設計判断 |
-| assessor | プロジェクト全体評価（移植直後の包括評価） |
-| manager | タスク分解・影響分析 |
+| manager | タスク分解・実行計画策定 |
+| developer | コーディング・デバッグ |
+| test-designer | テストケース設計（要求ベース） |
+| test-verifier | テスト検証・品質判定（独立検証） |
+| reviewer | コードレビュー |
 | writer | ドキュメント |
+| assessor | プロジェクト全体評価（移植直後の包括評価） |
 
-> 通常はオーケストレーター（Copilot CLI 本体）が自動で適切なエージェントを `task` ツールで呼び出す。
-> 個別に呼びたい場合のみ `/agent` コマンドで選択する。
+> 通常はオーケストレーターが自動で適切なエージェントを `task` ツールで呼び出す。
+> `task` ツールはエージェントごとに独立したコンテキストウィンドウを作成するため、
+> メインの会話が大量の中間出力で汚れることなく、専門タスクを並列に実行できる。
 
 ## よくある質問
 
