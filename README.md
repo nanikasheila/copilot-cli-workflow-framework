@@ -1,11 +1,14 @@
-# copilot-workflow-framework
+# copilot-cli-workflow-framework
 
-Reusable `.github` configuration framework for Copilot-powered development workflows.
+Reusable `.github` configuration framework for Copilot CLI-powered development workflows.
 
 ## 概要
 
 プロジェクト横断で使える `.github` ディレクトリのテンプレートです。
-GitHub Copilot のカスタムエージェント・スキル・ルール・インストラクションを体系的に管理します。
+GitHub Copilot CLI のカスタムエージェント・スキル・ルール・インストラクションを体系的に管理します。
+
+> **注**: 本フレームワークは **GitHub Copilot CLI** を前提としています。
+> VS Code 拡張版は [copilot-workflow-framework](https://github.com/nanikasheila/copilot-workflow-framework) を参照してください。
 
 ## 構造
 
@@ -97,16 +100,16 @@ tools/
 
 ### エージェント連携フロー
 
-トップレベルの Copilot Chat が**オーケストレーター**として機能し、Board を管理しながら各エージェントを呼び出します。
+トップレベルの Copilot CLI が**オーケストレーター**として機能し、Board を管理しながら `task` ツールで各エージェントを呼び出します。
 
 ```
 ■ 通常の開発フロー
 1. ユーザーがオーケストレーターに作業を指示
-2. オーケストレーターが manager に影響分析・タスク分解を依頼
+2. オーケストレーターが manager に影響分析・タスク分解を依頼（task ツール: general-purpose）
 3. エスカレーション該当時、architect に構造評価・配置判断を依頼
 4. manager に計画策定を依頼 → 実行計画を受領
-5. developer に実装を依頼
-6. reviewer にレビューを依頼
+5. developer に実装を依頼（task ツール: general-purpose）
+6. reviewer にレビューを依頼（task ツール: code-review）
 7. LGTM まで 5-6 を繰り返す
 8. writer にドキュメント更新を依頼（必要な場合）
 9. PR 提出 → マージ → クリーンアップ
@@ -125,7 +128,7 @@ tools/
 
 1. このリポジトリの `.github/` を自分のプロジェクトにコピー
 2. `settings.json` をプロジェクトに合わせて編集（または `initialize-project` スキルで初期化）
-3. Copilot Chat でエージェントを活用
+3. プロジェクトディレクトリで `copilot` コマンドを起動し、`/agent` でエージェントを活用
 
 > **初めての方へ**: 詳細なウォークスルーは [docs/quickstart.md](docs/quickstart.md) を参照してください。
 

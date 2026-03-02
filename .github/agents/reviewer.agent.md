@@ -1,12 +1,5 @@
 ---
 description: "レビューエージェントは、コードレビュー・設計検証・品質改善のタスクを支援します。"
-tools: ["read", "search", "problems", "usages", "changes", "web", "todo"]
-model: ["Claude Sonnet 4.6 (copilot)"]
-handoffs:
-  - label: "指摘を修正する"
-    agent: developer
-    prompt: "上記のレビュー指摘に従って修正を実施してください。"
-    send: false
 ---
 
 # レビューエージェント
@@ -30,7 +23,7 @@ handoffs:
 
 オーケストレーターからのプロンプトに Board の主要フィールド（feature_id, maturity, flow_state, cycle,
 関連 artifacts のサマリ）が直接埋め込まれる。
-詳細な artifact 参照が必要な場合は、プロンプトに含まれる絶対パスで `read_file` する。
+詳細な artifact 参照が必要な場合は、プロンプトに含まれる絶対パスで `view` する。
 
 | 操作 | 対象フィールド | 権限 |
 |---|---|---|

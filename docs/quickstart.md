@@ -5,7 +5,7 @@
 ## 前提条件
 
 - Git がインストール済み
-- VS Code + GitHub Copilot 拡張が導入済み
+- GitHub Copilot CLI がインストール済み（`copilot` コマンドが使える）
 - GitHub リポジトリが作成済み
 
 ## STEP 1: テンプレートの導入（5分）
@@ -22,7 +22,7 @@ cp -r /tmp/template/.github /path/to/your-project/
 
 ### 1-2. 初期設定を実行
 
-Copilot Chat で以下を入力:
+プロジェクトディレクトリで `copilot` を起動し、以下を入力:
 
 ```
 プロジェクトの初期設定をしてください
@@ -61,7 +61,7 @@ Copilot Chat で以下を入力:
 
 ## STEP 2: 最初の Feature を始める（2分）
 
-Copilot Chat で作業内容を伝える:
+Copilot CLI で作業内容を伝える:
 
 ```
 ユーザー認証機能を追加したい
@@ -91,7 +91,7 @@ Feature の成熟度（Maturity）によってフローの厳格さが変わる:
 ### experimental（最速パス）の例
 
 ```
-# Copilot Chat で:
+# Copilot CLI で:
 認証ミドルウェアを実装してください（experimental）
 ```
 
@@ -103,7 +103,7 @@ experimental ではショートカットが有効:
 ### development（通常パス）の例
 
 ```
-# Copilot Chat で:
+# Copilot CLI で:
 この機能を development に昇格してください
 ```
 
@@ -122,7 +122,7 @@ experimental ではショートカットが有効:
 ## STEP 4: PR 提出とマージ（1分）
 
 ```
-# Copilot Chat で:
+# Copilot CLI で:
 PR を提出してください
 ```
 
@@ -155,19 +155,19 @@ PR を提出してください
 
 ## エージェント一覧
 
-Copilot Chat の参加者メニューから各エージェントを直接呼び出せる:
+`/agent` コマンドから各エージェントを選択して呼び出せる:
 
-| エージェント | @ メンション | 用途 |
-|---|---|---|
-| developer | `@developer` | コーディング・テスト |
-| reviewer | `@reviewer` | コードレビュー |
-| architect | `@architect` | 構造設計・設計判断 |
-| assessor | `@assessor` | プロジェクト全体評価（移植直後の包括評価） |
-| manager | `@manager` | タスク分解・影響分析 |
-| writer | `@writer` | ドキュメント |
+| エージェント | 用途 |
+|---|---|
+| developer | コーディング・テスト |
+| reviewer | コードレビュー |
+| architect | 構造設計・設計判断 |
+| assessor | プロジェクト全体評価（移植直後の包括評価） |
+| manager | タスク分解・影響分析 |
+| writer | ドキュメント |
 
-> 通常はオーケストレーター（Copilot Chat 本体）が自動で適切なエージェントを呼び出す。
-> 個別に呼びたい場合のみ @ メンションを使う。
+> 通常はオーケストレーター（Copilot CLI 本体）が自動で適切なエージェントを `task` ツールで呼び出す。
+> 個別に呼びたい場合のみ `/agent` コマンドで選択する。
 
 ## よくある質問
 

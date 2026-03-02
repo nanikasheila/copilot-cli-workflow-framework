@@ -1,6 +1,5 @@
 ---
 description: "マージ完了後の worktree・ブランチ・Issue のクリーンアップを実行する"
-tools: ["execute", "read", "agent", "search", "todo"]
 ---
 
 # クリーンアップ
@@ -16,10 +15,10 @@ tools: ["execute", "read", "agent", "search", "todo"]
 5. Issue をクローズする（issueTracker が有効な場合）
 6. Board をアーカイブする
 
-## サブエージェント方針
+## エージェント呼び出し方針
 
-- クリーンアップ作業は基本的に自身で実行する（Git 操作・API 呼び出し）
-- 複雑な問題が発生した場合のみ `developer` サブエージェントに委任する
+- クリーンアップ作業は基本的に自身で実行する（Git 操作・シェルコマンド）
+- 複雑な問題が発生した場合のみ `developer` エージェントに `task` ツール（`general-purpose`）で委任する
 
 ## コンテキスト
 

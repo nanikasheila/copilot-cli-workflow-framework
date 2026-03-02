@@ -1,6 +1,8 @@
 ```instructions
 # Copilot Instructions
 
+> **本フレームワークは GitHub Copilot CLI を前提としている。**
+
 ## プロジェクト設定
 
 プロジェクト固有の設定は `.github/settings.json` で管理する（スキーマ: `settings.schema.json`）。
@@ -24,6 +26,25 @@
 | GitHub | **推奨** | PR・マージ・コードレビューに使用 |
 | Issue トラッカー | **オプション** | `issueTracker.provider: "none"` で無効化可能 |
 
+## 開発ルール（Rules）
+
+以下のルールファイルは**常に遵守すること**。ファイルの編集・実装・レビュー時に必ず参照する。
+
+| ルールファイル | 内容 |
+|---|---|
+| `rules/development-workflow.md` | Feature ベースの開発フローのポリシー |
+| `rules/workflow-state.md` | Flow State 遷移ルール・権限マトリクス |
+| `rules/gate-profiles.json` | Maturity 別の Gate 通過条件（宣言的定義） |
+| `rules/branch-naming.md` | ブランチ命名規則 |
+| `rules/commit-message.md` | コミットメッセージ規約 |
+| `rules/merge-policy.md` | マージ方式 |
+| `rules/worktree-layout.md` | Git Worktree の制約 |
+| `rules/issue-tracker-workflow.md` | Issue トラッカーの管理ルール |
+| `rules/error-handling.md` | エラーハンドリングポリシー |
+
+> **重要**: `rules/` ディレクトリは CLI では自動ロードされない。
+> 上記ルールの内容を遵守するために、作業開始時に関連ルールを `view` で確認すること。
+
 ## 中核概念
 
 Feature / Flow State / Maturity / Gate / Board の定義と関係は `rules/development-workflow.md` を参照。
@@ -36,46 +57,31 @@ Feature / Flow State / Maturity / Gate / Board の定義と関係は `rules/deve
 | 層 | ディレクトリ | 役割 | 適用方法 |
 |---|---|---|---|
 | **Instructions** | `instructions/` | フォルダ・拡張子単位のガイドライン | `applyTo` パターンで自動適用 |
-| **Rules** | `rules/` | 宣言的ポリシー（何をすべきか・してはいけないか） | 常時適用 |
-| **Prompts** | `prompts/` | 頻出ワークフローのスラッシュコマンド | `/` コマンドで手動起動 |
+| **Rules** | `rules/` | 宣言的ポリシー（何をすべきか・してはいけないか） | `copilot-instructions.md` で参照先を明示。作業時に `view` で確認 |
+| **Prompts** | `prompts/` | 頻出ワークフローのプロンプトテンプレート | ユーザーまたはオーケストレーターが手動で参照 |
 | **Skills** | `skills/` | ワークフロー手順のパッケージ | エージェントがタスクに応じて自動ロード |
-| **Agents** | `agents/` | 専門特化のカスタムエージェント | ユーザー選択 or サブエージェント呼出 |
+| **Agents** | `agents/` | 専門特化のカスタムエージェント | `/agent` コマンドで選択 or `task` ツールで呼び出し |
 | **Board** *(runtime)* | `.copilot/boards/` | Feature ごとの共有コンテキスト | オーケストレーターが自動管理 |
 
 ## Instructions（自動適用ガイドライン）
 
-`applyTo` パターンに一致するファイルを開いているとき、自動的にコンテキストに追加される。
+`applyTo` パターンに一致するファイルを扱うとき、自動的にコンテキストに追加される。
 共通規約に加え、言語・ファイルタイプ別のガイドラインが `instructions/` 配下にある。
 
-## Rules（開発ルール）
+## Prompts（ワークフローテンプレート）
 
-開発時のルール。必ず従うこと。ルールは**ポリシー**のみを定める。
-`rules/` ディレクトリ内の全ファイルが対象。主要なルール:
+頻出ワークフローのプロンプトテンプレート。
+`prompts/` ディレクトリ内の `.prompt.md` ファイルが1つのテンプレートに対応する。
 
-- `development-workflow.md` — Feature ベースの開発フローのポリシー
-- `workflow-state.md` — Flow State 遷移ルール・権限マトリクス
-- `gate-profiles.json` — Maturity 別の Gate 通過条件（宣言的定義）
-- `branch-naming.md` — ブランチ命名規則
-- `commit-message.md` — コミットメッセージ規約
-- `merge-policy.md` — マージ方式
-- `worktree-layout.md` — Git Worktree の制約
-- `issue-tracker-workflow.md` — Issue トラッカーの管理ルール
-- `error-handling.md` — エラーハンドリングポリシー
-
-## Prompts（スラッシュコマンド）
-
-頻出ワークフローを `/` コマンドで即座に起動できるプロンプトファイル。
-`prompts/` ディレクトリ内の `.prompt.md` ファイルが1つのコマンドに対応する。
-
-| コマンド | 対象エージェント | 用途 |
+| テンプレート | 対象エージェント | 用途 |
 |---|---|---|
-| `/start` | developer | 新規 Feature の作業開始（Issue・ブランチ・worktree） |
-| `/submit` | developer | コミット・PR 作成・マージ |
-| `/review` | reviewer | 現在の変更に対するコードレビュー |
-| `/plan` | manager | 影響分析と実行計画の策定 |
-| `/cleanup` | developer | マージ後の worktree・ブランチクリーンアップ |
-| `/assess` | assessor | 既存プロジェクトの全体評価（構造・テスト・品質） |
-| `/model` | — | エージェントのモデル変更（個別・一括・デフォルトに戻す） |
+| `start.prompt.md` | developer | 新規 Feature の作業開始（Issue・ブランチ・worktree） |
+| `submit.prompt.md` | developer | コミット・PR 作成・マージ |
+| `review.prompt.md` | reviewer | 現在の変更に対するコードレビュー |
+| `plan.prompt.md` | manager | 影響分析と実行計画の策定 |
+| `cleanup.prompt.md` | developer | マージ後の worktree・ブランチクリーンアップ |
+| `assess.prompt.md` | assessor | 既存プロジェクトの全体評価（構造・テスト・品質） |
+| `model.prompt.md` | — | エージェントのモデル変更（個別・一括・デフォルトに戻す） |
 
 ## Skills（自動ロードされるワークフロー手順）
 
@@ -86,29 +92,37 @@ Feature / Flow State / Maturity / Gate / Board の定義と関係は `rules/deve
 
 ## Agents（カスタムエージェント）
 
-機能特化のエージェント。Chat の参加者メニューから選択できる。
+機能特化のエージェント。`/agent` コマンドで選択するか、`task` ツールで呼び出す。
 
-| エージェント | 役割 | Handoff 先 | 備考 |
-|---|---|---|---|
-| `developer` | 実装・デバッグ・テスト | → reviewer | コード変更の実行者（実装モードとテストモードを切り替え） |
-| `reviewer` | コードレビュー・品質・セキュリティ検証 | → developer | 修正指示を構造化して出力。セキュリティ観点を常時チェック |
-| `writer` | ドキュメント・リリース管理 | — | 技術文書・.github/ 整備・リリースノート・バージョニング |
-| `manager` | 影響分析・タスク分解・計画策定 | → developer, → architect | 全変更で影響分析を実施し、実行計画を返す |
-| `architect` | 構造設計・設計判断 | → manager | ペースレイヤリング・非機能要求・データフロー観点で構造を評価 |
-| `assessor` | プロジェクト全体評価 | → manager, → architect | 移植直後の包括的評価。コード変更は行わず評価・提案のみ |
+| エージェント | 役割 | 備考 |
+|---|---|---|
+| `developer` | 実装・デバッグ・テスト | コード変更の実行者（実装モードとテストモードを切り替え） |
+| `reviewer` | コードレビュー・品質・セキュリティ検証 | 修正指示を構造化して出力。セキュリティ観点を常時チェック |
+| `writer` | ドキュメント・リリース管理 | 技術文書・.github/ 整備・リリースノート・バージョニング |
+| `manager` | 影響分析・タスク分解・計画策定 | 全変更で影響分析を実施し、実行計画を返す |
+| `architect` | 構造設計・設計判断 | ペースレイヤリング・非機能要求・データフロー観点で構造を評価 |
+| `assessor` | プロジェクト全体評価 | 移植直後の包括的評価。コード変更は行わず評価・提案のみ |
 
-### エージェント連携（Board 経由 + Handoffs）
+### エージェント連携（Board 経由 + task ツール）
 
-トップレベルエージェント（Copilot Chat）が**オーケストレーター**として Board を管理し、`runSubagent` で各エージェントを呼び出す。
+トップレベルエージェント（Copilot CLI）が**オーケストレーター**として Board を管理し、`task` ツールで各エージェントを呼び出す。
 
-- サブエージェント間の直接呼び出しはできない
+- エージェント間の直接呼び出しはできない
 - エージェント間の情報伝達は **Board の構造化 JSON** を通じて行う
 - `flow_state` / `gates` / `maturity` / `history` はオーケストレーターのみが更新する
 - 各エージェントは Board の自 `artifacts` セクションのみに書き込む
 
-#### Handoffs
+#### エージェント呼び出し方法（CLI）
 
-各エージェントの `.agent.md` に `handoffs:` で遷移先が定義されている。
+オーケストレーターは `task` ツールでエージェントを呼び出す。用途に応じたエージェントタイプを選択する:
+
+| エージェントタイプ | 用途 | 対応するカスタムエージェント |
+|---|---|---|
+| `general-purpose` | 完全なツールセットが必要な実装・分析 | developer, manager, architect, writer, assessor |
+| `code-review` | コードレビュー（差分検出・品質分析） | reviewer |
+| `explore` | 高速な事前調査・コードベース検索 | （事前調査用） |
+| `task` | ビルド・テスト実行（成功/失敗の確認） | （テスト実行用） |
+
 フローのポリシーは `rules/development-workflow.md`、具体的手順は `skills/orchestrate-workflow/` を参照。
 
 
@@ -116,9 +130,9 @@ Feature / Flow State / Maturity / Gate / Board の定義と関係は `rules/deve
 
 | | instructions | rules | prompts | skills | agents | board |
 |---|---|---|---|---|---|---|
-| **内容** | ガイドライン | ポリシー | スラッシュコマンド | 手順 | 振る舞い | ランタイムコンテキスト |
+| **内容** | ガイドライン | ポリシー | ワークフローテンプレート | 手順 | 振る舞い | ランタイムコンテキスト |
 | **粒度** | ファイル/フォルダ単位 | リポジトリ全体 | ワークフロー単位 | タスク単位 | 役割単位 | Feature 単位 |
-| **起動** | applyTo で自動 | 常時参照 | `/` コマンドで手動 | タスクで自動ロード | ユーザー選択 or サブエージェント | オーケストレーターが管理 |
-| **例** | コーディング規約 | squash 禁止 | `/start` `/review` | PR 作成手順 | レビュー専門家 | 影響分析結果・レビュー指摘 |
+| **起動** | applyTo で自動 | 作業時に view で参照 | ユーザーが手動参照 | タスクで自動ロード | `/agent` or `task` ツール | オーケストレーターが管理 |
+| **例** | コーディング規約 | squash 禁止 | start / review | PR 作成手順 | レビュー専門家 | 影響分析結果・レビュー指摘 |
 
 ```

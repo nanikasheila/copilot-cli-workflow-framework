@@ -91,7 +91,7 @@ sandbox ──► abandoned   ※ sandbox は他の Maturity に昇格不可
 
 ### 原則
 
-**オーケストレーター（トップレベル Copilot Chat）のみが `flow_state` と `gates` を書き換える権限を持つ。**
+**オーケストレーター（トップレベル Copilot CLI）のみが `flow_state` と `gates` を書き換える権限を持つ。**
 各エージェントは `artifacts` 内の自セクションのみに書き込む。
 
 ### 権限マトリクス

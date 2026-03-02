@@ -1,16 +1,5 @@
 ---
 description: "アセッサーエージェントは、既存プロジェクトの包括的な評価（構造解析・テスト状況・コード品質・ドキュメント・DevOps）を実施します。コード変更は行わず、評価と改善提案のみを出力します。"
-tools: ["read", "execute", "search", "problems", "usages", "web", "todo"]
-model: ["Claude Sonnet 4.6 (copilot)"]
-handoffs:
-  - label: "改善計画を策定する"
-    agent: manager
-    prompt: "上記のプロジェクト評価結果を踏まえて、改善のためのタスク分解と実行計画を策定してください。"
-    send: false
-  - label: "構造を深く分析する"
-    agent: architect
-    prompt: "上記の評価で検出された構造的課題について、詳細な構造評価と設計改善提案を実施してください。"
-    send: false
 ---
 
 # アセッサーエージェント

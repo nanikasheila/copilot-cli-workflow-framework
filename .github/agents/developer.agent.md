@@ -1,12 +1,5 @@
 ---
 description: "開発エージェントは、コーディング・デバッグ・実装関連のタスクを支援します。"
-tools: ["read", "edit", "execute", "search", "problems", "usages", "web", "todo"]
-model: ["Claude Sonnet 4.6 (copilot)"]
-handoffs:
-  - label: "コードレビューを依頼する"
-    agent: reviewer
-    prompt: "上記の実装内容に対してコードレビューを実施してください。"
-    send: false
 ---
 
 # 開発エージェント
@@ -32,7 +25,7 @@ handoffs:
 
 オーケストレーターからのプロンプトに Board の主要フィールド（feature_id, maturity, flow_state, cycle,
 関連 artifacts のサマリ）が直接埋め込まれる。
-詳細な artifact 参照が必要な場合は、プロンプトに含まれる絶対パスで `read_file` する。
+詳細な artifact 参照が必要な場合は、プロンプトに含まれる絶対パスで `view` する。
 
 | 操作 | 対象フィールド | 権限 |
 |---|---|---|
@@ -120,6 +113,6 @@ handoffs:
 - main ブランチ上での直接編集
 - squash merge の使用
 - テストなしのコミット（Gate Profile で `test_gate.required: false` の場合を除く）
-- sed 等によるファイル直接編集（必ずエディタ機能を使用する）
+- sed 等によるファイル直接編集（必ず `edit` ツールを使用する）
 - Board の `flow_state` / `gates` / `maturity` への直接書き込み（オーケストレーター専有）
 - Board への機密情報（パスワード、APIキー、トークン）の記録

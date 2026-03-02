@@ -1,12 +1,5 @@
 ---
 description: "アーキテクトエージェントは、システム全体の構造設計・設計判断・非機能要求の評価を支援します。実装は行わず、設計方針と構造的判断を提供します。"
-tools: ["read", "search", "problems", "usages", "web", "todo"]
-model: ["Claude Sonnet 4.6 (copilot)"]
-handoffs:
-  - label: "実行計画を策定する"
-    agent: manager
-    prompt: "上記の構造評価・設計判断を踏まえて、タスク分解と実行計画を策定してください。"
-    send: false
 ---
 
 # アーキテクトエージェント
@@ -54,7 +47,7 @@ handoffs:
 
 オーケストレーターからのプロンプトに Board の主要フィールド（feature_id, maturity, flow_state, cycle,
 関連 artifacts のサマリ）が直接埋め込まれる。
-詳細な artifact 参照が必要な場合は、プロンプトに含まれる絶対パスで `read_file` する。
+詳細な artifact 参照が必要な場合は、プロンプトに含まれる絶対パスで `view` する。
 
 | 操作 | 対象フィールド | 権限 |
 |---|---|---|
@@ -240,7 +233,7 @@ handoffs:
 ## 禁止事項
 
 - コードの直接編集
-- サブエージェントの呼び出し（`runSubagent` は使用不可）
+- 他エージェントの直接呼び出し（オーケストレーター経由で `task` ツールを使用すること）
 - テストの実行
 - タスク分解・スケジュール策定（manager の責務）
 - 個別のコード品質判断（reviewer の責務）
