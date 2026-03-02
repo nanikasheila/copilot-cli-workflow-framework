@@ -1,5 +1,7 @@
 ---
+name: developer
 description: "開発エージェントは、コーディング・デバッグ・実装関連のタスクを支援します。"
+model: claude-sonnet-4.6
 ---
 
 # 開発エージェント

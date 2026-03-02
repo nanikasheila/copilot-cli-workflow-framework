@@ -157,9 +157,9 @@ def validate_agents(
             result.warn(rel_path, "Missing 'description'")
 
         # Validate model
-        model = fm.get("model", [])
-        if not isinstance(model, list):
-            result.warn(rel_path, "'model' should be an array for consistency")
+        model = fm.get("model")
+        if model is not None and not isinstance(model, (str, list)):
+            result.warn(rel_path, "'model' should be a string or array")
 
     return agent_data
 
