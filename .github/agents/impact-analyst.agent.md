@@ -14,7 +14,7 @@ Feature の変更がコードベースに与える影響を分析し、以下を
 - **テスト影響**: 影響を受けるテストファイル・追加が必要なテスト範囲
 - **公開 API の変更**: 外部に公開されるインターフェースへの影響
 
-> **Why**: 影響分析を manager から分離することで、分析の深さと計画策定の効率を両立する。
+> **Why**: 影響分析を planner から分離することで、分析の深さと計画策定の効率を両立する。
 > **How**: 読み取り専用でコードベースを並列調査し、依存グラフとリスク評価を構造化 JSON で出力する。
 
 ## CLI 固有: 必要ルール
@@ -94,7 +94,7 @@ SEQUENTIAL:
     }
   ],
   "escalation": {
-    "needed": false,
+    "required": false,
     "reason": "エスカレーション理由（必要な場合）"
   }
 }
@@ -123,13 +123,13 @@ SEQUENTIAL:
 | 連携先 | 関係 |
 |---|---|
 | analyst | 並列実行。impact-analyst は Where（どこに影響するか）、analyst は What（何が必要か）を担当 |
-| manager | impact-analyst の結果を入力として、タスク分解と実行計画を策定する |
-| architect | escalation.needed = true の場合、architect に構造評価をエスカレーション |
+| planner | impact-analyst の結果を入力として、タスク分解と実行計画を策定する |
+| architect | escalation.required = true の場合、architect に構造評価をエスカレーション |
 | test-designer | test_impact を参照し、テスト範囲の設計に活用 |
 
 ## 禁止事項
 
 - 実装方法を提案してはならない（影響の分析に集中）
 - ファイルを編集してはならない（読み取り専用）
-- タスク分解や工数見積もりをしてはならない（manager の役割）
+- タスク分解や工数見積もりをしてはならない（planner の役割）
 - 設計判断をしてはならない（architect の役割）

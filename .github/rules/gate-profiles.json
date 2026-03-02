@@ -14,7 +14,7 @@
     "development": {
       "analysis_gate":       { "required": true,  "description": "影響分析を実施する" },
       "design_gate":         { "required": "on_escalation", "escalation_condition": "artifacts.impact_analysis.escalation.required == true", "description": "エスカレーション基準に該当する場合のみ architect を起動" },
-      "plan_gate":           { "required": true,  "description": "manager による実行計画を策定する" },
+      "plan_gate":           { "required": true,  "description": "planner による実行計画を策定する" },
       "implementation_gate": { "required": true,  "description": "コード実装の完了を確認" },
       "test_gate":           { "required": true,  "pass_rate": 100, "coverage_min": 70, "description": "主要パスのテスト PASS + カバレッジ 70% 以上" },
       "review_gate":         { "required": true,  "checks": ["logic", "security_basic"], "description": "ロジック + 基本セキュリティチェック" },
@@ -24,7 +24,7 @@
     "stable": {
       "analysis_gate":       { "required": true,  "description": "影響分析を実施し、API 互換性を特に重視" },
       "design_gate":         { "required": "on_escalation", "escalation_condition": "artifacts.impact_analysis.escalation.required == true OR len(artifacts.impact_analysis.affected_files) >= 2", "description": "エスカレーション閾値を引き下げ（2モジュール以上で発動）" },
-      "plan_gate":           { "required": true,  "description": "manager による実行計画を策定する" },
+      "plan_gate":           { "required": true,  "description": "planner による実行計画を策定する" },
       "implementation_gate": { "required": true,  "description": "コード実装の完了を確認" },
       "test_gate":           { "required": true,  "pass_rate": 100, "coverage_min": 85, "description": "全テスト PASS + カバレッジ 85% 以上" },
       "review_gate":         { "required": true,  "checks": ["logic", "security_deep", "test_quality"], "description": "ロジック + 深層セキュリティ + テスト品質" },
@@ -34,7 +34,7 @@
     "release-ready": {
       "analysis_gate":       { "required": true,  "description": "全変更で影響分析を実施" },
       "design_gate":         { "required": true,  "description": "全変更で architect による構造確認を実施" },
-      "plan_gate":           { "required": true,  "description": "manager による実行計画を策定する" },
+      "plan_gate":           { "required": true,  "description": "planner による実行計画を策定する" },
       "implementation_gate": { "required": true,  "description": "コード実装の完了を確認" },
       "test_gate":           { "required": true,  "pass_rate": 100, "coverage_min": 90, "regression_required": true, "description": "全テスト PASS + カバレッジ 90% 以上 + 回帰テスト" },
       "review_gate":         { "required": true,  "checks": ["logic", "security_deep", "architecture", "performance", "test_quality"], "description": "全観点でのフルレビュー" },
@@ -44,7 +44,7 @@
     "sandbox": {
       "analysis_gate":       { "required": true,  "description": "影響分析を実施する" },
       "design_gate":         { "required": "on_escalation", "escalation_condition": "artifacts.impact_analysis.escalation.required == true", "description": "エスカレーション基準に該当する場合のみ architect を起動" },
-      "plan_gate":           { "required": true,  "description": "manager による実行計画を策定する" },
+      "plan_gate":           { "required": true,  "description": "planner による実行計画を策定する" },
       "implementation_gate": { "required": true,  "description": "コード実装の完了を確認" },
       "test_gate":           { "required": true,  "pass_rate": 100, "coverage_min": 70, "description": "主要パスのテスト PASS + カバレッジ 70% 以上" },
       "review_gate":         { "required": true,  "checks": ["logic", "security_basic"], "description": "ロジック + 基本セキュリティチェック" },

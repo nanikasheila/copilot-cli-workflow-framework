@@ -96,7 +96,7 @@ sandbox ──► abandoned   ※ sandbox は他の Maturity に昇格不可
 
 ### 権限マトリクス
 
-| フィールド | orchestrator | manager | architect | developer | reviewer | writer |
+| フィールド | orchestrator | planner | architect | developer | reviewer | writer |
 |---|---|---|---|---|---|---|
 | `flow_state` | **write** | — | — | — | — | — |
 | `gates.*` | **write** | — | — | — | — | — |

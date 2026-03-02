@@ -113,7 +113,7 @@ experimental ではショートカットが有効:
 Phase 1:  analyst が要求分析       ┐
           impact-analyst が影響分析  ┘  ← task ツールで並列実行
 Phase 2:  architect が構造評価      → 必要時のみ（エスカレーション判定）
-Phase 3:  manager が実行計画策定    → Board に記録
+Phase 3:  planner が実行計画策定    → Board に記録
 Phase 4:  developer が実装         ┐
           test-designer がテスト設計 ┘  ← task ツールで並列実行
 Phase 5:  test-verifier が独立検証   → 実装者≠検証者の分離
@@ -157,7 +157,7 @@ PR を提出してください
 | DevOps / CI | CI/CD 設定・ビルドスクリプト・環境管理 |
 | セキュリティ | 秘密情報管理・入力検証・依存関係脆弱性 |
 
-評価後、改善が必要な場合は `manager` → `developer` の通常フローで改善を進められる。
+評価後、改善が必要な場合は `planner` → `developer` の通常フローで改善を進められる。
 
 ## スキル一覧
 
@@ -183,7 +183,7 @@ PR を提出してください
 | analyst | 要求分析・受け入れ基準策定 |
 | impact-analyst | 依存関係・影響範囲・リスク評価 |
 | architect | 構造設計・設計判断 |
-| manager | タスク分解・実行計画策定 |
+| planner | タスク分解・実行計画策定 |
 | developer | コーディング・デバッグ |
 | test-designer | テストケース設計（要求ベース） |
 | test-verifier | テスト検証・品質判定（独立検証） |

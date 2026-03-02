@@ -52,7 +52,7 @@ GitHub Copilot CLI で**マルチエージェント開発ワークフロー**を
 │   ├── assessor.agent.md         #   プロジェクト全体評価
 │   ├── developer.agent.md        #   実装・デバッグ
 │   ├── impact-analyst.agent.md   #   影響分析・依存グラフ・リスク評価
-│   ├── manager.agent.md          #   タスク分解・計画策定
+│   ├── planner.agent.md           #   タスク分解・計画策定
 │   ├── reviewer.agent.md         #   コードレビュー・品質・セキュリティ検証
 │   ├── test-designer.agent.md    #   テストケース設計
 │   ├── test-verifier.agent.md    #   テスト検証・品質判定
@@ -128,7 +128,7 @@ tools/
 | `analyst` | 要求分析・受け入れ基準策定 | ✅ | 読み取り専用。impact-analyst と並列実行可能 |
 | `impact-analyst` | 影響分析・依存グラフ・リスク評価 | ✅ | 読み取り専用。analyst と並列実行可能 |
 | `architect` | 構造設計・設計判断 | — | エスカレーション時のみ呼び出し |
-| `manager` | タスク分解・計画策定 | — | analyst + impact-analyst の結果を入力として受け取る |
+| `planner` | タスク分解・計画策定 | — | analyst + impact-analyst の結果を入力として受け取る |
 | `developer` | 実装・デバッグ | — | 書き込み系。test-designer と並列実行可能 |
 | `test-designer` | テストケース設計 | ✅ | 読み取り専用。要求ベースで設計（実装に依存しない） |
 | `test-verifier` | テスト検証・品質判定 | ✅ | 実装者と独立した立場で検証 |
@@ -147,7 +147,7 @@ tools/
 | スキル | 用途 |
 |---|---|
 | `start-feature` | Issue 作成・ブランチ・worktree 準備で新規作業を開始 |
-| `analyze-and-plan` | 要求分析（analyst）・影響分析（impact-analyst）・計画策定（manager）を連携実行 |
+| `analyze-and-plan` | 要求分析（analyst）・影響分析（impact-analyst）・計画策定（planner）を連携実行 |
 | `orchestrate-workflow` | Feature 開発フロー全体のオーケストレーション手順 |
 | `manage-board` | Board の CRUD・状態遷移・Gate 評価・アーカイブ |
 | `review-code` | コードレビュー実行・修正委任 |
@@ -180,7 +180,7 @@ Phase 3  architect（必要時のみ）
          構造変更のエスカレーション判定
          │
          ▼
-Phase 4  manager
+Phase 4  planner
          タスク分解・実行計画策定
          │
          ▼

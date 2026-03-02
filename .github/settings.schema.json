@@ -146,7 +146,7 @@
         "writer": {
           "$ref": "#/$defs/agentConfig"
         },
-        "manager": {
+        "planner": {
           "$ref": "#/$defs/agentConfig"
         },
         "architect": {

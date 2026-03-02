@@ -139,7 +139,7 @@ SEQUENTIAL:
 
 ```
 verdict: fail → developer に修正指示 → 再実装 → test-verifier で再検証
-verdict: conditional_pass → manager に判断を委ねる（許容するか修正するか）
+verdict: conditional_pass → planner に判断を委ねる（許容するか修正するか）
 verdict: pass → test_gate 通過
 ```
 
