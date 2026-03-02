@@ -37,9 +37,9 @@
 | # | フェーズ | エージェント | Gate | 参照スキル |
 |---|---|---|---|---|
 | 1 | Feature 開始 & Board 作成 | — | — | `start-feature` + `manage-board` |
-| 2 | 影響分析 | manager | `analysis_gate` | `orchestrate-workflow` |
+| 2 | 影響分析 | planner | `analysis_gate` | `orchestrate-workflow` |
 | 3 | 構造評価 | architect | `design_gate` | `orchestrate-workflow` |
-| 4 | 計画策定 | manager | `plan_gate` | `orchestrate-workflow` |
+| 4 | 計画策定 | planner | `plan_gate` | `orchestrate-workflow` |
 | 5 | 実装 | developer | `implementation_gate` | `orchestrate-workflow` |
 | 6 | テスト | developer | `test_gate` | `orchestrate-workflow` |
 | 7 | コードレビュー | reviewer | `review_gate` | `orchestrate-workflow` |

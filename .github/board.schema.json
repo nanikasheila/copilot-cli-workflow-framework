@@ -83,7 +83,7 @@
       "description": "各エージェントの成果物。各エージェントは自セクションのみに書き込む。詳細スキーマは board-artifacts.schema.json を参照",
       "properties": {
         "impact_analysis": {
-          "description": "manager の影響分析結果",
+          "description": "planner の影響分析結果",
           "oneOf": [{ "$ref": "board-artifacts.schema.json#/definitions/artifact_impact_analysis" }, { "type": "null" }]
         },
         "architecture_decision": {
@@ -91,7 +91,7 @@
           "oneOf": [{ "$ref": "board-artifacts.schema.json#/definitions/artifact_architecture_decision" }, { "type": "null" }]
         },
         "execution_plan": {
-          "description": "manager の実行計画",
+          "description": "planner の実行計画",
           "oneOf": [{ "$ref": "board-artifacts.schema.json#/definitions/artifact_execution_plan" }, { "type": "null" }]
         },
         "implementation": {

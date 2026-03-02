@@ -6,7 +6,7 @@
   "definitions": {
     "artifact_impact_analysis": {
       "type": "object",
-      "description": "manager が出力する影響分析",
+      "description": "planner が出力する影響分析",
       "required": ["affected_files", "api_compatibility", "test_impact", "escalation"],
       "properties": {
         "affected_files": {
@@ -76,7 +76,7 @@
 
     "artifact_execution_plan": {
       "type": "object",
-      "description": "manager が出力する実行計画",
+      "description": "planner が出力する実行計画",
       "required": ["tasks"],
       "properties": {
         "tasks": {
