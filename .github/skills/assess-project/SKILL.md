@@ -210,12 +210,12 @@ src/
 | Black | `pyproject.toml` の `[tool.black]` |
 | mypy | `mypy.ini` / `pyproject.toml` の `[tool.mypy]` |
 
-#### 4.2 IDE / エディタの問題検出
+#### 4.2 静的解析の問題検出
 
-VS Code の問題パネルから lint エラー・型エラーを収集:
+lint ツールや型チェッカーを実行してエラー・警告を収集:
 
 ```
-problems ツールで全ファイルのエラー・警告を取得
+プロジェクトの lint コマンド / 型チェックコマンドを実行して結果を確認
 ```
 
 #### 4.3 型安全性の評価

@@ -1,6 +1,5 @@
 ---
 description: "変更をコミットし、PR を作成してマージする"
-tools : ["execute", "read", "agent", "edit", "search", "todo"]
 ---
 
 # PR 作成・マージ
@@ -14,10 +13,10 @@ tools : ["execute", "read", "agent", "edit", "search", "todo"]
 3. 変更内容を確認し、コミットメッセージ規約に従ってコミットする
 4. PR を作成し、マージする
 
-## サブエージェント方針
+## エージェント呼び出し方針
 
-- PR 作成前にレビューが必要な場合は `reviewer` サブエージェントに委任する
-- 実装の修正が必要な場合は `developer` サブエージェントに委任する
+- PR 作成前にレビューが必要な場合は `reviewer` エージェントに `task` ツール（`code-review`）で委任する
+- 実装の修正が必要な場合は `developer` エージェントに `task` ツール（`general-purpose`）で委任する
 - 自身はオーケストレーターとして全体の進行を管理し、Board の状態遷移を制御する
 
 ## コンテキスト

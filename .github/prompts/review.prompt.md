@@ -1,6 +1,5 @@
 ---
 description: "現在の変更に対してコードレビューを実行する"
-tools : ["read", "agent", "search", "todo"]
 ---
 
 # コードレビュー
@@ -9,9 +8,9 @@ tools : ["read", "agent", "search", "todo"]
 
 ## 手順
 
-1. `reviewer` サブエージェントにレビューを委任する
+1. `reviewer` エージェントに `task` ツール（`code-review`）でレビューを委任する
 2. レビュー結果を受け取り、Board に記録する
-3. 修正が必要な場合は `developer` サブエージェントに修正指示を委任する
+3. 修正が必要な場合は `developer` エージェントに `task` ツール（`general-purpose`）で修正指示を委任する
 
 ## レビュー観点（reviewer に伝達）
 
@@ -23,12 +22,12 @@ tools : ["read", "agent", "search", "todo"]
 ## 出力形式
 
 - Critical / Warning / Security / Info の分類で指摘を構造化する
-- 修正が必要な場合は `developer` サブエージェントへの委任指示を含める
+- 修正が必要な場合は `developer` エージェントへの委任指示を含める
 
-## サブエージェント方針
+## エージェント呼び出し方針
 
-- レビュー実行は `reviewer` サブエージェントに委任する
-- 修正実行は `developer` サブエージェントに委任する
+- レビュー実行は `reviewer` エージェントに `task` ツール（`code-review`）で委任する
+- 修正実行は `developer` エージェントに `task` ツール（`general-purpose`）で委任する
 - 自身はオーケストレーターとして Board の状態遷移と Gate 評価を管理する
 
 ## コンテキスト

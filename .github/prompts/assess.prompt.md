@@ -1,6 +1,5 @@
 ---
 description: "既存プロジェクトの全体評価を実施する（構造解析・テスト状況・コード品質・ドキュメント・DevOps）"
-tools : ["execute", "read", "agent", "search", "problems", "todo"]
 ---
 
 # プロジェクト全体評価
@@ -18,7 +17,7 @@ tools : ["execute", "read", "agent", "search", "problems", "todo"]
 1. `assess-project` スキルを読み込み、手順に従う
 2. `.github/settings.json` からプロジェクト設定を取得する
 3. プロジェクト検出（言語・フレームワーク・依存関係）を実行する
-4. `assessor` サブエージェントに包括的な評価を委任する
+4. `assessor` エージェントに `task` ツール（`general-purpose`）で包括的な評価を委任する
 5. 評価レポートをユーザーに提示する
 6. 改善が必要な場合は次のアクションを提案する
 
@@ -33,11 +32,11 @@ tools : ["execute", "read", "agent", "search", "problems", "todo"]
 | **DevOps / CI** | CI/CD 設定・ビルドスクリプト・環境管理 |
 | **セキュリティ** | 秘密情報の管理・入力検証・依存関係の脆弱性 |
 
-## サブエージェント方針
+## エージェント呼び出し方針
 
-- 包括評価は `assessor` サブエージェントに委任する
-- 構造面で深い分析が必要な場合は `architect` サブエージェントにも委任する
-- 評価結果に基づく改善計画は `manager` サブエージェントに委任する
+- 包括評価は `assessor` エージェントに `task` ツール（`general-purpose`）で委任する
+- 構造面で深い分析が必要な場合は `architect` エージェントにも委任する
+- 評価結果に基づく改善計画は `manager` エージェントに委任する
 - 自身はオーケストレーターとして全体の進行を管理する
 
 ## 評価後のアクション提案

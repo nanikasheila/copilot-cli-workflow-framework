@@ -114,7 +114,7 @@ def validate_agents(
     """Validate all agent definition files under .github/agents/.
 
     Why: Agents define tools, models, and handoffs. Invalid references
-         cause runtime failures in Copilot Chat.
+         cause runtime failures in Copilot CLI.
     How: Parse each .agent.md file, verify tools against the allowed set,
          collect agent names for handoff cross-reference validation.
     """
