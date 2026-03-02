@@ -1,7 +1,7 @@
 ---
 name: planner
 description: "タスク分解・計画策定エージェント"
-model: claude-sonnet-4.6
+model: claude-opus-4.6
 ---
 
 # プランナーエージェント
