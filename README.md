@@ -1,5 +1,14 @@
 # copilot-cli-workflow-framework
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/nanikasheila/copilot-cli-workflow-framework?style=social)](https://github.com/nanikasheila/copilot-cli-workflow-framework/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/nanikasheila/copilot-cli-workflow-framework?style=social)](https://github.com/nanikasheila/copilot-cli-workflow-framework/network)
+[![GitHub Issues](https://img.shields.io/github/issues/nanikasheila/copilot-cli-workflow-framework)](https://github.com/nanikasheila/copilot-cli-workflow-framework/issues)
+
+> **English summary**: A reusable `.github/` framework that powers a **10-agent AI development workflow** using GitHub Copilot CLI. Agents collaborate through a shared Board, enabling parallel execution of read-only agents (analyst + impact-analyst, etc.) and enforcing context isolation between implementers, test designers, and verifiers. Drop-in ready — copy `.github/` to your project and run `initialize-project`.
+
+---
+
 GitHub Copilot CLI で**マルチエージェント開発ワークフロー**を実現する `.github` 構成フレームワーク。
 
 10 体のエージェントが Board を介して協調し、要求分析 → 設計 → 実装 → テスト設計 → 独立検証 → レビュー → ドキュメント → PR の一連のフローを自動化します。読み取り専用エージェントの**並列実行**と**コンテキスト分離**による品質保証が特徴です。
@@ -166,45 +175,39 @@ tools/
 
 `orchestrate-workflow` スキルが定義する 9 フェーズの開発フローです。読み取り専用エージェントは並列実行されます。
 
+```mermaid
+flowchart TD
+    P1["Phase 1: start-feature\nIssue 作成 → ブランチ → worktree 準備"]
+    P2A["analyst\n要求分析・受け入れ基準"]
+    P2B["impact-analyst\n影響分析・リスク評価"]
+    P3["Phase 3: architect\n構造変更エスカレーション\n（必要時のみ）"]
+    P4["Phase 4: planner\nタスク分解・実行計画"]
+    P5A["developer\n実装・デバッグ"]
+    P5B["test-designer\nテストケース設計"]
+    P6["Phase 6: test-verifier\n独立検証\n（実装者 ≠ 検証者）"]
+    P7{"Phase 7: reviewer\nコードレビュー\nセキュリティ検証"}
+    P8["Phase 8: writer\nドキュメント更新\n（必要時のみ）"]
+    P9["Phase 9: submit-pull-request\nPR 作成 → マージ → クリーンアップ"]
+
+    P1 --> P2A & P2B
+    P2A & P2B --> P3
+    P3 --> P4
+    P4 --> P5A & P5B
+    P5A & P5B --> P6
+    P6 --> P7
+    P7 -->|NG| P5A
+    P7 -->|OK| P8
+    P8 --> P9
+
+    style P2A fill:#d4edda,stroke:#28a745
+    style P2B fill:#d4edda,stroke:#28a745
+    style P5B fill:#d4edda,stroke:#28a745
+    style P6 fill:#d4edda,stroke:#28a745
+    style P3 fill:#fff3cd,stroke:#ffc107
+    style P8 fill:#fff3cd,stroke:#ffc107
 ```
-Phase 1  start-feature
-         │  Issue 作成 → ブランチ → worktree 準備
-         ▼
-Phase 2  analyst ──────────┐
-         要求分析・受け入れ基準  │ 並列実行
-         impact-analyst ───┘
-         影響分析・リスク評価
-         │
-         ▼
-Phase 3  architect（必要時のみ）
-         構造変更のエスカレーション判定
-         │
-         ▼
-Phase 4  planner
-         タスク分解・実行計画策定
-         │
-         ▼
-Phase 5  developer ────────┐
-         実装・デバッグ       │ 並列実行
-         test-designer ────┘
-         テストケース設計
-         │
-         ▼
-Phase 6  test-verifier
-         独立検証（実装者 ≠ 検証者）
-         │
-         ▼
-Phase 7  reviewer
-         コードレビュー・セキュリティ検証
-         │  NG → Phase 5 に戻る
-         ▼
-Phase 8  writer（必要時のみ）
-         ドキュメント・リリースノート更新
-         │
-         ▼
-Phase 9  submit-pull-request → cleanup-worktree
-         PR 作成 → マージ → クリーンアップ
-```
+
+> 🟢 **並列実行可能**（読み取り専用）　🟡 **必要時のみ呼び出し**
 
 ### Board によるエージェント間連携
 
