@@ -87,6 +87,14 @@ model: claude-sonnet-4.6
 | `stable` | 全カテゴリ + regression + カバレッジマトリクス |
 | `release-ready` | 全カテゴリ + security + 全 AC のトレーサビリティ |
 
+### 出力スキーマ契約
+
+本エージェントの出力は `board-artifacts.schema.json` の `artifact_test_design` 定義に準拠する。
+
+> Why: スキーマ契約を明示することで、エージェント出力のフォーマットブレを防ぎ、下流エージェントのパースエラーを削減する。フィールド名の不一致（例: `config` vs `configuration`）はデータ連携の破綻を招く。
+
+出力先: `artifacts.test_design`
+
 ## 設計プロセス
 
 1. **要求の読み込み**: `artifacts.requirements` から FR / AC / EC を取得

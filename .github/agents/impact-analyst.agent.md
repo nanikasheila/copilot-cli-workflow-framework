@@ -111,6 +111,14 @@ SEQUENTIAL:
 | `development` | 全依存グラフ + テスト影響 |
 | `stable` / `release-ready` | 全項目 + 公開 API 変更 + 破壊的変更分析 |
 
+### 出力スキーマ契約
+
+本エージェントの出力は `board-artifacts.schema.json` の `artifact_impact_analysis` 定義に準拠する。
+
+> Why: スキーマ契約を明示することで、エージェント出力のフォーマットブレを防ぎ、下流エージェントのパースエラーを削減する。フィールド名の不一致（例: `config` vs `configuration`）はデータ連携の破綻を招く。
+
+出力先: `artifacts.impact_analysis`
+
 ## 分析プロセス
 
 1. **変更対象の特定**: 要求から変更が必要なファイルを列挙

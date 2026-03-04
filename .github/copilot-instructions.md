@@ -87,6 +87,7 @@ Feature / Flow State / Maturity / Gate / Board の定義と関係は `rules/deve
 | `assess-project` | プロジェクト全体評価 | `assess.prompt.md` |
 | `configure-model` | エージェントモデル変更 | `model.prompt.md` |
 | `orchestrate-workflow` | Feature 開発フロー全体のオーケストレーション | — |
+| `execute-plan` | 計画のタスクを依存グラフに基づき並列実行 | — |
 | `manage-board` | Board の CRUD・状態遷移・Gate 評価 | — |
 | `initialize-project` | 新規プロジェクトの初期設定 | — |
 | `generate-gitignore` | .gitignore 生成 | — |
@@ -135,6 +136,29 @@ Feature / Flow State / Maturity / Gate / Board の定義と関係は `rules/deve
 > `general-purpose` タイプで起動するが、仕様上ファイル編集が禁止されているため**並列実行が安全**。
 
 フローのポリシーは `rules/development-workflow.md`、具体的手順は `skills/orchestrate-workflow/` を参照。
+
+#### Orchestration アーキテクチャ
+
+本フレームワークは **Sub-agent 型オーケストレーション** を採用している。
+
+> **Why**: Feature 開発フローは「分析→設計→実装→検証→レビュー→文書化」の各フェーズで異なるエージェントが協働するが、Board という共有状態を通じたデータ交換が不可欠である。Sub-agent 型は親（オーケストレーター）がコンテキストを保持し、各フェーズの結果を統合して次のフェーズに渡す判断ができるため、動的なワークフロー制御に適している。
+
+> **How**: `orchestrate-workflow` スキルがオーケストレーターとして機能し、`task` ツールで各専門エージェントを Spawn する。エージェント間のデータ共有は Board の `artifacts` セクションを通じて行い、`flow_state` の遷移はオーケストレーターのみが制御する。
+
+**Sub-agent 型 vs Skill Chain 型の比較**:
+
+| 設計軸 | Sub-agent 型（本フレームワーク） | Skill Chain 型 |
+|---|---|---|
+| 実行モデル | 1スキル内でエージェント生成 | 独立スキルの直列連結 |
+| コンテキスト管理 | Board を通じた共有状態 | 各スキルが独立ドメインのみ保持 |
+| 処理フロー | 並列 + 動的分岐 | 固定パイプライン |
+| 単体利用 | エージェントは単体利用可 | 各スキルが独立して使える |
+| 拡張方法 | エージェント追加 | スキル追加 |
+
+本フレームワークが Sub-agent 型を選択した理由:
+1. **Board による状態共有**: フェーズ間の情報伝達が Board の構造化 JSON で行われ、コンテキストロスが少ない
+2. **動的分岐**: architect エスカレーションやレビュー修正ループなど、実行時の判断が必要
+3. **並列実行の安全性**: 読み取り専用エージェント（analyst, impact-analyst, test-designer, test-verifier）は並列 Spawn が安全
 
 #### 並列実行戦略
 
