@@ -1,6 +1,11 @@
 ---
 name: submit-pull-request
-description: 変更をコミットし、PR を作成してマージする。worktree での変更が完了した後に使用する。
+description: >-
+  worktree での実装完了後に変更をコミット・PR 作成・マージまで一括実行する。「PR を作って」
+  「プルリクを出して」「変更をマージして」「コミットして PR を作って」「実装が終わった」
+  「レビューを通してマージして」と言った場合にトリガーする。
+  コミット→PR 作成→マージ→Board 更新の一連のフローを自動化する。
+  コンフリクト発生時は resolve-conflict スキルへ移行し、マージ後は cleanup-worktree で後片付けする。
 ---
 
 # PR 提出・マージ

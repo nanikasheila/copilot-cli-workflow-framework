@@ -11,6 +11,22 @@ applyTo: "**/*.py"
 - `typing` モジュールの型を活用する（`Optional`, `Union`, `list[str]` 等）
 - 複雑な型は `TypeAlias` で名前を付ける
 
+### Bad
+```python
+def process(data, callback):  # 型が不明
+    return callback(data)
+```
+
+### Good
+```python
+from typing import Callable, TypeVar
+
+T = TypeVar("T")
+
+def process(data: T, callback: Callable[[T], T]) -> T:
+    return callback(data)
+```
+
 ## ドキュメント
 
 - すべてのパブリック関数・クラスに docstring を付ける
@@ -28,8 +44,31 @@ applyTo: "**/*.py"
 - 素の `except:` や `except Exception:` は避け、具体的な例外型を捕捉する
 - カスタム例外クラスを定義する場合は `Exception` を継承する
 
+### Bad
+```python
+try:
+    result = risky_operation()
+except:  # KeyboardInterrupt も飲み込む
+    pass
+```
+
+### Good
+```python
+try:
+    result = risky_operation()
+except ValueError as e:
+    logger.warning("Invalid input: %s", e)
+    raise
+```
+
 ## 禁止パターン
 
 - `import *` の使用
 - ミュータブルなデフォルト引数（`def f(x=[])` → `def f(x=None)` に修正）
 - グローバル変数の変更（定数は `UPPER_CASE` で定義）
+
+## 非同期パターン
+
+- `asyncio` を使用する場合、`async def` / `await` を一貫して使う
+- 同期コードと非同期コードを混在させない
+- CPU バウンドな処理は `asyncio.to_thread()` でオフロードする

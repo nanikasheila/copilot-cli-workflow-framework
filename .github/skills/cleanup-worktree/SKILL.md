@@ -1,6 +1,11 @@
 ---
 name: cleanup-worktree
-description: マージ完了後のクリーンアップ処理を実行する。worktree、ローカルブランチ、Issue の整理を行うときに使用する。
+description: >-
+  PR マージ完了後の worktree・ローカルブランチ・Issue を一括整理する後片付けスキル。
+  「クリーンアップして」「worktree を削除して」「ブランチを削除して」「Issue をクローズして」
+  「マージ後の後片付けをして」「作業環境を片付けて」と言った場合にトリガーする。
+  worktree 削除・ローカルブランチ削除・Issue クローズを自動化する。
+  submit-pull-request でマージ完了後に呼び出される後処理スキルでもある。
 ---
 
 # クリーンアップ

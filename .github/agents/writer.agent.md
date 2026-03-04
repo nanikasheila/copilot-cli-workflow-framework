@@ -110,6 +110,14 @@ PARALLEL:
 }
 ```
 
+### 出力スキーマ契約
+
+本エージェントの出力は `board-artifacts.schema.json` の `artifact_documentation` 定義に準拠する。
+
+> Why: スキーマ契約を明示することで、エージェント出力のフォーマットブレを防ぎ、下流エージェントのパースエラーを削減する。フィールド名の不一致（例: `config` vs `configuration`）はデータ連携の破綻を招く。
+
+出力先: `artifacts.documentation`
+
 ## 文書品質の原則
 
 | 原則 | 説明 |

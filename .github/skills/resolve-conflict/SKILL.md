@@ -1,6 +1,11 @@
 ---
 name: resolve-conflict
-description: PR マージ時のコンフリクトを解消する。マージが 405 エラーで失敗した場合に使用する。
+description: >-
+  PR マージ時に発生したコンフリクト（競合）を解消するリカバリスキル。「コンフリクトが発生した」
+  「マージが失敗した」「405 Pull Request is not mergeable」「競合を解消して」
+  「merge conflict を直して」と言った場合にトリガーする。
+  submit-pull-request でマージが失敗した場合に呼び出されるエラーリカバリ専用スキル。
+  コンフリクト箇所の特定・解消・再マージを自動化する。
 ---
 
 # コンフリクト解消
