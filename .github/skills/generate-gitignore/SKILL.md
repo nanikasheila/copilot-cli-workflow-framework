@@ -1,6 +1,11 @@
 ---
 name: generate-gitignore
-description: gitignore.io API を使って .gitignore ファイルを生成・更新する。プロジェクトの言語・OS・エディタに応じたテンプレートを取得し、プロジェクトルートに .gitignore を作成する。
+description: >-
+  プロジェクト用の .gitignore ファイルを gitignore.io API で自動生成・更新する。
+  「.gitignore を作って」「gitignore を生成して」「無視するファイルを設定して」
+  「.gitignore を更新して」「Python 用の gitignore が欲しい」と言った場合にトリガーする。
+  プロジェクトの言語・OS・エディタに対応したテンプレートを取得し、プロジェクトルートに配置する。
+  initialize-project の一部としても呼び出される。
 ---
 
 # .gitignore 生成
