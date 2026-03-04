@@ -72,20 +72,7 @@ PARALLEL:
 
 ## Board 連携
 
-このエージェントは Board の以下のセクションに関与する。
-書き込み権限の詳細は `rules/workflow-state.md` の権限マトリクスを参照。
-
-### Board ファイルの参照
-
-オーケストレーターからのプロンプトに Board の主要フィールド（feature_id, maturity, flow_state, cycle,
-関連 artifacts のサマリ）が直接埋め込まれる。
-詳細な artifact 参照が必要な場合は、プロンプトに含まれる絶対パスで `view` する。
-
-| 操作 | 対象フィールド | 権限 |
-|---|---|---|
-| 読み取り | Board 全体 | ✅ |
-| 書き込み | `artifacts.architecture_decision` | ✅ |
-| 書き込み | `flow_state` / `gates` / `maturity` | ❌（オーケストレーター専有） |
+> Board連携共通: `agents/references/board-integration-guide.md` を参照。以下はこのエージェント固有のBoard連携:
 
 ### 入力として参照する Board フィールド
 
@@ -116,8 +103,6 @@ PARALLEL:
 ### 出力スキーマ契約
 
 本エージェントの出力は `board-artifacts.schema.json` の `artifact_architecture_decision` 定義に準拠する。
-
-> Why: スキーマ契約を明示することで、エージェント出力のフォーマットブレを防ぎ、下流エージェントのパースエラーを削減する。フィールド名の不一致（例: `config` vs `configuration`）はデータ連携の破綻を招く。
 
 出力先: `artifacts.architecture_decision`
 
@@ -272,10 +257,10 @@ PARALLEL:
 
 ## 禁止事項
 
+> 共通制約: `agents/references/common-constraints.md` を参照。以下はこのエージェント固有の禁止事項:
+
 - コードの直接編集
 - 他エージェントの直接呼び出し（オーケストレーター経由で `task` ツールを使用すること）
 - テストの実行
 - タスク分解・スケジュール策定（planner の責務）
 - 個別のコード品質判断（reviewer の責務）
-- Board の `flow_state` / `gates` / `maturity` への直接書き込み（オーケストレーター専有）
-- Board への機密情報（パスワード、APIキー、トークン）の記録
