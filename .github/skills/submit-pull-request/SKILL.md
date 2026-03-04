@@ -58,8 +58,23 @@ git status --short
 ```bash
 cd .worktrees/<ブランチ名>
 git add -A
-git commit -m "<type>: <説明> (<prefix>-<番号>)"
 ```
+
+コミットメッセージにセッション要約を含める（`rules/commit-message.md` のセッション要約フォーマットに従う）:
+
+```bash
+git commit -m "<type>: <説明> (<prefix>-<番号>)" -m "Session-Context: <セッション目的の1行要約>
+Changes-Made:
+- <変更1>
+- <変更2>
+Design-Decisions:
+- <設計判断（あれば）>
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+```
+
+> Session-Context と Changes-Made はセッション内の作業内容から自動生成する。
+> Design-Decisions は Board の history や artifacts から重要な判断を抽出する。
 
 ### 2. プッシュ
 

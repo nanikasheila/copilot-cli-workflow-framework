@@ -95,6 +95,49 @@ model: claude-sonnet-4.6
 
 出力先: `artifacts.test_design`
 
+## Sealed テスト基準（オプション）
+
+maturity が stable 以上の場合、通常の test_cases に加えて `sealed_criteria` を出力できる。
+
+> **Why**: dark-factory の知見。developer に見せない受け入れ基準を設けることで、
+> テスト仕様への overfitting を防ぎ、要求ベースの実装を促進する。
+
+### sealed_criteria の出力
+
+Board の `artifacts.test_design` に以下を追加して書き込む:
+
+```json
+{
+  "test_cases": [...],
+  "sealed_criteria": {
+    "enabled": true,
+    "criteria": [
+      {
+        "id": "SC-1",
+        "category": "edge_case",
+        "description": "空の入力配列に対して空の結果を返すこと",
+        "validation_method": "ユニットテストで空配列を入力し、空配列が返ることを確認"
+      }
+    ],
+    "rationale": "developer が test_cases だけを見て実装した場合に見落としがちなエッジケースをカバー"
+  }
+}
+```
+
+### sealed_criteria に含めるもの
+
+| カテゴリ | 例 |
+|---|---|
+| `edge_case` | 境界値・空入力・null・極大値 |
+| `error_handling` | 予期しないエラー・タイムアウト・ネットワーク障害 |
+| `performance` | レスポンスタイム・メモリ使用量の上限 |
+| `security` | インジェクション・認証バイパス・権限昇格 |
+
+### sealed_criteria に含めないもの
+
+- 通常のハッピーパステスト（test_cases に含める）
+- 実装方法に依存する検証（要求ベースのみ）
+
 ## 設計プロセス
 
 1. **要求の読み込み**: `artifacts.requirements` から FR / AC / EC を取得

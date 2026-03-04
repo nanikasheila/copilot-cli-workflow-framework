@@ -44,7 +44,10 @@ param(
 
     [Parameter(Mandatory = $true, HelpMessage = "評価対象 Gate 名 (e.g. test, review)")]
     [ValidateSet('analysis', 'design', 'plan', 'implementation', 'test', 'review', 'documentation', 'submit')]
-    [string]$GateName
+    [string]$GateName,
+
+    [Parameter(Mandatory = $false, HelpMessage = "settings.json ファイルパス（automated_checks で使用）")]
+    [string]$SettingsPath = ""
 )
 
 $ErrorActionPreference = 'Stop'
@@ -126,6 +129,211 @@ function Get-PropertyValue {
         $current = $prop.Value
     }
     return $current
+}
+
+function Test-Evidence {
+    <#
+        .SYNOPSIS
+        gate-profiles.json の evidence_required に基づき、Board の artifacts からエビデンスを検証する。
+    #>
+    param(
+        [Parameter(Mandatory)] [string[]]$RequiredEvidence,
+        [Parameter(Mandatory)] [object]$Artifacts,
+        [Parameter(Mandatory)] [string]$GateName
+    )
+
+    $results  = [System.Collections.Generic.List[object]]::new()
+    $failures = [System.Collections.Generic.List[string]]::new()
+
+    foreach ($evidenceType in $RequiredEvidence) {
+        switch ($evidenceType) {
+            'commit_sha' {
+                # artifacts 内のいずれかのフィールドに 40文字 hex の commit SHA が存在するか
+                $found = $false
+                if ($null -ne $Artifacts) {
+                    foreach ($prop in $Artifacts.PSObject.Properties) {
+                        $sha = Get-PropertyValue -Object $prop.Value -Path 'commit_sha'
+                        if ($null -ne $sha -and "$sha" -match '^[0-9a-fA-F]{40}$') {
+                            $found = $true
+                            break
+                        }
+                    }
+                }
+                $results.Add([ordered]@{
+                    evidence = $evidenceType
+                    met      = $found
+                    detail   = if ($found) { 'Valid 40-char commit SHA found in artifacts' } else { 'No valid 40-char hex SHA found in artifacts' }
+                })
+                if (-not $found) { $failures.Add("evidence '$evidenceType': no valid commit SHA (40-char hex) found in artifacts") }
+            }
+
+            'test_output' {
+                $testResults = if ($null -ne $Artifacts) {
+                    $Artifacts.PSObject.Properties | Where-Object { $_.Name -eq 'test_results' } |
+                        Select-Object -ExpandProperty Value -ErrorAction SilentlyContinue
+                } else { $null }
+                $met = ($null -ne $testResults)
+                $results.Add([ordered]@{
+                    evidence = $evidenceType
+                    met      = $met
+                    detail   = if ($met) { 'artifacts.test_results exists' } else { 'artifacts.test_results is missing' }
+                })
+                if (-not $met) { $failures.Add("evidence '$evidenceType': artifacts.test_results is missing") }
+            }
+
+            'build_success' {
+                $buildResult = if ($null -ne $Artifacts) {
+                    $Artifacts.PSObject.Properties | Where-Object { $_.Name -eq 'build_result' } |
+                        Select-Object -ExpandProperty Value -ErrorAction SilentlyContinue
+                } else { $null }
+                $success = if ($null -ne $buildResult) { Get-PropertyValue -Object $buildResult -Path 'success' } else { $null }
+                $met = ($success -eq $true)
+                $results.Add([ordered]@{
+                    evidence = $evidenceType
+                    met      = $met
+                    detail   = if ($met) { 'artifacts.build_result.success is true' } else { "artifacts.build_result.success is not true (actual: $success)" }
+                })
+                if (-not $met) { $failures.Add("evidence '$evidenceType': artifacts.build_result.success != true (actual: $success)") }
+            }
+
+            'lint_pass' {
+                $lintResult = if ($null -ne $Artifacts) {
+                    $Artifacts.PSObject.Properties | Where-Object { $_.Name -eq 'lint_result' } |
+                        Select-Object -ExpandProperty Value -ErrorAction SilentlyContinue
+                } else { $null }
+                $passed = if ($null -ne $lintResult) { Get-PropertyValue -Object $lintResult -Path 'passed' } else { $null }
+                $met = ($passed -eq $true)
+                $results.Add([ordered]@{
+                    evidence = $evidenceType
+                    met      = $met
+                    detail   = if ($met) { 'artifacts.lint_result.passed is true' } else { "artifacts.lint_result.passed is not true (actual: $passed)" }
+                })
+                if (-not $met) { $failures.Add("evidence '$evidenceType': artifacts.lint_result.passed != true (actual: $passed)") }
+            }
+
+            'review_verdict' {
+                $rfProp = if ($null -ne $Artifacts) {
+                    $Artifacts.PSObject.Properties | Where-Object { $_.Name -eq 'review_findings' }
+                } else { $null }
+                $reviewFindings = if ($null -ne $rfProp) { @($rfProp.Value) } else { $null }
+                $lastVerdict = $null
+                if ($null -ne $reviewFindings -and $reviewFindings.Count -gt 0) {
+                    $lastEntry   = $reviewFindings[$reviewFindings.Count - 1]
+                    $lastVerdict = Get-PropertyValue -Object $lastEntry -Path 'verdict'
+                }
+                $met = ($null -ne $lastVerdict)
+                $results.Add([ordered]@{
+                    evidence = $evidenceType
+                    met      = $met
+                    detail   = if ($met) { "review verdict exists: $lastVerdict" } else { 'no verdict found in artifacts.review_findings' }
+                })
+                if (-not $met) { $failures.Add("evidence '$evidenceType': no verdict found in artifacts.review_findings") }
+            }
+
+            'coverage_report' {
+                $testResults = if ($null -ne $Artifacts) {
+                    $Artifacts.PSObject.Properties | Where-Object { $_.Name -eq 'test_results' } |
+                        Select-Object -ExpandProperty Value -ErrorAction SilentlyContinue
+                } else { $null }
+                $coverage = if ($null -ne $testResults) {
+                    $v = Get-PropertyValue -Object $testResults -Path 'coverage'
+                    if ($null -eq $v) { $v = Get-PropertyValue -Object $testResults -Path 'coverage_percent' }
+                    $v
+                } else { $null }
+                $met = ($null -ne $coverage)
+                $results.Add([ordered]@{
+                    evidence = $evidenceType
+                    met      = $met
+                    detail   = if ($met) { "coverage value exists: $coverage" } else { 'no coverage value found in artifacts.test_results' }
+                })
+                if (-not $met) { $failures.Add("evidence '$evidenceType': no coverage value found in artifacts.test_results.coverage") }
+            }
+
+            default {
+                $results.Add([ordered]@{
+                    evidence = $evidenceType
+                    met      = $false
+                    detail   = "Unknown evidence type: $evidenceType"
+                })
+                $failures.Add("evidence '$evidenceType': unknown evidence type")
+            }
+        }
+    }
+
+    return [ordered]@{
+        results  = $results.ToArray()
+        failures = $failures.ToArray()
+        passed   = ($failures.Count -eq 0)
+    }
+}
+
+function Invoke-AutomatedCheck {
+    <#
+        .SYNOPSIS
+        gate-profiles.json の automated_checks エントリを実行し、成否を返す。
+        settings.json の project セクションからコマンドを解決する。
+    #>
+    param(
+        [Parameter(Mandatory)] [PSObject]$Check,
+        [Parameter(Mandatory = $false)] [PSObject]$ProjectSettings
+    )
+
+    $checkName = $Check.name
+    $checkType = $Check.type
+    $isRequired = if ($null -ne $Check.PSObject.Properties['required'] -and $null -ne $Check.required) {
+        [bool]$Check.required
+    } else { $true }
+
+    # コマンド解決: check.command が明示されていればそれを優先、なければ settings.json から解決
+    $command = $Check.PSObject.Properties['command'] | Select-Object -ExpandProperty Value -ErrorAction SilentlyContinue
+    if ([string]::IsNullOrEmpty($command) -and $null -ne $ProjectSettings) {
+        switch ($checkType) {
+            'build' { $command = $ProjectSettings.PSObject.Properties['build'] | Select-Object -ExpandProperty Value -ErrorAction SilentlyContinue }
+            'test'  {
+                $testSection = $ProjectSettings.PSObject.Properties['test'] | Select-Object -ExpandProperty Value -ErrorAction SilentlyContinue
+                if ($null -ne $testSection) {
+                    $command = Get-PropertyValue -Object $testSection -Path 'command'
+                }
+            }
+            'lint'  { $command = $ProjectSettings.PSObject.Properties['lint'] | Select-Object -ExpandProperty Value -ErrorAction SilentlyContinue }
+        }
+    }
+
+    if ([string]::IsNullOrEmpty($command)) {
+        return [ordered]@{
+            name     = $checkName
+            type     = $checkType
+            required = $isRequired
+            skipped  = $true
+            passed   = (-not $isRequired)   # optional check はスキップでも PASS 扱い
+            message  = "No command resolved for check '$checkName' (type: $checkType). Skipped."
+        }
+    }
+
+    try {
+        $output   = Invoke-Expression $command 2>&1
+        $exitCode = $LASTEXITCODE
+        $passed   = ($exitCode -eq 0)
+        return [ordered]@{
+            name      = $checkName
+            type      = $checkType
+            required  = $isRequired
+            skipped   = $false
+            passed    = $passed
+            exit_code = $exitCode
+            message   = if ($passed) { "Check '$checkName' passed (exit 0)" } else { "Check '$checkName' failed (exit $exitCode)" }
+        }
+    }
+    catch {
+        return [ordered]@{
+            name     = $checkName
+            type     = $checkType
+            required = $isRequired
+            skipped  = $false
+            passed   = $false
+            message  = "Check '$checkName' threw an exception: $_"
+        }
+    }
 }
 
 # ---------------------------------------------------------------------------
@@ -433,6 +641,63 @@ else {
 }
 
 # ---------------------------------------------------------------------------
+# エビデンス検証
+# ---------------------------------------------------------------------------
+# gate-profiles.json の evidence_required が定義されている場合のみ実行（後方互換）
+
+$evidenceStatus = $null
+
+$evProp = $gateConfig.PSObject.Properties | Where-Object { $_.Name -eq 'evidence_required' }
+if ($null -ne $evProp -and $null -ne $evProp.Value) {
+    $evidenceRequired = @($evProp.Value)
+    if ($evidenceRequired.Count -gt 0) {
+        $evResult      = Test-Evidence -RequiredEvidence $evidenceRequired -Artifacts $artifacts -GateName $GateName
+        $evidenceStatus = $evResult
+        foreach ($evFail in $evResult.failures) {
+            $failReasons.Add("evidence_check: $evFail")
+        }
+    }
+}
+
+# ---------------------------------------------------------------------------
+# 自動品質チェック
+# ---------------------------------------------------------------------------
+# gate-profiles.json の automated_checks が定義されている場合のみ実行（後方互換）
+
+$automatedCheckResults = $null
+
+$acProp = $gateConfig.PSObject.Properties | Where-Object { $_.Name -eq 'automated_checks' }
+if ($null -ne $acProp -and $null -ne $acProp.Value) {
+    $automatedChecks = @($acProp.Value)
+    if ($automatedChecks.Count -gt 0) {
+        # settings.json の project セクションを読み込む
+        $projectSettings = $null
+        if (-not [string]::IsNullOrEmpty($SettingsPath) -and (Test-Path -LiteralPath $SettingsPath)) {
+            try {
+                $settingsObj     = Get-Content -LiteralPath $SettingsPath -Raw -Encoding UTF8 | ConvertFrom-Json
+                $projectSettings = $settingsObj.PSObject.Properties['project'] |
+                                   Select-Object -ExpandProperty Value -ErrorAction SilentlyContinue
+            }
+            catch {
+                Write-Warning "evaluate-gate: failed to load settings.json from '$SettingsPath': $_"
+            }
+        }
+
+        $checkResultsList = [System.Collections.Generic.List[object]]::new()
+        foreach ($check in $automatedChecks) {
+            $checkResult = Invoke-AutomatedCheck -Check $check -ProjectSettings $projectSettings
+            $checkResultsList.Add($checkResult)
+
+            # required かつ失敗（スキップでない）の場合は FAIL 理由に追加
+            if ($checkResult.required -eq $true -and $checkResult.passed -eq $false -and $checkResult.skipped -ne $true) {
+                $failReasons.Add("automated_check '$($checkResult.name)': $($checkResult.message)")
+            }
+        }
+        $automatedCheckResults = $checkResultsList.ToArray()
+    }
+}
+
+# ---------------------------------------------------------------------------
 # 最終判定
 # ---------------------------------------------------------------------------
 
@@ -452,6 +717,13 @@ $result = New-ResultObject `
     -Conditions $conditions.ToArray()
 
 $result['gate_profile'] = $gateProfile
+
+if ($null -ne $evidenceStatus) {
+    $result['evidence_status'] = $evidenceStatus
+}
+if ($null -ne $automatedCheckResults) {
+    $result['automated_check_results'] = $automatedCheckResults
+}
 
 ConvertTo-JsonCompact $result
 exit $(if ($overallPass) { 0 } else { 1 })

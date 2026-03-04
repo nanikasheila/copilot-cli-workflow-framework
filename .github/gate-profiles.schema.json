@@ -54,6 +54,33 @@
           "type": "string",
           "description": "required が on_escalation の場合の評価条件。Board の artifacts を参照する条件式を自然言語で記述する"
         },
+        "evidence_required": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["commit_sha", "test_output", "build_success", "lint_pass", "review_verdict", "coverage_report"]
+          },
+          "description": "Gate 通過に必要なエビデンスの種別。evaluate-gate.ps1 が Board の artifacts から検証する"
+        },
+        "automated_checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "type"],
+            "properties": {
+              "name": { "type": "string", "description": "チェック名" },
+              "type": {
+                "type": "string",
+                "enum": ["build", "test", "lint", "custom"],
+                "description": "チェック種別"
+              },
+              "command": { "type": "string", "description": "実行コマンド（settings.json から解決する場合は省略可）" },
+              "required": { "type": "boolean", "default": true, "description": "このチェックが必須かどうか" }
+            },
+            "additionalProperties": false
+          },
+          "description": "Gate 通過前に自動実行するチェック。settings.json の project.test/project.build コマンドを参照"
+        },
         "description": {
           "type": "string",
           "description": "この Gate 条件の説明"
@@ -85,6 +112,33 @@
           "description": "回帰テストを必須とするか",
           "default": false
         },
+        "evidence_required": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["commit_sha", "test_output", "build_success", "lint_pass", "review_verdict", "coverage_report"]
+          },
+          "description": "Gate 通過に必要なエビデンスの種別。evaluate-gate.ps1 が Board の artifacts から検証する"
+        },
+        "automated_checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "type"],
+            "properties": {
+              "name": { "type": "string", "description": "チェック名" },
+              "type": {
+                "type": "string",
+                "enum": ["build", "test", "lint", "custom"],
+                "description": "チェック種別"
+              },
+              "command": { "type": "string", "description": "実行コマンド（settings.json から解決する場合は省略可）" },
+              "required": { "type": "boolean", "default": true, "description": "このチェックが必須かどうか" }
+            },
+            "additionalProperties": false
+          },
+          "description": "Gate 通過前に自動実行するチェック。settings.json の project.test/project.build コマンドを参照"
+        },
         "description": { "type": "string" }
       },
       "additionalProperties": false
@@ -110,6 +164,33 @@
             ]
           },
           "description": "必須のレビュー観点"
+        },
+        "evidence_required": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["commit_sha", "test_output", "build_success", "lint_pass", "review_verdict", "coverage_report"]
+          },
+          "description": "Gate 通過に必要なエビデンスの種別。evaluate-gate.ps1 が Board の artifacts から検証する"
+        },
+        "automated_checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "type"],
+            "properties": {
+              "name": { "type": "string", "description": "チェック名" },
+              "type": {
+                "type": "string",
+                "enum": ["build", "test", "lint", "custom"],
+                "description": "チェック種別"
+              },
+              "command": { "type": "string", "description": "実行コマンド（settings.json から解決する場合は省略可）" },
+              "required": { "type": "boolean", "default": true, "description": "このチェックが必須かどうか" }
+            },
+            "additionalProperties": false
+          },
+          "description": "Gate 通過前に自動実行するチェック。settings.json の project.test/project.build コマンドを参照"
         },
         "description": { "type": "string" }
       },
