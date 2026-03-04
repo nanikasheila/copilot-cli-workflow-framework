@@ -121,6 +121,43 @@ SEQUENTIAL:
 
 出力先: `artifacts.test_verification`
 
+## Sealed 基準の検証（オプション）
+
+`artifacts.test_design.sealed_criteria.enabled` が `true` の場合、通常の検証プロセスに加えて sealed 基準の検証を行う。
+
+> **Why**: dark-factory の Sealed-envelope Testing。developer が見ていない基準で検証することで、
+> テスト仕様への overfitting を検出し、真の要求充足を担保する。
+
+### Sealed 検証手順
+
+1. `artifacts.test_design.sealed_criteria.criteria` を読み込む
+2. 各 criterion に対して:
+   - developer の実装が criterion を満たしているか検証
+   - テストコードが criterion をカバーしているか確認
+3. 結果を `artifacts.test_verification.sealed_results` に記録:
+
+```json
+{
+  "sealed_results": {
+    "total": 3,
+    "passed": 2,
+    "failed": 1,
+    "details": [
+      { "id": "SC-1", "status": "passed", "evidence": "test_empty_input テストが存在" },
+      { "id": "SC-2", "status": "failed", "reason": "タイムアウト処理が未実装" }
+    ]
+  }
+}
+```
+
+### verdict への影響
+
+| 通常テスト | Sealed テスト | 最終 verdict |
+|---|---|---|
+| pass | 全 passed | `pass` |
+| pass | 一部 failed | `conditional_pass`（sealed 基準未充足を注記） |
+| fail | - | `fail`（通常テスト優先） |
+
 ## 検証プロセス
 
 1. **テスト実行**: `task` エージェントでテストスイートを実行

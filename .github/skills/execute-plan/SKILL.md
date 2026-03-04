@@ -130,14 +130,94 @@ WHILE (pending タスクが存在する):
 <Board の必須フィールドを埋め込み>
 ```
 
-### 6. 失敗時のハンドリング
+### 6. 失敗時のハンドリング（Self-repair ループ）
 
-| 失敗パターン | 対処 |
+タスク失敗時は、エラーコンテキストを蓄積しながら最大 3 回までリトライする。
+
+> **Why**: swarm-orchestrator の知見として、1回目の失敗コンテキスト（エラーメッセージ + diff + 前回の試行結果）を次の試行に含めることで、成功率が大幅に向上する。単純なリトライではなく、失敗から学習するリトライが重要。
+
+#### リトライ戦略
+
+```
+attempt = 1
+WHILE attempt <= 3 AND status != 'done':
+    result = task ツールでエージェント実行
+    IF result.success:
+        status = 'done'
+    ELSE:
+        IF attempt < 3:
+            repair_context を構築（後述）
+            attempt += 1
+        ELSE:
+            status = 'blocked'
+            blocked_reason = "3回リトライ後も失敗: " + result.error
+```
+
+#### repair_context の構成
+
+リトライ時のプロンプトに以下のコンテキストを追加する:
+
+| 要素 | 内容 | 目的 |
+|---|---|---|
+| original_task | 元のタスク description | 目的の再確認 |
+| error_message | 前回のエラーメッセージ全文 | 失敗原因の特定 |
+| attempted_changes | `git diff` の出力（変更があった場合） | 前回の試行で何をしたかの把握 |
+| failure_analysis | エラーの分類（構文エラー / テスト失敗 / 型エラー等） | アプローチの修正方針 |
+| attempt_number | 現在の試行回数 | エスカレーション判断 |
+
+#### リトライプロンプトのテンプレート
+
+```
+## リトライ（{attempt_number}/3 回目）
+
+### 元のタスク
+{original_task}
+
+### 前回の失敗
+{error_message}
+
+### 前回の変更（git diff）
+{attempted_changes}
+
+### 失敗分析
+{failure_analysis}
+
+### 指示
+前回の失敗を踏まえて、異なるアプローチで再実行してください。
+前回と同じアプローチを繰り返さないでください。
+```
+
+#### リトライ不可の条件
+
+以下の場合はリトライせず即座に `blocked` とする:
+
+| 条件 | 理由 |
 |---|---|
-| エージェントがエラーを返した | プロンプトを調整して 1 回リトライ |
-| リトライも失敗 | タスクを `blocked` にし、残りのタスクを続行 |
-| 依存先が `blocked` のタスク | 自動的に `blocked` に遷移（依存未充足） |
-| 全タスクが `blocked` | ユーザーに状況を報告し判断を仰ぐ |
+| ファイルが存在しない | 構造的問題。タスク定義の見直しが必要 |
+| 権限エラー | 環境問題。手動対処が必要 |
+| 依存パッケージ未インストール | 環境セットアップが必要 |
+| ユーザー入力が必要 | ask_user で確認後に再実行 |
+
+#### SQL によるリトライ追跡
+
+```sql
+-- リトライ情報を追跡するカラムを活用
+-- description フィールドに失敗理由を追記する
+UPDATE todos
+SET status = 'in_progress',
+    description = description || E'\n\n--- Retry 2/3 ---\nPrevious error: ' || '<error_summary>'
+WHERE id = '<task-id>';
+```
+
+#### 全タスク blocked 時のフォールバック
+
+全ての実行可能タスクが `blocked` になった場合:
+
+1. blocked タスクの一覧と失敗理由をユーザーに提示
+2. ask_user ツールで対処方針を確認:
+   - タスクの description を修正して再実行
+   - タスクをスキップして次に進む
+   - 計画全体を中断
 
 ### 7. 完了処理
 

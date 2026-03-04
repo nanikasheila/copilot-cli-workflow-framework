@@ -144,6 +144,10 @@ Board の状態が失われないよう、以下の手順に従う:
 > **Why**: 旧 pre_compact Hook が Board 状態をコンパクション前に additionalContext に保全していた。
 > **How**: Board をファイルに即座に永続化し、SQL ミラーを維持することで、コンパクション後も view + SQL 再ロードで復帰可能にする。
 
+## コンテキスト管理ガイドライン
+
+> 詳細は `references/context-management.md` を参照。フェーズ委任時にロードする。
+
 ## サブエージェントへの Board コンテキスト伝達
 
 エージェントは worktree 内の相対パスを解決できない場合がある。
@@ -370,3 +374,7 @@ sandbox の作業完了後:
 4. `settings.json` 等への一時的変更は worktree と共に消滅する
 
 > 詳細手順は `skills/manage-board/SKILL.md` セクション 9 を参照。
+
+## Sealed テストフロー（オプション）
+
+> 詳細は `references/sealed-testing.md` を参照。test-designer 呼び出し時にロードする。
