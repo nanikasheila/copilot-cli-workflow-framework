@@ -221,6 +221,88 @@ flowchart TD
 
 ---
 
+## オーケストレーション
+
+> 開発フロー（9フェーズ）が「**何をするか**」を定義し、オーケストレーションが「**どう駆動するか**」を担う。両者は**両輪**の関係です。
+
+### orchestrate-workflow スキルの役割
+
+`orchestrate-workflow` スキルはオーケストレーターとして以下を管理します:
+
+- **Board の読み書き** — Feature ごとの状態・成果物・履歴を JSON に永続化
+- **Flow State の遷移** — `initialized → analyzing → ... → completed` の状態機械を制御
+- **Gate 評価** — フェーズ遷移前に品質基準を自動チェック（`gate-profiles.json` 定義）
+- **エージェント呼び出し** — `task` ツールで各エージェントを独立コンテキストで起動
+- **SQL ミラー同期** — Board JSON と同時に SQL テーブルを更新し、高速クエリを維持
+
+### オーケストレーション構造
+
+```mermaid
+flowchart LR
+    subgraph Orchestrator["オーケストレーター（Copilot CLI）"]
+        direction TB
+        SK["orchestrate-workflow\nスキル"]
+        SQL["SQL ミラー\n（セッション内クエリ層）"]
+        SK <-->|同期| SQL
+    end
+
+    subgraph Board["Board（永続的正本）"]
+        direction TB
+        FS["flow_state\n状態機械"]
+        ART["artifacts\n成果物"]
+        GT["gates\n評価結果"]
+        HIST["history\n変更履歴"]
+    end
+
+    subgraph Agents["専門エージェント（task ツール経由）"]
+        direction LR
+        A1["analyst"]
+        A2["impact-analyst"]
+        A3["developer"]
+        A4["test-designer"]
+        A5["test-verifier"]
+        A6["reviewer"]
+    end
+
+    SK <-->|読み書き| Board
+    SK -->|spawn| Agents
+    Agents -->|artifacts 書き込み| ART
+    GT -->|Gate 通過| FS
+```
+
+### Gate 評価と Maturity
+
+Feature の **Maturity**（成熟度）によって Gate の厳格さが変わります。
+
+| Maturity | Gate の厳格さ | 用途 |
+|---|---|---|
+| `experimental` | 最小限（実装→PR の最短パス） | プロトタイプ・PoC |
+| `development` | 標準（分析・実装・テスト・レビュー必須） | 通常の機能開発 |
+| `stable` | 厳格（全フェーズ + ドキュメント必須） | 安定版への変更 |
+| `release-ready` | 最厳格（外部レビュー・リリースノート必須） | リリース候補 |
+
+Gate 条件の詳細は `.github/rules/gate-profiles.json` を参照してください。
+
+### Flow State 遷移図
+
+```mermaid
+stateDiagram-v2
+    [*] --> initialized: start-feature
+    initialized --> analyzing: Gate: feature_defined
+    analyzing --> designing: Gate: analysis_complete
+    designing --> planning: Gate: design_approved（必要時のみ）
+    planning --> implementing: Gate: plan_ready
+    implementing --> verifying: Gate: implementation_complete
+    verifying --> reviewing: Gate: tests_passed
+    reviewing --> documenting: Gate: review_approved
+    reviewing --> implementing: Gate: review_rejected（ループバック）
+    documenting --> submitting: Gate: docs_updated（必要時のみ）
+    submitting --> completed: Gate: pr_merged
+    completed --> [*]
+```
+
+---
+
 ## 使い方
 
 ### 1. 導入
