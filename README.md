@@ -177,17 +177,17 @@ tools/
 
 ```mermaid
 flowchart TD
-    P1["Phase 1: start-feature\nIssue 作成 → ブランチ → worktree 準備"]
-    P2A["analyst\n要求分析・受け入れ基準"]
-    P2B["impact-analyst\n影響分析・リスク評価"]
-    P3["Phase 3: architect\n構造変更エスカレーション\n（必要時のみ）"]
-    P4["Phase 4: planner\nタスク分解・実行計画"]
-    P5A["developer\n実装・デバッグ"]
-    P5B["test-designer\nテストケース設計"]
-    P6["Phase 6: test-verifier\n独立検証\n（実装者 ≠ 検証者）"]
-    P7{"Phase 7: reviewer\nコードレビュー\nセキュリティ検証"}
-    P8["Phase 8: writer\nドキュメント更新\n（必要時のみ）"]
-    P9["Phase 9: submit-pull-request\nPR 作成 → マージ → クリーンアップ"]
+    P1["Phase 1: start-feature<br/>Issue 作成 → ブランチ → worktree 準備"]
+    P2A["analyst<br/>要求分析・受け入れ基準"]
+    P2B["impact-analyst<br/>影響分析・リスク評価"]
+    P3["Phase 3: architect<br/>構造変更エスカレーション<br/>（必要時のみ）"]
+    P4["Phase 4: planner<br/>タスク分解・実行計画"]
+    P5A["developer<br/>実装・デバッグ"]
+    P5B["test-designer<br/>テストケース設計"]
+    P6["Phase 6: test-verifier<br/>独立検証<br/>（実装者 ≠ 検証者）"]
+    P7{"Phase 7: reviewer<br/>コードレビュー<br/>セキュリティ検証"}
+    P8["Phase 8: writer<br/>ドキュメント更新<br/>（必要時のみ）"]
+    P9["Phase 9: submit-pull-request<br/>PR 作成 → マージ → クリーンアップ"]
 
     P1 --> P2A & P2B
     P2A & P2B --> P3
@@ -241,17 +241,17 @@ flowchart TD
 flowchart LR
     subgraph Orchestrator["オーケストレーター（Copilot CLI）"]
         direction TB
-        SK["orchestrate-workflow\nスキル"]
-        SQL["SQL ミラー\n（セッション内クエリ層）"]
+        SK["orchestrate-workflow<br/>スキル"]
+        SQL["SQL ミラー<br/>（セッション内クエリ層）"]
         SK <-->|同期| SQL
     end
 
     subgraph Board["Board（永続的正本）"]
         direction TB
-        FS["flow_state\n状態機械"]
-        ART["artifacts\n成果物"]
-        GT["gates\n評価結果"]
-        HIST["history\n変更履歴"]
+        FS["flow_state<br/>状態機械"]
+        ART["artifacts<br/>成果物"]
+        GT["gates<br/>評価結果"]
+        HIST["history<br/>変更履歴"]
     end
 
     subgraph Agents["専門エージェント（task ツール経由）"]
