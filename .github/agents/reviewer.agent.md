@@ -50,20 +50,7 @@ CLI では `rules/` が自動ロードされない。このエージェントが
 
 ## Board 連携
 
-このエージェントは Board の以下のセクションに関与する。
-書き込み権限の詳細は `rules/workflow-state.md` の権限マトリクスを参照。
-
-### Board ファイルの参照
-
-オーケストレーターからのプロンプトに Board の主要フィールド（feature_id, maturity, flow_state, cycle,
-関連 artifacts のサマリ）が直接埋め込まれる。
-詳細な artifact 参照が必要な場合は、プロンプトに含まれる絶対パスで `view` する。
-
-| 操作 | 対象フィールド | 権限 |
-|---|---|---|
-| 読み取り | Board 全体 | ✅ |
-| 書き込み | `artifacts.review_findings` | ✅ |
-| 書き込み | `flow_state` / `gates` | ❌（オーケストレーター専有） |
+> Board連携共通: `agents/references/board-integration-guide.md` を参照。以下はこのエージェント固有のBoard連携:
 
 ### 入力として参照する Board フィールド
 
@@ -114,8 +101,6 @@ CLI では `rules/` が自動ロードされない。このエージェントが
 本エージェントの出力は `board-artifacts.schema.json` の `artifact_review_finding` 定義に準拠する。
 
 > **注意**: スキーマ名は `artifact_review_finding`（単数形）だが、Board フィールドは `artifacts.review_findings`（複数形）として各レビュー試行のオブジェクトを格納する配列である。
-
-> Why: スキーマ契約を明示することで、エージェント出力のフォーマットブレを防ぎ、下流エージェントのパースエラーを削減する。フィールド名の不一致（例: `config` vs `configuration`）はデータ連携の破綻を招く。
 
 出力先: `artifacts.review_findings`（各レビュー試行のオブジェクト）
 
@@ -202,10 +187,10 @@ LGTM / 要修正
 
 ## 禁止事項
 
+> 共通制約: `agents/references/common-constraints.md` を参照。以下はこのエージェント固有の禁止事項:
+
 - コードの直接編集（レビューのみ）（Why: 実装権限と評価権限の分離が客観性を保証する。レビュアーが修正まで行うと自己レビューになり指摘の信頼性が失われる）
 - テストの実行（開発エージェントの責務）（Why: 責務分離により実行環境・手順の一貫性を保つ。レビュアーが独自実行すると環境差異による誤判定が生じうる）
-- Board の `flow_state` / `gates` / `maturity` への直接書き込み（オーケストレーター専有）（Why: 状態遷移はオーケストレーターが Gate 評価と整合して行う。エージェントが直接変更すると Gate チェックがバイパスされ品質保証フローが破綻する）
-- Board への機密情報（パスワード、APIキー、トークン）の記録（Why: Board データはリポジトリに保存されるため、機密情報が混入すると Git 履歴経由で永続的に露出する）
 
 ## 他エージェントとの連携
 

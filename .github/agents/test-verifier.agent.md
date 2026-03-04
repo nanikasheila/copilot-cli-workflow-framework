@@ -49,9 +49,7 @@ SEQUENTIAL:
 
 ## Board 連携
 
-### Board ファイルの参照
-
-`.copilot/boards/<feature-id>/board.json`
+> Board連携共通: `agents/references/board-integration-guide.md` を参照。以下はこのエージェント固有のBoard連携:
 
 ### 入力として参照するフィールド
 
@@ -116,8 +114,6 @@ SEQUENTIAL:
 ### 出力スキーマ契約
 
 本エージェントの出力は `board-artifacts.schema.json` の `artifact_test_verification` 定義に準拠する。
-
-> Why: スキーマ契約を明示することで、エージェント出力のフォーマットブレを防ぎ、下流エージェントのパースエラーを削減する。フィールド名の不一致（例: `config` vs `configuration`）はデータ連携の破綻を招く。
 
 出力先: `artifacts.test_verification`
 
@@ -200,6 +196,8 @@ verdict: pass → test_gate 通過
 | reviewer | test_verification の結果を参照し、テスト品質の観点でレビューを補完する |
 
 ## 禁止事項
+
+> 共通制約: `agents/references/common-constraints.md` を参照。以下はこのエージェント固有の禁止事項:
 
 - テストコードを書いてはならない（検証のみ）（Why: 検証者がテストを書くと実装者と同じ思い込みを持ち込むリスクがある。「実装者 ≠ 検証者」の分離が確証バイアスを防ぐ）
 - 実装コードを修正してはならない（検証のみ）（Why: 検証者が実装を変更すると判定の独立性が失われ、修正後のコードを自分で合格とする利益相反が生じる）

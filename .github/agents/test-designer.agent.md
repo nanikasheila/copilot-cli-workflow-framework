@@ -33,11 +33,9 @@ model: claude-sonnet-4.6
 
 ## Board 連携
 
-### Board ファイルの参照
+> Board連携共通: `agents/references/board-integration-guide.md` を参照。以下はこのエージェント固有のBoard連携:
 
-`.copilot/boards/<feature-id>/board.json`
-
-### 入力として参照するフィールド
+### 入力として参照する Board フィールド
 
 | フィールド | 用途 |
 |---|---|
@@ -46,7 +44,7 @@ model: claude-sonnet-4.6
 | `artifacts.implementation` | 実装完了後の公開 API シグネチャ参照（利用可能な場合） |
 | `maturity` | テストカバレッジ要求レベルの判断 |
 
-### 出力として書き込むフィールド
+### 出力として書き込む artifacts フィールド
 
 `artifacts.test_design` に以下の構造で書き込む:
 
@@ -90,8 +88,6 @@ model: claude-sonnet-4.6
 ### 出力スキーマ契約
 
 本エージェントの出力は `board-artifacts.schema.json` の `artifact_test_design` 定義に準拠する。
-
-> Why: スキーマ契約を明示することで、エージェント出力のフォーマットブレを防ぎ、下流エージェントのパースエラーを削減する。フィールド名の不一致（例: `config` vs `configuration`）はデータ連携の破綻を招く。
 
 出力先: `artifacts.test_design`
 
@@ -170,6 +166,8 @@ analyst → test-designer → developer（実装 + テストコード） → tes
 | test-verifier | test_design を基準として、テスト充足性を検証する |
 
 ## 禁止事項
+
+> 共通制約: `agents/references/common-constraints.md` を参照。以下はこのエージェント固有の禁止事項:
 
 - テストコードを書いてはならない（仕様の設計のみ）
 - ファイルを編集してはならない（読み取り専用）

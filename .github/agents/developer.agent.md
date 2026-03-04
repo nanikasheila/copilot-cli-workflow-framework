@@ -52,21 +52,7 @@ task(agent_type="task", prompt="以下のテストコマンドを実行せよ: <
 
 ## Board 連携
 
-このエージェントは Board の以下のセクションに関与する。
-書き込み権限の詳細は `rules/workflow-state.md` の権限マトリクスを参照。
-
-### Board ファイルの参照
-
-オーケストレーターからのプロンプトに Board の主要フィールド（feature_id, maturity, flow_state, cycle,
-関連 artifacts のサマリ）が直接埋め込まれる。
-詳細な artifact 参照が必要な場合は、プロンプトに含まれる絶対パスで `view` する。
-
-| 操作 | 対象フィールド | 権限 |
-|---|---|---|
-| 読み取り | Board 全体 | ✅ |
-| 書き込み | `artifacts.implementation` | ✅ |
-| 書き込み | `artifacts.test_results` | ✅ |
-| 書き込み | `flow_state` / `gates` | ❌（オーケストレーター専有） |
+> Board連携共通: `agents/references/board-integration-guide.md` を参照。以下はこのエージェント固有のBoard連携:
 
 ### 入力として参照する Board フィールド
 
@@ -121,8 +107,6 @@ task(agent_type="task", prompt="以下のテストコマンドを実行せよ: <
 - `artifact_implementation` → 出力先: `artifacts.implementation`
 - `artifact_test_results` → 出力先: `artifacts.test_results`
 
-> Why: スキーマ契約を明示することで、エージェント出力のフォーマットブレを防ぎ、下流エージェントのパースエラーを削減する。フィールド名の不一致（例: `config` vs `configuration`）はデータ連携の破綻を招く。
-
 ## 行動ルール
 
 - コードを生成・修正した場合、必ず動作確認を行う（Why: コンパイル成功だけでは論理エラーを検出できない。実際の入出力で期待動作を確認することでバグの早期発見につながる）
@@ -154,9 +138,9 @@ task(agent_type="task", prompt="以下のテストコマンドを実行せよ: <
 
 ## 禁止事項
 
+> 共通制約: `agents/references/common-constraints.md` を参照。以下はこのエージェント固有の禁止事項:
+
 - main ブランチ上での直接編集（Why: レビュープロセスをバイパスすると破壊的変更が即座に本番へ到達し、ロールバックコストが急増する）
 - squash merge の使用（Why: コミット履歴が圧縮されると変更の追跡・バグ原因の特定が困難になる。履歴の保全は障害調査の重要資産）
 - テストなしのコミット（Gate Profile で `test_gate.required: false` の場合を除く）（Why: テストのないコードは動作保証がなく、後続の変更でサイレントに壊れるリスクが高い。テストは最低限の品質ゲート）
 - sed 等によるファイル直接編集（必ず `edit` ツールを使用する）（Why: sed 等は意図しない行の変更や文字エンコード破損を引き起こすリスクがある。edit ツールは対象箇所を特定してから適用するため安全）
-- Board の `flow_state` / `gates` / `maturity` への直接書き込み（オーケストレーター専有）（Why: 状態遷移はオーケストレーターが Gate 評価と整合して行う。エージェントが直接変更すると Gate チェックがバイパスされ品質保証フローが破綻する）
-- Board への機密情報（パスワード、APIキー、トークン）の記録（Why: Board データはリポジトリに保存されるため、機密情報が混入すると Git 履歴経由で永続的に露出する）
