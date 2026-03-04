@@ -113,6 +113,14 @@ PARALLEL:
 }
 ```
 
+### 出力スキーマ契約
+
+本エージェントの出力は `board-artifacts.schema.json` の `artifact_architecture_decision` 定義に準拠する。
+
+> Why: スキーマ契約を明示することで、エージェント出力のフォーマットブレを防ぎ、下流エージェントのパースエラーを削減する。フィールド名の不一致（例: `config` vs `configuration`）はデータ連携の破綻を招く。
+
+出力先: `artifacts.architecture_decision`
+
 ## 分析フレームワーク
 
 ### 1. 構造スキャン

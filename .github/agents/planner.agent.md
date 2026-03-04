@@ -93,6 +93,14 @@ PARALLEL:
 影響分析と実行計画を **構造化 JSON** として Board に書き込む。
 オーケストレーターがこのエージェントの出力を Board JSON と SQL ミラーの**両方**に反映する。
 
+### 出力スキーマ契約
+
+本エージェントの出力は `board-artifacts.schema.json` の `artifact_execution_plan` 定義に準拠する。
+
+> Why: スキーマ契約を明示することで、エージェント出力のフォーマットブレを防ぎ、下流エージェントのパースエラーを削減する。フィールド名の不一致（例: `config` vs `configuration`）はデータ連携の破綻を招く。
+
+出力先: `artifacts.execution_plan`
+
 ## 影響分析フレームワーク
 
 すべての計画策定時に、以下の簡易影響分析を実施する。

@@ -22,6 +22,21 @@ applyTo: "**/*.{test,spec}.{js,ts,mjs,cjs,jsx,tsx},**/test_*.py,**/*_test.py"
 2. **Act** — テスト対象の関数を実行
 3. **Assert** — 結果を検証
 
+### Good
+```typescript
+it("returns discounted price when user is premium", () => {
+  // Arrange
+  const user = { type: "premium" };
+  const product = { price: 100 };
+
+  // Act
+  const result = calculatePrice(user, product);
+
+  // Assert
+  expect(result).toBe(80);
+});
+```
+
 ## カバレッジ
 
 - 正常系（ハッピーパス）を最低1ケース
@@ -40,3 +55,25 @@ applyTo: "**/*.{test,spec}.{js,ts,mjs,cjs,jsx,tsx},**/test_*.py,**/*_test.py"
 - テスト内での `console.log` によるデバッグ（assertion で検証する）
 - 1つのテストケースで複数の独立した機能を検証する
 - テストデータのハードコード共有（ヘルパー関数で生成する）
+
+## 非同期テスト
+
+- 非同期関数のテストにはフレームワーク提供の async サポートを使用する（Jest: `async/await`、pytest: `@pytest.mark.asyncio`）
+- タイムアウトを設定し、非同期テストが無限に待たないようにする
+
+### Bad
+```typescript
+it("fetches user data", () => {
+  // await なし: Promise が解決される前にテストが通過してしまう
+  const user = getUser(1);
+  expect(user.name).toBe("Alice");
+});
+```
+
+### Good
+```typescript
+it("fetches user data", async () => {
+  const user = await getUser(1);
+  expect(user.name).toBe("Alice");
+}, 5000); // 5秒タイムアウト
+```
