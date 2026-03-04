@@ -47,19 +47,30 @@ CLI では `rules/` が自動ロードされない。このエージェントが
 | ツール | 用途 |
 |---|---|
 | `explore`（ビルトイン） | ドキュメント対象のコード調査。実装の詳細確認を並列で実行 |
-| `sql` | Board artifacts の参照。`SELECT * FROM artifacts WHERE name IN ('implementation', 'architecture_decision')` |
+| `sql` | Board artifacts の参照・ドキュメント対象の特定 |
 | `view` | ソースコードの直接確認（公開 API の正確な型・例外を検証） |
+
+SQL クエリ例:
+```sql
+-- ドキュメント対象の変更ファイルを取得
+SELECT * FROM board_artifacts WHERE type = 'implementation';
+-- 設計判断の参照
+SELECT * FROM board_artifacts WHERE type = 'architecture_decision';
+-- ドキュメント更新履歴
+SELECT * FROM board_history WHERE action LIKE '%document%';
+```
 
 ### ドキュメント作成での並列探索
 
-ドキュメント作成時に `explore` エージェントを並列で活用する:
+ドキュメント作成時に `task` ツールの `explore` エージェントを並列で活用する:
 
 ```
-PARALLEL:
-  - explore: "変更ファイルの公開 API シグネチャを確認"
-  - explore: "既存ドキュメントの関連セクションを検索"
-  - explore: "architecture_decision の設計方針を確認"
+task(explore): "変更ファイルの公開 API シグネチャを確認"
+task(explore): "既存ドキュメントの関連セクションを検索"
+task(explore): "architecture_decision の設計方針を確認"
 ```
+
+> 3つの explore エージェントが並列で動作し、結果を統合してドキュメントに反映する。
 
 ## Board 連携
 
@@ -112,7 +123,7 @@ PARALLEL:
 
 ### 出力スキーマ契約
 
-本エージェントの出力は `board-artifacts.schema.json` の `artifact_documentation` 定義に準拠する。
+本エージェントの出力は `.github/board-artifacts.schema.json` の `artifact_documentation` 定義に準拠する。
 
 > Why: スキーマ契約を明示することで、エージェント出力のフォーマットブレを防ぎ、下流エージェントのパースエラーを削減する。フィールド名の不一致（例: `config` vs `configuration`）はデータ連携の破綻を招く。
 
@@ -127,6 +138,15 @@ PARALLEL:
 | **簡潔性** | 冗長な説明を避け、必要十分な情報量にとどめる |
 | **構造化** | 見出し・表・リストを活用し、スキャンしやすい構造にする |
 | **一貫性** | 用語・記法・文体を統一する。既存ドキュメントのスタイルに合わせる |
+
+## maturity 別ドキュメント深度
+
+| maturity | ドキュメント深度 | 説明 |
+|---|---|---|
+| experimental | 最小限 | README 概要のみ。API ドキュメントは不要 |
+| development | 基本 | README + 主要 API ドキュメント。アーキテクチャ概要 |
+| stable | 包括的 | README + 全公開 API + アーキテクチャ詳細 + ADR |
+| release-ready | 完全 | 上記 + マイグレーションガイド + 変更履歴 + リリースノート |
 
 ## 文書タイプ別ガイドライン
 
