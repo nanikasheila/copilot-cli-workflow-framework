@@ -288,16 +288,16 @@ Gate 条件の詳細は `.github/rules/gate-profiles.json` を参照してくだ
 ```mermaid
 stateDiagram-v2
     [*] --> initialized: start-feature
-    initialized --> analyzing: Gate: feature_defined
-    analyzing --> designing: Gate: analysis_complete
-    designing --> planning: Gate: design_approved（必要時のみ）
-    planning --> implementing: Gate: plan_ready
-    implementing --> verifying: Gate: implementation_complete
-    verifying --> reviewing: Gate: tests_passed
-    reviewing --> documenting: Gate: review_approved
-    reviewing --> implementing: Gate: review_rejected（ループバック）
-    documenting --> submitting: Gate: docs_updated（必要時のみ）
-    submitting --> completed: Gate: pr_merged
+    initialized --> analyzing: feature_defined
+    analyzing --> designing: analysis_complete
+    designing --> planning: design_approved (optional)
+    planning --> implementing: plan_ready
+    implementing --> verifying: implementation_complete
+    verifying --> reviewing: tests_passed
+    reviewing --> documenting: review_approved
+    reviewing --> implementing: review_rejected (loop back)
+    documenting --> submitting: docs_updated (optional)
+    submitting --> completed: pr_merged
     completed --> [*]
 ```
 
