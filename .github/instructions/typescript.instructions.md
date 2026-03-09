@@ -13,6 +13,7 @@ applyTo: "**/*.{ts,tsx}"
 - ジェネリクスの型パラメータには意味のある名前を付ける（`T` ではなく `TItem` 等）
 
 ### Bad
+
 ```typescript
 function process(data: any): any {  // 型チェックが無効化される
   return data.value;
@@ -20,6 +21,7 @@ function process(data: any): any {  // 型チェックが無効化される
 ```
 
 ### Good
+
 ```typescript
 interface DataRecord {
   value: string;
@@ -47,6 +49,7 @@ function process(data: DataRecord): string {
 - `catch(e: unknown)` を使い、`instanceof` で型を絞り込む
 
 ### Bad
+
 ```typescript
 try {
   await fetchData();
@@ -56,6 +59,7 @@ try {
 ```
 
 ### Good
+
 ```typescript
 try {
   await fetchData();
@@ -80,6 +84,7 @@ try {
 - 並列実行が可能な場合は `Promise.all()` を使用する
 
 ### Bad
+
 ```typescript
 // 逐次実行（不要な待ち時間）
 const users = await getUsers();
@@ -87,6 +92,7 @@ const orders = await getOrders();
 ```
 
 ### Good
+
 ```typescript
 // 並列実行
 const [users, orders] = await Promise.all([getUsers(), getOrders()]);

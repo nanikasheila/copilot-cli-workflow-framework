@@ -16,6 +16,7 @@ description: >-
 ## 入力
 
 ユーザーが作業内容を説明する。以下を判断:
+
 - Issue タイトル（`<type>: <説明>` 形式）
 - ブランチ名（`settings.branch.format` に従う）
 - 親 Issue がある場合はその ID
@@ -25,6 +26,7 @@ description: >-
 ### 0. 設定読み込み
 
 `.github/settings.json` を読み取り、以下の値を使用する:
+
 - `issueTracker.provider` — Issue トラッカー種別
 - `issueTracker.mcpServer` — MCP サーバー名
 - `issueTracker.team` — チーム名
@@ -39,7 +41,7 @@ description: >-
 
 #### Linear（`provider: "linear"`）
 
-```
+```text
 mcp_<issueTracker.mcpServer>_create_issue:
   title: "<type>: <説明>"
   description: "## 概要\n<作業内容>\n\n## タスク\n- [ ] <具体的なタスク>"
@@ -50,12 +52,13 @@ mcp_<issueTracker.mcpServer>_create_issue:
 ```
 
 返却された以下の値を記録する:
+
 - `id`（UUID、例: `17ac3f2d-062a-...`）— cleanup 時の Issue 更新に必要
 - `identifier`（例: `<prefix>-20`）— コミットメッセージ・ブランチ名に使用
 
 #### GitHub Issues（`provider: "github"`）
 
-```
+```text
 mcp_io_github_git_issue_write:
   owner: "<github.owner>"
   repo: "<github.repo>"
@@ -64,6 +67,7 @@ mcp_io_github_git_issue_write:
 ```
 
 返却された以下の値を記録する:
+
 - `number`（例: `20`）— コミットメッセージ・ブランチ名に使用（`#20` 形式）
 - Issue ID は `#<number>` として扱う
 
@@ -96,10 +100,12 @@ test -f .gitignore
 ```
 
 `.gitignore` が**存在しない場合**:
+
 - `generate-gitignore` スキルを使って `.gitignore` を生成する
 - `settings.json` の `project.language` を元にテンプレートを自動決定する
 
 `.gitignore` が**既に存在する場合**:
+
 - そのまま使用する（追加ルールが必要なら `generate-gitignore` スキルの「マージ」手順を参照）
 
 > **Why**: 前回の検証で `__pycache__/` や `.coverage` が Git 管理対象になりかけた。

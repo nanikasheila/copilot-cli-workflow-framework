@@ -69,7 +69,6 @@
 | `maturity` | ❌ 保持される |
 | `history` | ❌ 全サイクルの履歴が蓄積される |
 
-
 ## History アクション語彙
 
 `history[].action` には以下の標準値を使用する:
@@ -87,7 +86,7 @@
 
 ## Board ファイル配置
 
-```
+```text
 .copilot/
   boards/
     <feature-id>/

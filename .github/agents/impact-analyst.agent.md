@@ -39,7 +39,7 @@ Feature の変更がコードベースに与える影響を分析し、以下を
 
 ### 並列事前調査パターン
 
-```
+```yaml
 PARALLEL:
   - explore: 変更対象ファイルの import/export 分析
   - explore: 関連テストファイルの網羅的特定

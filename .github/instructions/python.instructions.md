@@ -12,12 +12,14 @@ applyTo: "**/*.py"
 - 複雑な型は `TypeAlias` で名前を付ける
 
 ### Bad
+
 ```python
 def process(data, callback):  # 型が不明
     return callback(data)
 ```
 
 ### Good
+
 ```python
 from typing import Callable, TypeVar
 
@@ -45,6 +47,7 @@ def process(data: T, callback: Callable[[T], T]) -> T:
 - カスタム例外クラスを定義する場合は `Exception` を継承する
 
 ### Bad
+
 ```python
 try:
     result = risky_operation()
@@ -53,6 +56,7 @@ except:  # KeyboardInterrupt も飲み込む
 ```
 
 ### Good
+
 ```python
 try:
     result = risky_operation()

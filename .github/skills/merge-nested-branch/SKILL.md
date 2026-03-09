@@ -46,7 +46,7 @@ git push origin <親フルブランチ名>
 
 ## フロー概要
 
-```
+```text
 サブA PR（base=親） → マージ
 サブB PR（base=親） → コンフリクト解消 → マージ
 親 PR（base=main）  → マージ

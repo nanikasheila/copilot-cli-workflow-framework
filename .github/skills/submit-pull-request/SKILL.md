@@ -25,6 +25,7 @@ description: >-
 ### 0. 設定読み込み
 
 `.github/settings.json` を読み取り、以下の値を使用する:
+
 - `github.owner` — GitHub リポジトリオーナー（以降 `<owner>` と表記）
 - `github.repo` — GitHub リポジトリ名（以降 `<repo>` と表記）
 - `github.mergeMethod` — マージ方式（以降 `<mergeMethod>` と表記）
@@ -84,7 +85,7 @@ git push origin <フルブランチ名>
 
 ### 3. PR 作成
 
-```
+```text
 mcp_io_github_git_create_pull_request:
   owner: "<owner>"
   repo: "<repo>"
@@ -96,7 +97,7 @@ mcp_io_github_git_create_pull_request:
 
 ### 4. マージ
 
-```
+```text
 mcp_io_github_git_merge_pull_request:
   owner: "<owner>"
   repo: "<repo>"

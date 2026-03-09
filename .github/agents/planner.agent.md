@@ -50,7 +50,7 @@ CLI では `rules/` が自動ロードされない。このエージェントが
 
 影響分析時に `explore` エージェントを並列で活用する:
 
-```
+```text
 PARALLEL:
   - explore: "変更対象ファイルを import/require している全ファイルを検索"
   - explore: "変更対象に対応するテストファイルを検索"

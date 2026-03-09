@@ -156,7 +156,7 @@ Gate 条件を `gate-profiles.json` から読み取り、評価する。
 
 すべての Board 操作で以下のパターンで `history` に追記する:
 
-```
+```text
 history.push({
   "timestamp": new Date().toISOString(),
   "cycle": board.cycle,
@@ -168,6 +168,7 @@ board.updated_at = new Date().toISOString()
 ```
 
 **使用可能な action 値**:
+
 - `board_created` — Board 初期化時
 - `cycle_started` — サイクル開始時
 - `flow_state_changed` — 状態遷移時

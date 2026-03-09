@@ -37,7 +37,7 @@ model: claude-sonnet-4.6
 
 ### 並列事前調査パターン
 
-```
+```yaml
 PARALLEL:
   - explore: 既存の関連機能の仕様把握
   - explore: 関連テストから現在の期待動作を抽出
@@ -118,7 +118,7 @@ SEQUENTIAL:
 
 ### トレーサビリティチェーン
 
-```
+```text
 FR-001（要求）
   ├── AC-001（受け入れ基準）→ test-designer が TC-001 に対応付け
   ├── AC-002（受け入れ基準）→ test-designer が TC-002 に対応付け

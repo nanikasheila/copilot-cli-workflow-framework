@@ -38,6 +38,7 @@ git remote get-url origin
 URL から `owner` と `repo` を抽出する。
 
 例:
+
 - `https://github.com/owner/repo.git` → `owner`, `repo`
 - `git@github.com:owner/repo.git` → `owner`, `repo`
 
@@ -60,7 +61,7 @@ URL から `owner` と `repo` を抽出する。
 | `project.language` | ❌ | 「主要言語は？（javascript / typescript / python 等）」 |
 | `project.entryPoint` | ❌ | 「エントリーポイントは？（例: index.js, src/main.ts）」 |
 | `project.test.command` | ❌ | 「テストコマンドは？（例: node --test, npm test, pytest）」 |
-| `project.test.directory` | ❌ | 「テストディレクトリは？（例: tests/, __tests__/）」 |
+| `project.test.directory` | ❌ | 「テストディレクトリは？（例: tests/, **tests**/）」 |
 | `project.test.pattern` | ❌ | 「テストファイルのパターンは？（例: *.test.js, test_*.py）」 |
 | `agents.model` | ❌ | 「エージェントのデフォルトモデルは？（例: Claude Sonnet 4.6 (copilot)）」 |
 | 各エージェント個別 model | ❌ | 「エージェントごとにモデルを変えますか？」（変える場合: developer, reviewer 等の model を個別に質問） |
@@ -115,15 +116,17 @@ URL から `owner` と `repo` を抽出する。
 各エージェントのモデルを全エージェントファイルの `model:` フロントマターに反映する:
 
 モデルの解決優先度:
+
 1. `agents.<agent-name>.model` が設定されていればその値を使用
 2. 未設定なら `agents.model`（デフォルト）の値を使用
 
-```
+```text
 .github/agents/*.agent.md の YAML frontmatter 内:
   model: "<解決されたモデル名>"
 ```
 
 対象ファイル:
+
 - `agents/developer.agent.md`
 - `agents/reviewer.agent.md`
 - `agents/writer.agent.md`
@@ -142,7 +145,7 @@ URL から `owner` と `repo` を抽出する。
 
 `delete_branch_on_merge` を有効にするか確認:
 
-```
+```text
 mcp_io_github_git → リポジトリ設定の更新
   delete_branch_on_merge: true
 ```
@@ -151,7 +154,7 @@ mcp_io_github_git → リポジトリ設定の更新
 
 設定完了後、以下を表示:
 
-```
+```text
 ✅ プロジェクト初期設定が完了しました。
 
 設定ファイル: .github/settings.json

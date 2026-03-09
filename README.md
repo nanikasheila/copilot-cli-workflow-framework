@@ -46,7 +46,7 @@ GitHub Copilot CLI で**マルチエージェント開発ワークフロー**を
 
 ### ディレクトリツリー
 
-```
+```text
 .github/
 ├── copilot-instructions.md       # トップレベル Copilot 設定
 ├── settings.json                 # プロジェクト固有設定
@@ -108,7 +108,7 @@ GitHub Copilot CLI で**マルチエージェント開発ワークフロー**を
 
 ### docs/（ドキュメント）
 
-```
+```text
 docs/
 ├── quickstart.md                 # クイックスタートガイド
 └── architecture/                 # 構造ドキュメント（architect/writer が維持）
@@ -121,7 +121,7 @@ docs/
 
 ### tools/（フレームワーク外ツール）
 
-```
+```text
 tools/
 ├── skill-creator/                # スキル作成ガイド
 ├── validate-architecture/        # 構造テスト（ポインタ腐敗検出・サイズガード）
@@ -133,7 +133,7 @@ tools/
 
 ### ルート設定ファイル（品質ツール）
 
-```
+```text
 pyproject.toml                    # Python lint/format 設定（Ruff）
 .editorconfig                     # エディタ共通設定
 .markdownlint-cli2.jsonc          # Markdown lint 設定
@@ -362,7 +362,7 @@ copilot
 
 ### 3. 開発を開始
 
-```
+```markdown
 # 新しい Feature を始める（自然言語で指示）
 > ログイン機能を追加したい
 

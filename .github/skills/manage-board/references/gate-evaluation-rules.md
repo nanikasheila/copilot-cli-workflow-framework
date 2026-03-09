@@ -26,7 +26,7 @@
 }
 ```
 
-5. `history` に `gate_evaluated` エントリを追記
+1. `history` に `gate_evaluated` エントリを追記
 
 ## on_escalation の評価条件
 
@@ -110,6 +110,7 @@ evaluate-gate.ps1 の JSON 出力に `evidence_status` フィールドが追加�
 | `custom` | `check.command`（必須。省略不可） |
 
 コマンドが解決できない場合:
+
 - `required: true`（デフォルト）の場合 → Gate FAIL
 - `required: false` の場合 → スキップ扱いで PASS
 

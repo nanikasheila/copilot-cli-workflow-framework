@@ -38,7 +38,7 @@ developer が実装したテストコードを**実装者とは独立した立�
 
 ### テスト実行・検証パターン
 
-```
+```yaml
 PARALLEL:
   - task: テストスイート全体の実行
   - explore: テストコードと test_design の照合
@@ -180,7 +180,7 @@ SEQUENTIAL:
 
 ### フィードバックループ
 
-```
+```yaml
 verdict: fail → developer に修正指示 → 再実装 → test-verifier で再検証
 verdict: conditional_pass → planner に判断を委ねる（許容するか修正するか）
 verdict: pass → test_gate 通過

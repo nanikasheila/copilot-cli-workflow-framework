@@ -30,7 +30,7 @@
 
 ### フェーズ 1: Feature 開始
 
-```
+```yaml
 PARALLEL:
   - explore: 既存ブランチ・worktree の確認
   - explore: 類似 Feature の過去セッション検索（session_store）
@@ -40,7 +40,7 @@ SEQUENTIAL:
 
 ### フェーズ 2: 要求分析 + 影響分析（並列）
 
-```
+```text
 PARALLEL（分析フェーズ — 両エージェントとも読み取り専用で並列安全）:
   - analyst エージェント呼び出し（要求の構造化・AC/EC 策定）
   - impact-analyst エージェント呼び出し（依存グラフ・リスク評価）
@@ -54,7 +54,7 @@ SEQUENTIAL:
 
 ### フェーズ 3-4: 構造評価・計画策定
 
-```
+```text
 SEQUENTIAL:
   - architect エージェント呼び出し（条件付き — design_gate.required に従い escalation.required を評価）
   - planner エージェント呼び出し（analyst + impact-analyst + architect の結果を入力）
@@ -62,7 +62,7 @@ SEQUENTIAL:
 
 ### フェーズ 5: 実装 + テストケース設計
 
-```
+```text
 PARALLEL（実装とテスト設計は独立に実行可能）:
   - developer エージェント（実装）
   - test-designer エージェント（要求ベースのテストケース設計 — 読み取り専用）
@@ -77,7 +77,7 @@ SEQUENTIAL:
 
 ### フェーズ 6: テスト検証
 
-```
+```text
 PARALLEL（test-verifier 内部での並列）:
   - task: テストスイート全体の実行
   - explore: テストコードと test_design の照合
@@ -91,7 +91,7 @@ SEQUENTIAL:
 
 ### フェーズ 7: コードレビュー
 
-```
+```text
 PARALLEL（レビュー準備）:
   - explore: 変更差分のコンテキスト収集
   - explore: 関連するコーディング規約の確認
@@ -101,7 +101,7 @@ SEQUENTIAL:
 
 ### フェーズ 8-10: ドキュメント・PR・クリーンアップ
 
-```
+```text
 SEQUENTIAL:
   - writer エージェント呼び出し
   - submit-pull-request スキル実行

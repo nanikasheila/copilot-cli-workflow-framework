@@ -26,6 +26,7 @@ PR マージ後に worktree、ローカルブランチ、Issue を整理する�
 ### 0. 設定読み込み
 
 `.github/settings.json` を読み取り、以下の値を使用する:
+
 - `issueTracker.provider` — Issue トラッカー種別
 - `issueTracker.mcpServer` — MCP サーバー名
 
@@ -60,7 +61,7 @@ git pull origin main
 
 #### Linear（`provider: "linear"`）
 
-```
+```text
 mcp_<issueTracker.mcpServer>_save_issue:
   id: "<UUID>"       # start-feature で記録した id（UUID）を使用。identifier ではない
   state: "Done"
@@ -71,7 +72,7 @@ mcp_<issueTracker.mcpServer>_save_issue:
 PR の `body` に `Closes #<number>` を含めていれば、マージ時に自動クローズされる。
 自動クローズされなかった場合は手動で対応する:
 
-```
+```text
 mcp_io_github_git_issue_write:
   owner: "<github.owner>"
   repo: "<github.repo>"

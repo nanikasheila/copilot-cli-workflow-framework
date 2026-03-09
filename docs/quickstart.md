@@ -27,7 +27,7 @@ cp -r /tmp/template/.github /path/to/your-project/
 
 プロジェクトディレクトリで `copilot` を起動し、以下を入力:
 
-```
+```text
 プロジェクトの初期設定をしてください
 ```
 
@@ -86,7 +86,7 @@ python tools/validate-architecture/validate_architecture.py
 
 Copilot CLI で作業内容を伝える:
 
-```
+```text
 ユーザー認証機能を追加したい
 ```
 
@@ -113,26 +113,27 @@ Feature の成熟度（Maturity）によってフローの厳格さが変わる:
 
 ### experimental（最速パス）の例
 
-```
+```markdown
 # Copilot CLI で:
 認証ミドルウェアを実装してください（experimental）
 ```
 
 experimental ではショートカットが有効:
+
 - 影響分析・設計・計画をスキップ → 直接実装へ
 - テスト・レビューもスキップ可能
 - 最短: `initialized → implementing → approved → submitting → completed`
 
 ### development（通常パス）の例
 
-```
+```markdown
 # Copilot CLI で:
 この機能を development に昇格してください
 ```
 
 昇格後は以下のフェーズを実行する。`task` ツールによる並列実行でコンテキストを分離しつつ、効率的に進行する:
 
-```
+```text
 Phase 1:  analyst が要求分析       ┐
           impact-analyst が影響分析  ┘  ← task ツールで並列実行
 Phase 2:  architect が構造評価      → 必要時のみ（エスカレーション判定）
@@ -150,12 +151,13 @@ Phase 7:  writer がドキュメント更新  → 必要時のみ
 
 ## STEP 4: PR 提出とマージ（1分）
 
-```
+```markdown
 # Copilot CLI で:
 PR を提出してください
 ```
 
 自動で以下が実行される:
+
 - `git add -A` → `git commit` → `git push`
 - GitHub PR 作成 → マージ
 - Worktree・ブランチのクリーンアップ
@@ -165,7 +167,7 @@ PR を提出してください
 
 既存プロジェクトに `.github/` を移植した場合、`assess-project` スキルでプロジェクトの現状を包括的に評価できる:
 
-```
+```text
 プロジェクトを評価してください
 ```
 

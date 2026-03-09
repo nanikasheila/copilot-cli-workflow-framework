@@ -34,7 +34,7 @@ description: >-
 
 ### 呼び出し例
 
-```
+```markdown
 # settings.json で agents.model = "claude-sonnet-4.6" の場合:
 task(agent_type="developer", model="claude-sonnet-4.6", prompt="...")
 
@@ -46,7 +46,6 @@ task(agent_type="architect", model="claude-opus-4.6", prompt="...")
 > CLI の `task` ツールは `model` パラメータが明示指定されていない場合、
 > ビルトインのデフォルトモデルを使用する可能性がある。
 > オーケストレーターが `settings.json` から解決して渡すことで確実にモデルが適用される。
-
 
 ## CLI 固有: Rules 事前ロード
 
@@ -95,7 +94,7 @@ CLI では `rules/` が自動ロードされないため、各フェーズ開始
 
 ### フロー実行における SQL 活用
 
-```
+```sql
 1. Board を確認する（SQL: SELECT * FROM board_state）
 2. 次の Gate を特定（SQL: SELECT name FROM gates WHERE status = 'not_reached' LIMIT 1）
 3. Gate 条件を gate-profiles.json から取得する
@@ -129,7 +128,7 @@ Board JSON を編集した後は、skills/manage-board/SKILL.md の「書き込�
 
 ### フロー実行手順
 
-```
+```sql
 1. Board を確認する（view で Board JSON を読み取り、SQL にロードする）
 2. 現在の flow_state と gate_profile を確認する（SQL: SELECT * FROM board_state）
 3. 次の Gate 条件を gate-profiles.json から取得する（SQL: SELECT name FROM gates WHERE status = 'not_reached' LIMIT 1）
@@ -171,7 +170,7 @@ Board コンテキストの伝達は**プロンプトへの直接埋め込み**�
 1. オーケストレーターが `view` で Board JSON を読み取る
 2. 以下の**必須フィールド**を `task` ツールのプロンプトに直接記載する:
 
-```
+```yaml
 ## Board コンテキスト
 - feature_id: <feature_id>
 - maturity: <maturity>
@@ -187,7 +186,7 @@ Board コンテキストの伝達は**プロンプトへの直接埋め込み**�
 相対パス: .copilot/boards/<feature-id>/board.json
 ```
 
-3. エージェントが artifact の詳細を参照する必要がある場合は、絶対パスで `view` する
+1. エージェントが artifact の詳細を参照する必要がある場合は、絶対パスで `view` する
 
 > **Why**: 検証で判明 — エージェントは worktree 内の相対パスを解決できない。
 > **How**: Board 内容をプロンプトに直接埋め込むことで、パス解決に依存せず確実に伝達する。
@@ -214,6 +213,7 @@ Board コンテキストの伝達は**プロンプトへの直接埋め込み**�
 #### Feature の再開（既存 Board がある場合）
 
 既存の Board がある場合はサイクルを進める:
+
 - `cycle` をインクリメント
 - `flow_state` を `initialized` にリセット
 - `gates` を全て `not_reached` にリセット
@@ -244,11 +244,13 @@ Board コンテキストの伝達は**プロンプトへの直接埋め込み**�
 | `false` | architect をスキップし、Phase 4 に進む（experimental） |
 
 architect を呼び出す場合:
+
 - `architect` エージェント（`agent_type: general-purpose`）に構造評価を依頼する
 - 入力: analyst の `artifacts.requirements` + impact-analyst の `artifacts.impact_analysis`
 - architect は Board の `artifacts.architecture_decision` に結果を書き込む
 
 architect をスキップする場合:
+
 - Board の `artifacts.architecture_decision` を `null` に設定する
 - Phase 4 に進む
 
@@ -358,7 +360,7 @@ architect をスキップする場合:
 
 ## sandbox フロー
 
-```
+```text
 1. Feature 開始 & Board 作成    → maturity: sandbox
 2. 影響分析                      → [analysis_gate]
 3. 構造評価（on_escalation）     → [design_gate]

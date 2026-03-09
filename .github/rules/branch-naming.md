@@ -5,7 +5,8 @@
 `.github/settings.json` の `branch.format` で定義されたテンプレートに従う。
 
 デフォルトテンプレート:
-```
+
+```text
 <user>/<prefix>-<number>-<type>-<description>
 ```
 

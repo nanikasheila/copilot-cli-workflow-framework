@@ -54,17 +54,20 @@
 ### Added
 
 #### コアフレームワーク
+
 - **10 体のカスタムエージェント**: `analyst`, `impact-analyst`, `architect`, `planner`, `developer`, `test-designer`, `test-verifier`, `reviewer`, `writer`, `assessor`
 - **13 個のワークフロースキル**: `start-feature`, `analyze-and-plan`, `orchestrate-workflow`, `manage-board`, `review-code`, `submit-pull-request`, `cleanup-worktree`, `assess-project`, `configure-model`, `initialize-project`, `generate-gitignore`, `resolve-conflict`, `merge-nested-branch`
 - **Board システム**: Feature 単位の状態管理・エージェント間連携（JSON + SQL ミラー）
 - **Gate 評価**: フェーズ遷移時の品質基準自動チェック（`gate-profiles.json`）
 
 #### 設計思想
+
 - 読み取り専用エージェントの**並列実行**（analyst + impact-analyst、developer + test-designer 等）
 - 「実装者 ≠ テスト設計者 ≠ 検証者」を**コンテキスト分離**で強制
 - **Sub-agent 型オーケストレーション**: Board を介した動的ワークフロー制御
 
 #### 構成ファイル
+
 - `.github/settings.json` + `settings.schema.json`: プロジェクト固有設定
 - `.github/board.schema.json` + `board-artifacts.schema.json`: Board スキーマ定義
 - `.github/gate-profiles.schema.json`: Gate Profile スキーマ

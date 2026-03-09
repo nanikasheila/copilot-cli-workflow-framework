@@ -20,6 +20,7 @@ description: >-
 ### 0. 設定読み込み
 
 `.github/settings.json` を読み取り、以下の値を使用する:
+
 - `project.name` — プロジェクト名
 - `project.language` — 主要言語
 - `project.entryPoint` — エントリーポイント
@@ -47,6 +48,7 @@ description: >-
 | `*.csproj` / `*.sln` | C# / .NET |
 
 フレームワークの特定:
+
 - `package.json` の `dependencies` / `devDependencies` を確認
 - Python の場合は `requirements.txt` / `pyproject.toml` の依存関係を確認
 
@@ -67,6 +69,7 @@ find . -maxdepth 3 -type d \
 ```
 
 Windows 環境の場合:
+
 ```powershell
 Get-ChildItem -Directory -Recurse -Depth 2 |
   Where-Object { $_.FullName -notmatch '\\(\.git|node_modules|__pycache__|\.venv|dist|build)' } |
@@ -77,6 +80,7 @@ Get-ChildItem -Directory -Recurse -Depth 2 |
 #### 1.3 エントリーポイント特定
 
 `settings.json` の `project.entryPoint` がない場合、以下の候補を探索:
+
 - `index.js` / `index.ts` / `main.js` / `main.ts`
 - `src/index.*` / `src/main.*` / `src/app.*`
 - `app.py` / `main.py` / `manage.py`
@@ -121,6 +125,7 @@ find . -name '*.js' -o -name '*.ts' -o -name '*.py' -o -name '*.java' -o -name '
 ```
 
 Windows 環境の場合:
+
 ```powershell
 Get-ChildItem -Recurse -Include *.js,*.ts,*.py,*.java,*.cs |
   Where-Object { $_.FullName -notmatch '\\(node_modules|\.git|dist|build)' } |
@@ -147,6 +152,7 @@ find . -name '*.test.*' -o -name '*.spec.*' -o -name 'test_*' -o -name '*_test.*
 ```
 
 Windows 環境の場合:
+
 ```powershell
 Get-ChildItem -Recurse -Include *.test.*,*.spec.*,test_*.*,*_test.* |
   Where-Object { $_.FullName -notmatch '\\(node_modules|__pycache__)' }
@@ -174,6 +180,7 @@ Get-ChildItem -Recurse -Include *.test.*,*.spec.*,test_*.*,*_test.* |
 ```
 
 テストコマンドが未設定の場合は自動検出を試みる:
+
 - `package.json` の `scripts.test`
 - `pytest` の存在確認
 - `Makefile` の `test` ターゲット
@@ -192,7 +199,7 @@ Get-ChildItem -Recurse -Include *.test.*,*.spec.*,test_*.*,*_test.* |
 
 ソースファイルとテストファイルの対応関係を整理:
 
-```
+```text
 src/
   services/
     user-service.ts    → tests/services/user-service.test.ts ✅
@@ -219,7 +226,7 @@ src/
 
 lint ツールや型チェッカーを実行してエラー・警告を収集:
 
-```
+```text
 プロジェクトの lint コマンド / 型チェックコマンドを実行して結果を確認
 ```
 
@@ -232,6 +239,7 @@ lint ツールや型チェッカーを実行してエラー・警告を収集:
 | JavaScript | TypeScript への移行可能性、JSDoc の使用状況 |
 
 型ヒントの付与率を調査:
+
 ```bash
 # Python: 型ヒントなしの関数を検出
 grep -rn "def .*(.*):" --include="*.py" | grep -v " -> " | grep -v "test_" | head -20
@@ -286,6 +294,7 @@ grep -rn "secret\s*=\s*['\"]" --include="*.py" --include="*.js" --include="*.ts"
 #### 5.3 アーキテクチャドキュメント
 
 `docs/architecture/` の存在と内容を確認:
+
 - `module-map.md` — モジュール構成図
 - `data-flow.md` — データフロー図
 - `glossary.md` — 用語集

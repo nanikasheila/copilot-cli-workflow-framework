@@ -12,6 +12,7 @@ applyTo: "**/*.{js,mjs,cjs}"
 - セミコロンを文末に付ける
 
 ### Bad
+
 ```javascript
 // 暗黙の型変換による予期しない比較
 if (userInput == false) { /* '0', 0, '' も true になる */ }
@@ -19,6 +20,7 @@ var count = 0; // 関数スコープ外に漏れる可能性
 ```
 
 ### Good
+
 ```javascript
 // 厳密等価で意図を明確に
 if (userInput === false) { /* false のみ */ }
@@ -54,6 +56,7 @@ const count = 0; // ブロックスコープ、再代入不可
 - 並列実行が可能な場合は `Promise.all()` を使用する
 
 ### Bad
+
 ```javascript
 // 逐次実行（不要な待ち時間）
 const users = await getUsers();
@@ -61,6 +64,7 @@ const orders = await getOrders();
 ```
 
 ### Good
+
 ```javascript
 // 並列実行
 const [users, orders] = await Promise.all([getUsers(), getOrders()]);
