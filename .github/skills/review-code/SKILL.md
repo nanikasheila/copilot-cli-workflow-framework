@@ -48,7 +48,7 @@ git diff --stat main...HEAD
 
 `reviewer` エージェントに `task` ツール（`code-review`）でレビューを委任する:
 
-```
+```text
 task ツール（agent_type: code-review）:
 - レビュー対象: 現在のブランチの変更
 - 観点:
@@ -77,7 +77,7 @@ task ツール（agent_type: code-review）:
 
 Critical または Security の指摘がある場合、`developer` エージェントに修正を委任する:
 
-```
+```text
 task ツール（agent_type: developer）:
 - 修正指示: <reviewer の指摘内容>
 - 対象ファイル: <指摘のあったファイル一覧>
@@ -89,6 +89,7 @@ task ツール（agent_type: developer）:
 ### 5. Board 更新（Board が存在する場合）
 
 Board の以下のセクションを更新する:
+
 - `artifacts.review` — reviewer の出力（指摘一覧、severity 分布）
 - `history` — レビュー実施・修正の記録を追記
 
@@ -96,7 +97,7 @@ Board の以下のセクションを更新する:
 
 以下の構造で結果を表示する:
 
-```
+```markdown
 ## コードレビュー結果
 
 ### 指摘サマリ

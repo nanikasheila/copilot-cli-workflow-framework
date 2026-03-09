@@ -55,7 +55,7 @@ pwsh -File validate-board.ps1 -BoardPath ".copilot/boards/feature-auth/board.jso
 
 ### 出力例
 
-```
+```yaml
 # PASS の場合
 PASS: Board validation passed
 

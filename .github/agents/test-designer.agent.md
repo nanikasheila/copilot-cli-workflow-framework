@@ -151,7 +151,7 @@ Board の `artifacts.test_design` に以下を追加して書き込む:
 
 ### テスト駆動の流れ
 
-```
+```text
 analyst → test-designer → developer（実装 + テストコード） → test-verifier
   要求       テスト仕様       実装 + テストコード実装          第三者検証
 ```

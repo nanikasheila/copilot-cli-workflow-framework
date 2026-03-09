@@ -42,7 +42,7 @@ CLI では `rules/` が自動ロードされない。このエージェントが
 
 構造評価時に `explore` エージェントを並列で活用する:
 
-```
+```text
 PARALLEL:
   - explore: "ディレクトリ構造を調査し、層の識別を行う"
   - explore: "import/require の依存方向を検出し、循環依存を特定する"

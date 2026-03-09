@@ -18,7 +18,7 @@ dark-factory の Sealed-envelope Testing パターン。test-designer が「deve
 
 ## フロー
 
-```
+```text
 1. test-designer が Board に書き込む:
    artifacts.test_design.test_cases     → developer に公開（通常のテスト仕様）
    artifacts.test_design.sealed_criteria → developer に非公開（sealed）
@@ -35,7 +35,7 @@ dark-factory の Sealed-envelope Testing パターン。test-designer が「deve
 
 Sealed テスト有効時、developer への task プロンプトに以下を追加する:
 
-```
+```markdown
 ## Sealed テスト注意事項
 artifacts.test_design.sealed_criteria が存在しますが、参照しないでください。
 artifacts.test_design.test_cases のみを参照して実装してください。

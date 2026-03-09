@@ -26,7 +26,7 @@ verified_by: architect
 本フレームワークは [Pace Layering](design-philosophy.md) に基づく設計を採用している。
 変化速度の速い層から遅い層への依存のみ許容する。
 
-```
+```text
 ランタイム（Board）
     ↓（読み書き）
 スキル（orchestrate-workflow 等）

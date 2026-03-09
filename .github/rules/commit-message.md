@@ -2,7 +2,7 @@
 
 ## フォーマット
 
-```
+```text
 <type>: <説明> (<prefix>-<番号>)
 ```
 
@@ -25,7 +25,7 @@
 
 `issueTracker.provider` が `"none"` の場合は Issue ID を省略する:
 
-```
+```text
 <type>: <説明>
 ```
 
@@ -33,7 +33,7 @@
 
 ### Issue トラッカー利用時
 
-```
+```yaml
 feat: 新機能の追加 (<prefix>-6)
 docs: ドキュメント更新 (<prefix>-17)
 merge: resolve conflict with <branch> (<prefix>-16)
@@ -41,7 +41,7 @@ merge: resolve conflict with <branch> (<prefix>-16)
 
 ### Issue トラッカー未使用時（provider: "none"）
 
-```
+```yaml
 feat: ユーザー認証機能の追加
 docs: README にセットアップ手順を追記
 refactor: データベース接続の共通化
@@ -54,7 +54,7 @@ AI エージェントがコミットを作成する場合、コミットメッ�
 
 ### フォーマット
 
-```
+```yaml
 <type>: <説明> (<prefix>-<番号>)
 
 Session-Context: <1行でセッションの目的を要約>
@@ -67,7 +67,7 @@ Design-Decisions:
 
 ### 例
 
-```
+```yaml
 feat: ユーザー認証機能の追加 (AUTH-6)
 
 Session-Context: Issue AUTH-6 の認証機能実装。JWT ベースの認証フローを構築。
@@ -92,4 +92,3 @@ Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
 | Co-authored-by | AI がコミットする場合は必ず付与 |
 
 > **Why**: shift-log プロジェクトの知見。Git Notes は追加ツールが必要だが、commit extended body なら標準 Git のみで検索可能（`git log --grep`）。セッション文脈の永続化により、後日「なぜこの変更をしたか」を Git 履歴から追跡できる。
-

@@ -51,6 +51,7 @@ CLI では `rules/` が自動ロードされない。このエージェントが
 | `view` | ソースコードの直接確認（公開 API の正確な型・例外を検証） |
 
 SQL クエリ例:
+
 ```sql
 -- ドキュメント対象の変更ファイルを取得
 SELECT * FROM board_artifacts WHERE type = 'implementation';
@@ -64,7 +65,7 @@ SELECT * FROM board_history WHERE action LIKE '%document%';
 
 ドキュメント作成時に `task` ツールの `explore` エージェントを並列で活用する:
 
-```
+```text
 task(explore): "変更ファイルの公開 API シグネチャを確認"
 task(explore): "既存ドキュメントの関連セクションを検索"
 task(explore): "architecture_decision の設計方針を確認"

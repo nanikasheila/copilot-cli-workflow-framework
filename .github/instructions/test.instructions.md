@@ -23,6 +23,7 @@ applyTo: "**/*.{test,spec}.{js,ts,mjs,cjs,jsx,tsx},**/test_*.py,**/*_test.py"
 3. **Assert** — 結果を検証
 
 ### Good
+
 ```typescript
 it("returns discounted price when user is premium", () => {
   // Arrange
@@ -62,6 +63,7 @@ it("returns discounted price when user is premium", () => {
 - タイムアウトを設定し、非同期テストが無限に待たないようにする
 
 ### Bad
+
 ```typescript
 it("fetches user data", () => {
   // await なし: Promise が解決される前にテストが通過してしまう
@@ -71,6 +73,7 @@ it("fetches user data", () => {
 ```
 
 ### Good
+
 ```typescript
 it("fetches user data", async () => {
   const user = await getUser(1);

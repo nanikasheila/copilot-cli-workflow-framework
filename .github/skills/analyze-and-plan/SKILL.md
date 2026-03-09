@@ -37,7 +37,7 @@ description: >-
 
 #### analyst への指示
 
-```
+```text
 task ツール（agent_type: analyst）:
 - Feature の説明: <description>
 - Maturity: <maturity>
@@ -47,7 +47,7 @@ task ツール（agent_type: analyst）:
 
 #### impact-analyst への指示（同時起動）
 
-```
+```text
 task ツール（agent_type: impact-analyst）:
 - Feature の説明: <description>
 - 出力: 影響ファイル、依存グラフ、API 互換性、テスト影響、リスク評価
@@ -68,7 +68,7 @@ task ツール（agent_type: impact-analyst）:
 
 `escalation.required: true` の場合、`architect` エージェントに設計評価を委任する:
 
-```
+```text
 task ツール（agent_type: architect）:
 - 要求分析結果: <analyst の出力>
 - 影響分析結果: <impact-analyst の出力>
@@ -79,7 +79,7 @@ task ツール（agent_type: architect）:
 
 `planner` エージェントに計画策定を委任する:
 
-```
+```text
 task ツール（agent_type: planner）:
 - 要求分析結果: <analyst の出力>
 - 影響分析結果: <impact-analyst の出力>
@@ -90,6 +90,7 @@ task ツール（agent_type: planner）:
 ### 5. Board 更新（Board が存在する場合）
 
 Board の以下のセクションを更新する:
+
 - `artifacts.requirements` — analyst の出力
 - `artifacts.impact_analysis` — impact-analyst の出力
 - `artifacts.plan` — planner の出力
@@ -99,7 +100,7 @@ Board の以下のセクションを更新する:
 
 以下の構造で結果を表示する:
 
-```
+```markdown
 ## 要求分析
 - FR: <機能要求一覧>
 - NFR: <非機能要求一覧>

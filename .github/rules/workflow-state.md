@@ -17,7 +17,7 @@
 
 ## Flow State 遷移図
 
-```
+```text
 initialized ──[analysis_gate]──► analyzing
 initialized ──────────────────► planned         ※ analysis スキップ時（現行プロファイルでは未使用）
 initialized ──────────────────► implementing    ※ experimental ショートカット
@@ -72,7 +72,7 @@ submitting  ──────────────────► completed
 
 ### 遷移図
 
-```
+```text
 experimental ──► development ──► stable ──► release-ready
      │                │             │
      ▼                ▼             ▼
@@ -82,7 +82,6 @@ experimental ──► development ──► stable ──► release-ready
 
 sandbox ──► abandoned   ※ sandbox は他の Maturity に昇格不可
 ```
-
 
 > Maturity の詳細（sandbox・昇格・降格・廃棄条件）、Cycle 管理、History action 語彙、Board ファイル配置の詳細は
 > \skills/orchestrate-workflow/workflow-state-reference.md\ を参照。
@@ -118,6 +117,7 @@ sandbox ──► abandoned   ※ sandbox は他の Maturity に昇格不可
 ## Gate 評価
 
 Gate 評価の規則:
+
 - 各 Gate は `gate-profiles.json` の `required` 値に従い実行またはスキップする
 - Gate 評価結果は Board に記録する（監査証跡）
 - 具体的な Board 操作手順は skills 層で定義する
@@ -137,4 +137,3 @@ Gate 評価の規則:
 - `submit_gate` が `blocked` の場合、`approved` で作業終了としクリーンアップに進む
 
 > 具体的なループバック手順は skills 層で定義する。
-

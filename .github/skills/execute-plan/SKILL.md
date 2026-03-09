@@ -79,7 +79,7 @@ AND NOT EXISTS (
 
 以下のループを全タスクが `done` になるまで繰り返す:
 
-```
+```text
 WHILE (pending タスクが存在する):
     1. SQL で実行可能タスク一覧を取得する
     2. 並列安全性を判定する（後述のルール）
@@ -111,7 +111,7 @@ WHILE (pending タスクが存在する):
 
 各タスクのプロンプトには以下を含める:
 
-```
+```markdown
 ## タスク
 <title>
 
@@ -138,7 +138,7 @@ WHILE (pending タスクが存在する):
 
 #### リトライ戦略
 
-```
+```text
 attempt = 1
 WHILE attempt <= 3 AND status != 'done':
     result = task ツールでエージェント実行
@@ -167,7 +167,7 @@ WHILE attempt <= 3 AND status != 'done':
 
 #### リトライプロンプトのテンプレート
 
-```
+```markdown
 ## リトライ（{attempt_number}/3 回目）
 
 ### 元のタスク
@@ -227,9 +227,9 @@ WHERE id = '<task-id>';
 SELECT status, COUNT(*) as count FROM todos GROUP BY status;
 ```
 
-2. 結果をユーザーに報告する:
+1. 結果をユーザーに報告する:
 
-```
+```markdown
 ## 実行結果
 - 完了: N 件
 - ブロック: N 件（理由付き）
@@ -242,7 +242,7 @@ SELECT status, COUNT(*) as count FROM todos GROUP BY status;
 <Board がない場合はコミット・PR 提出を提案>
 ```
 
-3. Board がある場合:
+1. Board がある場合:
    - `artifacts` を更新する
    - `history` に実行記録を追加する
    - 次の Gate 評価を提案する

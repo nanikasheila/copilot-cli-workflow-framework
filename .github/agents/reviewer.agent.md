@@ -21,7 +21,7 @@ model: claude-sonnet-4.6
 このエージェントは `code-review` agent_type で呼び出される。
 `code-review` タイプは差分検出・品質分析に特化した軽量エージェントで、コードの変更は行わない。
 
-```
+```text
 task(agent_type="code-review", prompt="...")
 ```
 

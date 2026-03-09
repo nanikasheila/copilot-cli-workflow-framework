@@ -22,7 +22,7 @@ verified_by: architect
 
 ### 1. Feature 開始時のデータ初期化
 
-```
+```text
 ユーザー指示
     │
     ▼
@@ -38,7 +38,7 @@ start-feature スキル
 
 ### 2. オーケストレーション中のデータ循環
 
-```
+```sql
 orchestrate-workflow スキル（オーケストレーター）
     │
     ├─ [読み取り] Board JSON を view
@@ -62,7 +62,7 @@ orchestrate-workflow スキル（オーケストレーター）
 エージェント間は **Board の artifacts セクション**を経由してデータを受け渡す。
 プロンプトへの直接埋め込みではなく、Board への書き込み → 参照パス渡しを基本とする。
 
-```
+```text
 analyst
   └─→ Board.artifacts.requirements（要求定義・受け入れ基準）
           │
@@ -93,7 +93,7 @@ reviewer
 
 ### 4. PR 完了後のアーカイブ
 
-```
+```text
 submit-pull-request スキル
     │
     ├─→ GitHub API ──→ PR マージ
