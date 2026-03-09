@@ -15,22 +15,41 @@ from pathlib import Path
 from typing import NamedTuple
 
 
+def format_error(error: str, file: str, why: str, fix: str) -> str:
+    """Format validation error with actionable fix instructions.
+
+    Why: Harness Engineering pattern - error messages should teach agents
+         how to fix issues, not just report them. Agents cannot ignore CI errors.
+    How: Structured ERROR/WHY/FIX format that agents can parse and act on.
+    """
+    return f"ERROR: {error}\n  FILE: {file}\n  WHY: {why}\n  FIX: {fix}"
+
+
 # ── Known .github/ top-level subdirectories ───────────────────────────────────
 # Used to anchor bare-text path references and to qualify slash-containing paths.
-_GITHUB_SUBDIRS: frozenset[str] = frozenset({
-    "agents",
-    "instructions",
-    "ISSUE_TEMPLATE",
-    "references",
-    "rules",
-    "skills",
-    "workflows",
-})
+_GITHUB_SUBDIRS: frozenset[str] = frozenset(
+    {
+        "agents",
+        "instructions",
+        "ISSUE_TEMPLATE",
+        "references",
+        "rules",
+        "skills",
+        "workflows",
+    }
+)
 
 # File extensions that mark a token as a potential file path reference.
-_VALID_EXTS: frozenset[str] = frozenset({
-    ".json", ".md", ".sh", ".txt", ".yaml", ".yml",
-})
+_VALID_EXTS: frozenset[str] = frozenset(
+    {
+        ".json",
+        ".md",
+        ".sh",
+        ".txt",
+        ".yaml",
+        ".yml",
+    }
+)
 
 # URI schemes that disqualify a string from being a local file path.
 _URI_PREFIXES: tuple[str, ...] = ("http://", "https://", "ftp://", "mailto:")
@@ -64,6 +83,7 @@ _RE_CODE_FENCE: re.Pattern[str] = re.compile(r"^\s*(?:```|~~~)")
 
 # ── Data types ─────────────────────────────────────────────────────────────────
 
+
 class BrokenRef(NamedTuple):
     """A broken file reference found inside a markdown file.
 
@@ -79,6 +99,7 @@ class BrokenRef(NamedTuple):
 
 
 # ── Core helpers ───────────────────────────────────────────────────────────────
+
 
 def find_github_dir() -> Path:
     """Find .github directory by walking up from script location.
@@ -154,10 +175,7 @@ def should_skip(raw: str) -> bool:
     #    .github/ subdirectory. Paths like docs/architecture/... or .circleci/...
     #    are project-scoped and outside this script's scope.
     first = s.replace("\\", "/").split("/")[0]
-    if first not in _GITHUB_SUBDIRS and first != ".github":
-        return True
-
-    return False
+    return bool(first not in _GITHUB_SUBDIRS and first != ".github")
 
 
 def resolve_path(raw: str, github_dir: Path, source_file: Path) -> Path:
@@ -183,7 +201,7 @@ def resolve_path(raw: str, github_dir: Path, source_file: Path) -> Path:
     # Strategy 1 — explicit .github/ prefix (repo-root-relative form).
     for prefix in (".github/", ".github\\"):
         if clean.startswith(prefix):
-            return (github_dir / clean[len(prefix):]).resolve()
+            return (github_dir / clean[len(prefix) :]).resolve()
 
     # Strategy 2 — resolve relative to .github/ (most common framework pattern).
     candidate_a = (github_dir / clean).resolve()
@@ -229,6 +247,7 @@ def extract_candidates(line: str) -> list[str]:
 
 # ── Per-file validator ─────────────────────────────────────────────────────────
 
+
 def check_file(md_file: Path, github_dir: Path) -> list[BrokenRef]:
     """Scan one markdown file and collect every broken cross-reference.
 
@@ -268,6 +287,7 @@ def check_file(md_file: Path, github_dir: Path) -> list[BrokenRef]:
 
 # ── Entry point ────────────────────────────────────────────────────────────────
 
+
 def main() -> int:
     """Run cross-reference validation across all .github/ markdown files.
 
@@ -297,7 +317,18 @@ def main() -> int:
         print(f"FAILED: {len(all_broken)} broken reference(s) found:\n")
         for ref in all_broken:
             rel_source = ref.source_file.relative_to(github_dir)
-            print(f"  - {rel_source}:{ref.line_number}  →  {ref.raw_path}")
+            print(
+                format_error(
+                    f"Broken cross-reference to '{ref.raw_path}'",
+                    f"{rel_source}:{ref.line_number}",
+                    "Documentation references to non-existent files silently mislead contributors "
+                    "and agents that rely on them for navigation. A renamed or deleted file leaves "
+                    "dangling references that are invisible until someone follows them.",
+                    "Update the reference to point to the correct file path, "
+                    "or remove the reference if the file was intentionally deleted.",
+                )
+            )
+            print()
         return 1
 
     print("ALL PASSED: No broken cross-references found.")

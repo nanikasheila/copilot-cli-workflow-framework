@@ -6,6 +6,12 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 
+# Ruff
+.ruff_cache/
+
+# Node (markdownlint)
+node_modules/
+
 # Environment
 .env
 .venv/
@@ -14,6 +20,9 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+
+# Lefthook
+lefthook-local.yml
 
 # IDE
 .idea/

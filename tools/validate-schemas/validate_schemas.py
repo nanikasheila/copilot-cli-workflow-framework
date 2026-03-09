@@ -11,7 +11,16 @@ How: Use jsonschema library if available, fall back to basic structural checks.
 import json
 import sys
 from pathlib import Path
-from typing import Optional
+
+
+def format_error(error: str, file: str, why: str, fix: str) -> str:
+    """Format validation error with actionable fix instructions.
+
+    Why: Harness Engineering pattern - error messages should teach agents
+         how to fix issues, not just report them. Agents cannot ignore CI errors.
+    How: Structured ERROR/WHY/FIX format that agents can parse and act on.
+    """
+    return f"ERROR: {error}\n  FILE: {file}\n  WHY: {why}\n  FIX: {fix}"
 
 
 def find_github_dir() -> Path:
@@ -30,7 +39,7 @@ def find_github_dir() -> Path:
     sys.exit(1)
 
 
-def load_json(file_path: Path) -> Optional[dict]:
+def load_json(file_path: Path) -> dict | None:
     """Load and parse a JSON file, returning None on failure.
 
     Why: Graceful error handling for missing or malformed files.
@@ -57,13 +66,30 @@ def validate_settings(github_dir: Path) -> list[str]:
     schema = load_json(github_dir / "settings.schema.json")
 
     if settings is None or schema is None:
-        return ["settings.json or schema not loadable"]
+        return [
+            format_error(
+                "settings.json or settings.schema.json could not be loaded",
+                ".github/settings.json",
+                "Both files are required for schema validation. "
+                "Missing or malformed files prevent all downstream checks.",
+                "Ensure .github/settings.json and .github/settings.schema.json exist and contain valid JSON.",
+            )
+        ]
 
     # Check required top-level keys
     required_keys = schema.get("required", [])
     for key in required_keys:
         if key not in settings:
-            errors.append(f"settings.json: missing required key '{key}'")
+            errors.append(
+                format_error(
+                    f"Missing required key '{key}'",
+                    ".github/settings.json",
+                    "settings.json is the central config; all skills read it at startup. "
+                    "Missing required keys cause cascading failures across the framework.",
+                    f"Add the '{key}' key to .github/settings.json. "
+                    "See .github/settings.schema.json for the required structure.",
+                )
+            )
 
     # Validate issueTracker.provider enum
     provider = settings.get("issueTracker", {}).get("provider")
@@ -77,24 +103,30 @@ def validate_settings(github_dir: Path) -> list[str]:
         )
         if allowed_providers and provider not in allowed_providers:
             errors.append(
-                f"settings.json: issueTracker.provider '{provider}' "
-                f"not in allowed values {allowed_providers}"
+                format_error(
+                    f"issueTracker.provider '{provider}' is not a valid value",
+                    ".github/settings.json",
+                    "The provider must match the enum in settings.schema.json. "
+                    "An invalid value causes issue-tracking integrations to fail.",
+                    f"Set issueTracker.provider to one of: {allowed_providers}",
+                )
             )
 
     # Validate project.language enum
     language = settings.get("project", {}).get("language")
     if language is not None:
         allowed_languages = (
-            schema.get("properties", {})
-            .get("project", {})
-            .get("properties", {})
-            .get("language", {})
-            .get("enum", [])
+            schema.get("properties", {}).get("project", {}).get("properties", {}).get("language", {}).get("enum", [])
         )
         if allowed_languages and language not in allowed_languages:
             errors.append(
-                f"settings.json: project.language '{language}' "
-                f"not in allowed values {allowed_languages}"
+                format_error(
+                    f"project.language '{language}' is not a valid value",
+                    ".github/settings.json",
+                    "The language must match the enum in settings.schema.json. "
+                    "An invalid value disables language-specific skill behavior.",
+                    f"Set project.language to one of: {allowed_languages}",
+                )
             )
 
     return errors
@@ -112,45 +144,77 @@ def validate_gate_profiles(github_dir: Path) -> list[str]:
     board_schema = load_json(github_dir / "board.schema.json")
 
     if gate_profiles is None:
-        return ["gate-profiles.json not loadable"]
+        return [
+            format_error(
+                "gate-profiles.json could not be loaded",
+                ".github/rules/gate-profiles.json",
+                "gate-profiles.json controls which CI gates are mandatory. Without it, gate evaluation always fails.",
+                "Ensure .github/rules/gate-profiles.json exists and contains valid JSON.",
+            )
+        ]
 
     profiles = gate_profiles.get("profiles", {})
 
     # Expected gate keys (from board.schema.json)
     expected_gate_keys: set[str] = set()
     if board_schema is not None:
-        gates_props = (
-            board_schema.get("properties", {})
-            .get("gates", {})
-            .get("properties", {})
-        )
+        gates_props = board_schema.get("properties", {}).get("gates", {}).get("properties", {})
         # Board uses short names (e.g., "analysis"), gate-profiles uses suffixed names (e.g., "analysis_gate")
-        expected_gate_keys = {f"{key}_gate" for key in gates_props.keys()}
+        expected_gate_keys = {f"{key}_gate" for key in gates_props}
 
     for profile_name, profile in profiles.items():
         if not isinstance(profile, dict):
-            errors.append(f"gate-profiles.json: profile '{profile_name}' is not an object")
+            errors.append(
+                format_error(
+                    f"Profile '{profile_name}' is not a JSON object",
+                    ".github/rules/gate-profiles.json",
+                    "Each profile must be a JSON object mapping gate names to gate config objects. "
+                    "A non-object value prevents all gate configs in the profile from being read.",
+                    f"Change the '{profile_name}' value to an object. "
+                    'Example: { "analysis_gate": { "required": true } }',
+                )
+            )
             continue
 
         # Check each gate has required fields
         for gate_name, gate_config in profile.items():
             if not isinstance(gate_config, dict):
                 errors.append(
-                    f"gate-profiles.json: {profile_name}.{gate_name} is not an object"
+                    format_error(
+                        f"Gate config '{profile_name}.{gate_name}' is not a JSON object",
+                        ".github/rules/gate-profiles.json",
+                        "Each gate configuration must be a JSON object with at least a 'required' boolean field. "
+                        "A non-object value causes a TypeError during gate evaluation.",
+                        f"Change '{gate_name}' in profile '{profile_name}' to an object. "
+                        'Example: { "required": true }',
+                    )
                 )
                 continue
 
             if "required" not in gate_config:
                 errors.append(
-                    f"gate-profiles.json: {profile_name}.{gate_name} missing 'required' field"
+                    format_error(
+                        f"Gate '{profile_name}.{gate_name}' is missing the 'required' field",
+                        ".github/rules/gate-profiles.json",
+                        "The 'required' boolean controls whether this gate must pass before the workflow proceeds. "
+                        "Without it, gate evaluation raises a KeyError.",
+                        f"Add '\"required\": true' or '\"required\": false' to '{gate_name}' "
+                        f"in profile '{profile_name}'.",
+                    )
                 )
 
             # Cross-reference with board schema
             if expected_gate_keys and gate_name not in expected_gate_keys:
                 errors.append(
-                    f"gate-profiles.json: {profile_name}.{gate_name} "
-                    f"has no corresponding gate in board.schema.json "
-                    f"(expected one of: {sorted(expected_gate_keys)})"
+                    format_error(
+                        f"Gate '{gate_name}' in profile '{profile_name}'"
+                        " has no corresponding gate in board.schema.json",
+                        ".github/rules/gate-profiles.json",
+                        "Gate keys in gate-profiles.json must match gates defined in board.schema.json. "
+                        "Unknown gates are silently ignored by the orchestrator.",
+                        f"Rename '{gate_name}' to one of: {sorted(expected_gate_keys)}, "
+                        "or add the gate definition to board.schema.json.",
+                    )
                 )
 
     # Check all board gates have entries in each profile
@@ -161,8 +225,13 @@ def validate_gate_profiles(github_dir: Path) -> list[str]:
             missing_gates = expected_gate_keys - set(profile.keys())
             if missing_gates:
                 errors.append(
-                    f"gate-profiles.json: profile '{profile_name}' missing gates: "
-                    f"{sorted(missing_gates)}"
+                    format_error(
+                        f"Profile '{profile_name}' is missing gate entries: {sorted(missing_gates)}",
+                        ".github/rules/gate-profiles.json",
+                        "Every gate defined in board.schema.json must have a corresponding entry in each profile. "
+                        "Missing entries cause a KeyError during gate evaluation.",
+                        f"Add the missing gates to the '{profile_name}' profile: {sorted(missing_gates)}",
+                    )
                 )
 
     return errors
@@ -179,7 +248,15 @@ def validate_board_schema(github_dir: Path) -> list[str]:
     artifacts_schema = load_json(github_dir / "board-artifacts.schema.json")
 
     if board_schema is None:
-        return ["board.schema.json not loadable"]
+        return [
+            format_error(
+                "board.schema.json could not be loaded",
+                ".github/board.schema.json",
+                "board.schema.json defines the contract between all agents. "
+                "Without it, Board state validation and artifact schema checks cannot run.",
+                "Ensure .github/board.schema.json exists and contains valid JSON.",
+            )
+        ]
 
     # Check required top-level fields
     required = board_schema.get("required", [])
@@ -187,24 +264,55 @@ def validate_board_schema(github_dir: Path) -> list[str]:
     for field in required:
         if field not in properties:
             errors.append(
-                f"board.schema.json: required field '{field}' "
-                f"not defined in properties"
+                format_error(
+                    f"Required field '{field}' is listed in 'required' but not defined in 'properties'",
+                    ".github/board.schema.json",
+                    "Every field in the 'required' array must have a corresponding definition in 'properties'. "
+                    "This mismatch causes JSON Schema validation to always fail.",
+                    f"Add a property definition for '{field}' under 'properties' in board.schema.json, "
+                    "or remove it from the 'required' array.",
+                )
             )
 
     # Validate flow_state enum
     flow_states = properties.get("flow_state", {}).get("enum", [])
     expected_states = [
-        "initialized", "analyzing", "designing", "planned",
-        "implementing", "testing", "reviewing", "approved",
-        "documenting", "submitting", "completed",
+        "initialized",
+        "analyzing",
+        "designing",
+        "planned",
+        "implementing",
+        "testing",
+        "reviewing",
+        "approved",
+        "documenting",
+        "submitting",
+        "completed",
     ]
     if flow_states and set(flow_states) != set(expected_states):
         missing = set(expected_states) - set(flow_states)
         extra = set(flow_states) - set(expected_states)
         if missing:
-            errors.append(f"board.schema.json: flow_state missing states: {missing}")
+            errors.append(
+                format_error(
+                    f"flow_state enum is missing expected states: {missing}",
+                    ".github/board.schema.json",
+                    "The flow_state enum must contain all workflow states used by orchestration skills. "
+                    "Missing states cause Board transition validation to reject valid transitions.",
+                    f"Add the missing states to the flow_state enum: {sorted(missing)}",
+                )
+            )
         if extra:
-            errors.append(f"board.schema.json: flow_state has extra states: {extra}")
+            errors.append(
+                format_error(
+                    f"flow_state enum contains unrecognised states: {extra}",
+                    ".github/board.schema.json",
+                    "Unrecognised states suggest a stale definition or a typo. "
+                    "Skills that check against the expected set will reject these states.",
+                    f"Remove the unexpected states from the flow_state enum: {sorted(extra)}, "
+                    "or update EXPECTED_STATES in validate_schemas.py if the workflow was intentionally extended.",
+                )
+            )
 
     # Check artifacts references
     if artifacts_schema is not None:
@@ -219,9 +327,15 @@ def validate_board_schema(github_dir: Path) -> list[str]:
                     def_name = ref_path.split("/")[-1]
                     if def_name not in artifact_defs:
                         errors.append(
-                            f"board.schema.json: artifacts.{artifact_name} "
-                            f"references '{def_name}' not found in "
-                            f"board-artifacts.schema.json"
+                            format_error(
+                                f"artifacts.{artifact_name} references '{def_name}' "
+                                "not found in board-artifacts.schema.json",
+                                ".github/board.schema.json",
+                                "All $ref targets must be defined in board-artifacts.schema.json. "
+                                "A dangling reference causes JSON Schema validation to fail at runtime.",
+                                f"Add a '{def_name}' definition to board-artifacts.schema.json, "
+                                f"or fix the $ref in artifacts.{artifact_name} to an existing definition.",
+                            )
                         )
 
     return errors
@@ -255,9 +369,10 @@ def main() -> int:
 
     print()
     if all_errors:
-        print(f"FAILED: {len(all_errors)} error(s) found:")
+        print(f"FAILED: {len(all_errors)} error(s) found:\n")
         for error in all_errors:
-            print(f"  - {error}")
+            print(error)
+            print()
         return 1
 
     print("ALL PASSED: No errors found.")

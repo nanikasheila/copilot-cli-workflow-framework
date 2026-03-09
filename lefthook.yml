@@ -1,0 +1,24 @@
+# lefthook.yml
+# Why: Provide instant feedback before CI. Catches issues in seconds, not minutes.
+# How: Runs linters on staged files only for speed. Full checks run in CI.
+
+pre-commit:
+  parallel: true
+  commands:
+    ruff-check:
+      glob: "*.py"
+      run: ruff check {staged_files}
+    ruff-format:
+      glob: "*.py"
+      run: ruff format --check {staged_files}
+    markdownlint:
+      glob: "*.md"
+      run: npx markdownlint-cli2 {staged_files}
+    validate-schemas:
+      glob: "*.json"
+      run: python tools/validate-schemas/validate_schemas.py
+
+commit-msg:
+  commands:
+    check-format:
+      run: python tools/validate-commit-msg.py {1}

@@ -7,6 +7,9 @@
 - Git がインストール済み
 - GitHub Copilot CLI がインストール済み（`copilot` コマンドが使える）
 - GitHub リポジトリが作成済み
+- Python 3.10+（バリデーションツールの実行に必要）
+- Node.js（`markdownlint-cli2` に必要、オプション）
+- Lefthook（プリコミットフック、推奨）
 
 ## STEP 1: テンプレートの導入（5分）
 
@@ -57,6 +60,26 @@ cp -r /tmp/template/.github /path/to/your-project/
     }
   }
 }
+```
+
+### 1-3. 品質ツールのセットアップ（推奨）
+
+プリコミットフックで即時フィードバックを得るための設定:
+
+```bash
+# Lefthook のインストール（推奨）
+brew install lefthook     # macOS
+go install github.com/evilmartians/lefthook@latest  # Go
+
+# フック登録
+lefthook install
+
+# Ruff のインストール（Python lint/format）
+pip install ruff
+
+# バリデーション実行
+python tools/validate-schemas/validate_schemas.py
+python tools/validate-architecture/validate_architecture.py
 ```
 
 ## STEP 2: 最初の Feature を始める（2分）
