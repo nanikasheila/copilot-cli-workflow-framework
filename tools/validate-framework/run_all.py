@@ -17,8 +17,6 @@ import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
-
 
 # ---------------------------------------------------------------------------
 # Data structures
@@ -35,7 +33,7 @@ class ValidatorResult:
     """
 
     name: str
-    status: str          # "PASS" | "FAIL" | "SKIP" | "ERROR"
+    status: str  # "PASS" | "FAIL" | "SKIP" | "ERROR"
     error_count: int = 0
     output: str = field(default="", repr=False)
 
@@ -100,7 +98,7 @@ def run_validator(script_path: Path) -> ValidatorResult:
         )
 
     try:
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603
             [sys.executable, str(script_path)],
             capture_output=True,
             text=True,
@@ -123,10 +121,8 @@ def run_validator(script_path: Path) -> ValidatorResult:
         return ValidatorResult(name=name, status="PASS", output=combined)
 
     # Count error lines as a rough indicator of severity for the summary table.
-    error_count = sum(
-        1 for line in combined.splitlines() if line.strip().startswith("FAIL")
-    )
-    error_count = max(error_count, 1)   # at least 1 since the process failed
+    error_count = sum(1 for line in combined.splitlines() if line.strip().startswith("FAIL"))
+    error_count = max(error_count, 1)  # at least 1 since the process failed
 
     return ValidatorResult(
         name=name,
@@ -175,14 +171,12 @@ def print_summary(results: list[ValidatorResult]) -> None:
     How: Compute column widths from actual data, print a header row, then one
          row per validator. Append a totals line showing overall pass/fail counts.
     """
-    col_name  = max(len(r.name) for r in results)
-    col_name  = max(col_name, len("Validator"))
+    col_name = max(len(r.name) for r in results)
+    col_name = max(col_name, len("Validator"))
     col_status = max(len(r.status) for r in results)
     col_status = max(col_status, len("Status"))
 
-    header = (
-        f"  {'Validator':<{col_name}}  {'Status':<{col_status}}  Errors"
-    )
+    header = f"  {'Validator':<{col_name}}  {'Status':<{col_status}}  Errors"
     divider = "  " + "-" * (len(header) - 2)
 
     print()
@@ -197,9 +191,7 @@ def print_summary(results: list[ValidatorResult]) -> None:
     skipped = 0
 
     for r in results:
-        print(
-            f"  {r.name:<{col_name}}  {r.status:<{col_status}}  {r.error_count}"
-        )
+        print(f"  {r.name:<{col_name}}  {r.status:<{col_status}}  {r.error_count}")
         if r.status == "PASS":
             passed += 1
         elif r.status == "SKIP":
@@ -208,10 +200,7 @@ def print_summary(results: list[ValidatorResult]) -> None:
             failed += 1
 
     print(divider)
-    print(
-        f"  {'TOTAL':<{col_name}}  "
-        f"{passed} passed, {failed} failed, {skipped} skipped"
-    )
+    print(f"  {'TOTAL':<{col_name}}  {passed} passed, {failed} failed, {skipped} skipped")
     print("=" * 60)
 
 
@@ -251,6 +240,10 @@ def main() -> int:
             "validate_cross_refs",
             repo_root / "tools" / "validate-framework" / "validate_cross_refs.py",
         ),
+        (
+            "validate_architecture",
+            repo_root / "tools" / "validate-architecture" / "validate_architecture.py",
+        ),
     ]
 
     results: list[ValidatorResult] = []
@@ -259,7 +252,7 @@ def main() -> int:
         print_section(index, name, script_path)
 
         result = run_validator(script_path)
-        result.name = name   # use the friendly name instead of the bare filename
+        result.name = name  # use the friendly name instead of the bare filename
 
         print_validator_output(result)
 

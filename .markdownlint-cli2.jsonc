@@ -1,0 +1,34 @@
+{
+  // markdownlint-cli2 configuration
+  "config": {
+    "default": true,
+    // 行の長さ制限は無効（長い表やURL等が多い）
+    "MD013": false,
+    // インラインHTML許可（バッジ等）
+    "MD033": false,
+    // 最初の行が見出しでなくてもOK（frontmatter）
+    "MD041": false,
+    // 重複見出し許可（異なるセクションで同名見出しあり）
+    "MD024": { "siblings_only": true },
+    // コードブロック内の行の長さチェック無効
+    "MD046": { "style": "fenced" },
+    // 見出しスタイル統一は無効（frontmatter内の見出しが誤検出される）
+    "MD003": false,
+    // テーブルパイプスタイル統一は無効（コンパクト形式を許容）
+    "MD060": false
+  },
+  // YAML frontmatter付きファイルは先頭---を許容
+  "frontMatter": "^---\\s*$[\\s\\S]*?^---\\s*$",
+  // チェック対象
+  "globs": [
+    ".github/**/*.md",
+    "docs/**/*.md",
+    "*.md"
+  ],
+  // 除外
+  "ignores": [
+    ".worktrees/**",
+    "node_modules/**",
+    ".copilot/**"
+  ]
+}

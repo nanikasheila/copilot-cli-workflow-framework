@@ -13,7 +13,6 @@ How: Walk .github/agents/, parse YAML frontmatter and markdown headings for each
 import re
 import sys
 from pathlib import Path
-from typing import Optional
 
 try:
     import yaml  # type: ignore[import]
@@ -23,6 +22,16 @@ except ImportError:
     print("WARNING: PyYAML not installed. Frontmatter validation will use basic parsing.")
     print("         Install with: pip install pyyaml")
     YAML_AVAILABLE = False
+
+
+def format_error(error: str, file: str, why: str, fix: str) -> str:
+    """Format validation error with actionable fix instructions.
+
+    Why: Harness Engineering pattern - error messages should teach agents
+         how to fix issues, not just report them. Agents cannot ignore CI errors.
+    How: Structured ERROR/WHY/FIX format that agents can parse and act on.
+    """
+    return f"ERROR: {error}\n  FILE: {file}\n  WHY: {why}\n  FIX: {fix}"
 
 
 # Required frontmatter fields present in every agent file's --- block.
@@ -73,7 +82,7 @@ def parse_frontmatter(content: str) -> tuple[dict, str]:
         return {}, content
 
     fm_text = content[3:end_idx].strip()
-    body = content[end_idx + 3:].lstrip("\n")
+    body = content[end_idx + 3 :].lstrip("\n")
 
     if YAML_AVAILABLE:
         try:
@@ -102,9 +111,25 @@ def validate_frontmatter(frontmatter: dict, filename: str) -> list[str]:
     errors: list[str] = []
     for field in REQUIRED_FRONTMATTER_FIELDS:
         if field not in frontmatter:
-            errors.append(f"{filename}: frontmatter missing required field '{field}'")
+            errors.append(
+                format_error(
+                    f"Frontmatter missing required field '{field}'",
+                    filename,
+                    "Missing name, description, or model fields cause the agent runtime to reject "
+                    "or misidentify the file, breaking orchestration and skill lookups.",
+                    f"Add the '{field}' field to the YAML frontmatter block at the top of {filename}.",
+                )
+            )
         elif not frontmatter[field]:
-            errors.append(f"{filename}: frontmatter field '{field}' is empty")
+            errors.append(
+                format_error(
+                    f"Frontmatter field '{field}' is empty",
+                    filename,
+                    "Empty required fields are treated as missing by the agent runtime, "
+                    "causing the same failures as absent fields.",
+                    f"Set a non-empty value for '{field}' in the YAML frontmatter of {filename}.",
+                )
+            )
     return errors
 
 
@@ -130,8 +155,16 @@ def validate_sections(body: str, filename: str) -> list[str]:
         if not found_in_h2 and not found_in_h3:
             level = "## or ###" if allow_h3 else "##"
             errors.append(
-                f"{filename}: missing required section '{level} {ja_name}' "
-                f"(or '{level} {en_name}')"
+                format_error(
+                    f"Missing required section '{level} {ja_name}' (or '{level} {en_name}')",
+                    filename,
+                    "Required sections document the agent's role, board integration contract, "
+                    "output schema, and prohibited actions. Without them, the agent definition "
+                    "is incomplete and downstream consumers (orchestrator, writer) cannot "
+                    "reliably interpret the agent's scope.",
+                    f"Add a '{level} {ja_name}' (or '{level} {en_name}') heading to {filename} "
+                    "and fill in the required content.",
+                )
             )
 
     return errors
@@ -151,12 +184,29 @@ def validate_agent_file(file_path: Path) -> list[str]:
     try:
         content = file_path.read_text(encoding="utf-8")
     except OSError as exc:
-        return [f"{filename}: cannot read file — {exc}"]
+        return [
+            format_error(
+                f"Cannot read file — {exc}",
+                filename,
+                "An unreadable agent file is treated as missing, skipping all validation. "
+                "This may hide structural errors that would otherwise be caught.",
+                f"Check file permissions and encoding for {filename}.",
+            )
+        ]
 
     frontmatter, body = parse_frontmatter(content)
 
     if not frontmatter:
-        errors.append(f"{filename}: no YAML frontmatter found (expected opening '---' block)")
+        errors.append(
+            format_error(
+                "No YAML frontmatter found",
+                filename,
+                "Agent files must begin with a YAML frontmatter block delimited by '---'. "
+                "Without it, the agent runtime cannot read name, description, or model fields.",
+                f"Add an opening '---' block with at least 'name', 'description', and 'model' "
+                f"fields at the top of {filename}.",
+            )
+        )
     else:
         errors.extend(validate_frontmatter(frontmatter, filename))
 
@@ -174,11 +224,27 @@ def validate_agents(github_dir: Path) -> list[str]:
     """
     agents_dir = github_dir / "agents"
     if not agents_dir.is_dir():
-        return [f".github/agents/ directory not found at {agents_dir}"]
+        return [
+            format_error(
+                ".github/agents/ directory not found",
+                str(agents_dir),
+                "The agents/ directory is required for the framework to function. "
+                "Without it, no agent definitions can be loaded.",
+                "Create the .github/agents/ directory and add at least one *.agent.md file.",
+            )
+        ]
 
     agent_files = sorted(agents_dir.glob("*.agent.md"))
     if not agent_files:
-        return [f".github/agents/ contains no *.agent.md files"]
+        return [
+            format_error(
+                "No *.agent.md files found in .github/agents/",
+                str(agents_dir),
+                "The framework requires at least one agent definition to function. "
+                "An empty agents/ directory means no workflow can be executed.",
+                "Create at least one *.agent.md file in .github/agents/.",
+            )
+        ]
 
     all_errors: list[str] = []
     for i, agent_file in enumerate(agent_files, start=1):
@@ -188,10 +254,9 @@ def validate_agents(github_dir: Path) -> list[str]:
         if errors:
             print(f"   FAIL ({len(errors)} error(s)):")
             for error in errors:
-                # Strip the leading "filename: " prefix — context is already clear
-                # from the header line printed above.
-                detail = error.split(": ", 1)[-1] if ": " in error else error
-                print(f"     - {detail}")
+                for line in error.splitlines():
+                    print(f"     {line}")
+                print()
         else:
             print("   PASS")
 

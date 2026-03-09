@@ -1,3 +1,8 @@
+<!-- doc-freshness
+status: active
+last_verified: 2026-03-09
+verified_by: architect
+-->
 # 用語集（グロッサリー）
 
 > このファイルはドメイン固有の用語を定義する。新しいドメイン概念の導入時に更新すること。

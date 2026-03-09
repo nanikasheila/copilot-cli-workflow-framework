@@ -4,6 +4,25 @@
 形式は [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に基づき、
 バージョン管理は [Semantic Versioning](https://semver.org/lang/ja/) に準拠します。
 
+## [Unreleased]
+
+### Added
+
+- **決定論的品質ツール**: Ruff（Python lint/format）、markdownlint-cli2（Markdown lint）、EditorConfig を導入。`pyproject.toml`・`.markdownlint-cli2.jsonc`・`.editorconfig` を新規作成
+- **プリコミットフック**: Lefthook 導入。`lefthook.yml` で pre-commit（Ruff, markdownlint, JSON validation）・commit-msg フックを定義
+- **コミットメッセージ検証**: `tools/validate-commit-msg.py` を新規作成。`rules/commit-message.md` 準拠のフォーマットチェック
+- **構造テスト**: `tools/validate-architecture/validate_architecture.py` を新規作成。ポインタ腐敗検出・ファイルサイズガード・ADR ステータス検証・エージェント-ルール参照整合性チェック
+- **ADR 運用ルール**: `rules/adr-management.md` を新規作成。テンプレート・ステータス管理・不変原則を明文化
+- **保護ファイルポリシー**: `rules/protected-files.md` を新規作成。エージェントによる設定ファイル改竄を防止
+- **ドキュメント鮮度メタデータ**: `docs/architecture/` の4ファイルに `doc-freshness` コメントブロック追加。validate-architecture で鮮度警告を出力
+- **CI 拡張**: `lint-python`・`lint-markdown`・`validate-architecture` の3ジョブを追加
+
+### Changed
+
+- **copilot-instructions.md コンパクト化**: 236行→59行（75%削減）。ポインタ設計に移行し、詳細はオンデマンドロードに変更
+- **エラーメッセージ統一**: 全バリデーター（5ファイル）のエラー出力を `ERROR/WHY/FIX` 構造に統一。`format_error()` ヘルパー関数を各ファイルに配置
+- **Python コード品質**: tools/ 配下の全 Python ファイル（9ファイル）を Ruff 準拠に修正（isort・未使用 import・union 構文・f-string 等）
+
 ## [1.1.0] - 2026-03-04
 
 ### Added

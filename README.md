@@ -83,7 +83,9 @@ GitHub Copilot CLI で**マルチエージェント開発ワークフロー**を
 │   ├── merge-policy.md
 │   ├── worktree-layout.md
 │   ├── issue-tracker-workflow.md
-│   └── error-handling.md
+│   ├── error-handling.md
+│   ├── adr-management.md         #   ADR テンプレート・ステータス管理・不変原則
+│   └── protected-files.md        #   保護ファイル一覧・変更手順
 │
 ├── skills/                       # ワークフロースキル（13 個）
 │   ├── analyze-and-plan/
@@ -121,9 +123,21 @@ docs/
 
 ```
 tools/
-├── skill-creator/                # スキル作成ガイド（独立ツール）
+├── skill-creator/                # スキル作成ガイド
+├── validate-architecture/        # 構造テスト（ポインタ腐敗検出・サイズガード）
+├── validate-commit-msg.py        # コミットメッセージ検証
+├── validate-framework/           # フレームワーク全体検証
 ├── validate-github-config/       # .github 設定のバリデーション
 └── validate-schemas/             # スキーマ整合性バリデーション
+```
+
+### ルート設定ファイル（品質ツール）
+
+```
+pyproject.toml                    # Python lint/format 設定（Ruff）
+.editorconfig                     # エディタ共通設定
+.markdownlint-cli2.jsonc          # Markdown lint 設定
+lefthook.yml                      # プリコミットフック設定（Lefthook）
 ```
 
 ---
@@ -303,6 +317,30 @@ stateDiagram-v2
 
 ---
 
+## 品質ツール
+
+決定論的な品質チェックは LLM に任せず、ツールで自動化します。
+
+| ツール | 用途 | 設定ファイル |
+|---|---|---|
+| **Ruff** | Python lint + format | `pyproject.toml` |
+| **markdownlint-cli2** | Markdown lint | `.markdownlint-cli2.jsonc` |
+| **EditorConfig** | エディタ共通設定（インデント・改行コード等） | `.editorconfig` |
+| **Lefthook** | プリコミットフック（Ruff・markdownlint・JSON validation・commit-msg） | `lefthook.yml` |
+| **validate-architecture** | 構造テスト（ポインタ腐敗検出・ファイルサイズガード・ADR ステータス検証） | `tools/validate-architecture/` |
+
+### CI ジョブ
+
+`.github/workflows/ci.yml` に以下のジョブを追加済み:
+
+| ジョブ | 内容 |
+|---|---|
+| `lint-python` | Ruff でコードスタイルと型チェック |
+| `lint-markdown` | markdownlint-cli2 で Markdown 整合性確認 |
+| `validate-architecture` | ポインタ腐敗・サイズ超過・ADR ステータス異常を検出 |
+
+---
+
 ## 使い方
 
 ### 1. 導入
@@ -352,6 +390,22 @@ copilot
 | Git | **必須** | すべての変更は Git で管理 |
 | GitHub | **推奨** | PR・マージ・コードレビューに使用 |
 | Issue トラッカー | **オプション** | Linear / GitHub Issues に対応。`settings.json` で `provider: "none"` に設定すると無効化 |
+| Lefthook | **推奨** | プリコミットフックで即時フィードバック |
+
+---
+
+## ドキュメント鮮度
+
+ドキュメントには2種類あります:
+
+| 種別 | 例 | 腐敗リスク |
+|---|---|---|
+| **実行可能アーティファクト** | テスト・スキーマ・リンター | 低い（実行すれば整合性が確認できる） |
+| **説明的ドキュメント** | `docs/architecture/` | 高い（コードと乖離しやすい） |
+
+`docs/architecture/` の4ファイルには `doc-freshness` メタデータブロックが埋め込まれており、
+`validate_architecture.py` が更新日と対応コミットを定期チェックします。
+ADR は不変原則により一度承認されると変更不可のため、腐敗に強い構造になっています。
 
 ---
 
@@ -372,6 +426,12 @@ CLI の仕様上、`rules/` ディレクトリは自動ロードされません�
 ### Q: Board とは何ですか？
 
 Feature 単位の状態管理ファイル（`.copilot/boards/<feature-id>/board.json`）です。エージェント間で作業状態・成果物・Gate 評価結果を共有するために使われます。JSON が永続的な正本で、セッション中は SQL ミラーで高速にクエリできます。
+
+### Q: ドキュメントの鮮度（freshness）はどう管理していますか？
+
+`docs/architecture/` の各ファイルには `doc-freshness` メタデータが埋め込まれており、
+`tools/validate-architecture/validate_architecture.py` が鮮度を自動チェックします。
+ADR は不変原則により腐敗に強い構造です。詳細は [ドキュメント鮮度](#ドキュメント鮮度) セクションを参照してください。
 
 ### Q: 既存プロジェクトに導入するには？
 

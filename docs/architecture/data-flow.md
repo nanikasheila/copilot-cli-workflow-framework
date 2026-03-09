@@ -1,3 +1,8 @@
+<!-- doc-freshness
+status: active
+last_verified: 2026-03-09
+verified_by: architect
+-->
 # データフロー
 
 > このファイルは `architect` エージェントのデータフロー分析に基づき、`writer` エージェントが維持する。

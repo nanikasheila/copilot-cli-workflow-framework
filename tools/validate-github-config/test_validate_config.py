@@ -17,10 +17,10 @@ from validate_config import (
     ValidationResult,
     parse_frontmatter,
     validate_agents,
+    validate_all,
     validate_handoffs,
     validate_prompts,
     validate_settings,
-    validate_all,
 )
 
 passed = 0
@@ -49,7 +49,6 @@ def create_prompt_file(prompts_dir: Path, name: str, content: str) -> None:
 
 
 if __name__ == "__main__":
-
     # -- Test: parse_frontmatter -------------------------------------------------
 
     print("=== parse_frontmatter ===")
@@ -73,7 +72,6 @@ if __name__ == "__main__":
         bad_yaml_file.write_text("---\n[invalid: yaml: here\n---\n")
         check("invalid YAML returns None", parse_frontmatter(bad_yaml_file) is None)
 
-
     # -- Test: validate_agents ---------------------------------------------------
 
     print("\n=== validate_agents ===")
@@ -84,11 +82,15 @@ if __name__ == "__main__":
         agents_dir.mkdir(parents=True)
 
         # Valid agent
-        create_agent_file(agents_dir, "dev", (
-            '---\ndescription: "Dev agent"\n'
-            'tools: ["read", "edit", "execute"]\n'
-            'model: ["Claude Sonnet 4.6 (copilot)"]\n---\n# Dev\n'
-        ))
+        create_agent_file(
+            agents_dir,
+            "dev",
+            (
+                '---\ndescription: "Dev agent"\n'
+                'tools: ["read", "edit", "execute"]\n'
+                'model: ["Claude Sonnet 4.6 (copilot)"]\n---\n# Dev\n'
+            ),
+        )
 
         result = ValidationResult()
         data = validate_agents(github_dir, result)
@@ -96,13 +98,10 @@ if __name__ == "__main__":
         check("agent data populated", "dev" in data)
 
         # Invalid tool
-        create_agent_file(agents_dir, "bad", (
-            '---\ndescription: "Bad"\ntools: ["read", "invalid_tool"]\n---\n'
-        ))
+        create_agent_file(agents_dir, "bad", ('---\ndescription: "Bad"\ntools: ["read", "invalid_tool"]\n---\n'))
         result2 = ValidationResult()
         validate_agents(github_dir, result2)
         check("invalid tool detected", not result2.is_valid)
-
 
     # -- Test: validate_handoffs -------------------------------------------------
 
@@ -113,13 +112,12 @@ if __name__ == "__main__":
         agents_dir = github_dir / "agents"
         agents_dir.mkdir(parents=True)
 
-        create_agent_file(agents_dir, "alpha", (
-            '---\ndescription: "Alpha"\ntools: ["read"]\n'
-            'handoffs:\n  - label: "Go to beta"\n    agent: beta\n---\n'
-        ))
-        create_agent_file(agents_dir, "beta", (
-            '---\ndescription: "Beta"\ntools: ["read"]\n---\n'
-        ))
+        create_agent_file(
+            agents_dir,
+            "alpha",
+            ('---\ndescription: "Alpha"\ntools: ["read"]\nhandoffs:\n  - label: "Go to beta"\n    agent: beta\n---\n'),
+        )
+        create_agent_file(agents_dir, "beta", ('---\ndescription: "Beta"\ntools: ["read"]\n---\n'))
 
         result = ValidationResult()
         data = validate_agents(github_dir, result)
@@ -127,15 +125,18 @@ if __name__ == "__main__":
         check("valid handoff passes", result.is_valid)
 
         # Handoff to non-existent agent
-        create_agent_file(agents_dir, "ghost", (
-            '---\ndescription: "Ghost"\ntools: ["read"]\n'
-            'handoffs:\n  - label: "Go to nowhere"\n    agent: nonexistent\n---\n'
-        ))
+        create_agent_file(
+            agents_dir,
+            "ghost",
+            (
+                '---\ndescription: "Ghost"\ntools: ["read"]\n'
+                'handoffs:\n  - label: "Go to nowhere"\n    agent: nonexistent\n---\n'
+            ),
+        )
         result2 = ValidationResult()
         data2 = validate_agents(github_dir, result2)
         validate_handoffs(data2, github_dir, result2)
         check("handoff to missing agent detected", not result2.is_valid)
-
 
     # -- Test: validate_prompts --------------------------------------------------
 
@@ -148,14 +149,12 @@ if __name__ == "__main__":
         agents_dir.mkdir(parents=True)
         prompts_dir.mkdir(parents=True)
 
-        create_agent_file(agents_dir, "dev", (
-            '---\ndescription: "Dev"\ntools: ["read"]\n---\n'
-        ))
+        create_agent_file(agents_dir, "dev", ('---\ndescription: "Dev"\ntools: ["read"]\n---\n'))
 
         # Valid prompt referencing existing agent
-        create_prompt_file(prompts_dir, "start", (
-            '---\ndescription: "Start"\nagent: dev\ntools: ["read", "execute"]\n---\n'
-        ))
+        create_prompt_file(
+            prompts_dir, "start", ('---\ndescription: "Start"\nagent: dev\ntools: ["read", "execute"]\n---\n')
+        )
 
         result = ValidationResult()
         data = validate_agents(github_dir, result)
@@ -163,14 +162,11 @@ if __name__ == "__main__":
         check("valid prompt passes", result.is_valid)
 
         # Prompt referencing non-existent agent
-        create_prompt_file(prompts_dir, "broken", (
-            '---\ndescription: "Broken"\nagent: nonexistent\n---\n'
-        ))
+        create_prompt_file(prompts_dir, "broken", ('---\ndescription: "Broken"\nagent: nonexistent\n---\n'))
         result2 = ValidationResult()
         data2 = validate_agents(github_dir, result2)
         validate_prompts(github_dir, data2, result2)
         check("prompt with missing agent detected", not result2.is_valid)
-
 
     # -- Test: validate_settings -------------------------------------------------
 
@@ -199,7 +195,6 @@ if __name__ == "__main__":
         validate_settings(github_dir, result2)
         check("missing fields detected", not result2.is_valid)
 
-
     # -- Test: validate_all (integration) ----------------------------------------
 
     print("\n=== validate_all (real repo) ===")
@@ -216,7 +211,6 @@ if __name__ == "__main__":
             print(result.summary())
     else:
         print("  SKIP: Not running from within the repository")
-
 
     # -- Summary -----------------------------------------------------------------
 

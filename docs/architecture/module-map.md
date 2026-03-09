@@ -1,3 +1,8 @@
+<!-- doc-freshness
+status: active
+last_verified: 2026-03-09
+verified_by: architect
+-->
 # モジュールマップ
 
 > このファイルは `architect` エージェントの構造評価に基づき、`writer` エージェントが維持する。

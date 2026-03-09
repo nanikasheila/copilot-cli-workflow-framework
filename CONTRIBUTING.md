@@ -27,15 +27,43 @@
 
 1. `tools/skill-creator/` のガイドを参照して雛形を作成する
 2. `.github/skills/<skill-name>/SKILL.md` を作成する
-3. `.github/copilot-instructions.md` のスキル一覧テーブルを更新する
-4. README.md のスキル一覧テーブルを更新する
+3. README.md のスキル一覧テーブルを更新する
 
 ## 新しいエージェントを追加する
 
 1. `.github/agents/<agent-name>.agent.md` を作成する（既存ファイルを参考にする）
 2. frontmatter に `name` と `model` を定義する
-3. `.github/copilot-instructions.md` のエージェント一覧テーブルを更新する
-4. README.md のエージェント一覧テーブルを更新する
+3. README.md のエージェント一覧テーブルを更新する
+
+## 品質チェック
+
+PR 前に以下のチェックを実行してください。Lefthook をインストール済みの場合は、コミット時に自動実行されます。
+
+```bash
+# Python lint/format（Ruff）
+ruff check tools/
+ruff format tools/
+
+# Markdown lint
+npx markdownlint-cli2 "**/*.md"
+
+# 構造テスト
+python tools/validate-architecture/validate_architecture.py
+```
+
+### Lefthook のインストール
+
+```bash
+# フック登録（初回のみ）
+lefthook install
+```
+
+インストール後は `git commit` のたびに Ruff・markdownlint・JSON validation が自動実行されます。
+
+## 保護ファイルに関する注意
+
+`.github/rules/protected-files.md` に記載されているファイルは直接変更しないでください。
+変更が必要な場合は [Issue](https://github.com/nanikasheila/copilot-cli-workflow-framework/issues) を作成して議論してから変更してください。
 
 ## Pull Request のガイドライン
 

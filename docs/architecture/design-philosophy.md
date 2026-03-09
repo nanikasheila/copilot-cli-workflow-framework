@@ -1,3 +1,8 @@
+<!-- doc-freshness
+status: active
+last_verified: 2026-03-09
+verified_by: architect
+-->
 # 設計哲学
 
 > architect エージェントが構造評価・配置判断時に参照する設計原則。

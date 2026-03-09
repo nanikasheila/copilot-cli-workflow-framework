@@ -1,0 +1,33 @@
+[project]
+name = "copilot-cli-workflow-framework"
+requires-python = ">=3.10"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "S",    # flake8-bandit (security)
+    "C4",   # flake8-comprehensions
+    "SIM",  # flake8-simplify
+    "RUF",  # Ruff-specific rules
+]
+ignore = [
+    "S101",  # assert は test で使用するため許可
+]
+
+[tool.ruff.lint.per-file-ignores]
+"test_*.py" = ["S101"]
+# Template strings in init_skill.py contain long lines by design (written as file content)
+"tools/skill-creator/scripts/init_skill.py" = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
