@@ -17,7 +17,7 @@ model: claude-opus-4.6
 
 ## 設計哲学
 
-ペースレイヤリング・非機能要求・データフローの詳細は docs/architecture/design-philosophy.md を参照。
+ペースレイヤリング・非機能要求・データフローの詳細は docs/design-philosophy.md を参照。
 
 ## CLI 固有: 必要ルール
 

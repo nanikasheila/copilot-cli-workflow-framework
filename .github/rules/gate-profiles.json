@@ -2,6 +2,7 @@
   "$schema": "../gate-profiles.schema.json",
   "profiles": {
     "experimental": {
+      "requirements_gate":   { "required": false, "description": "実験段階では要求開発をスキップ可能" },
       "analysis_gate":       { "required": false, "description": "実験段階では影響分析をスキップ可能" },
       "design_gate":         { "required": false, "description": "architect エスカレーション不要" },
       "plan_gate":           { "required": false, "description": "形式的な計画策定は不要" },
@@ -12,6 +13,7 @@
       "submit_gate":         { "required": true,  "description": "コミット・プッシュは必要" }
     },
     "development": {
+      "requirements_gate":   { "required": true,  "description": "要求開発を実施し、ユーザー承認を得る" },
       "analysis_gate":       { "required": true,  "description": "影響分析を実施する" },
       "design_gate":         { "required": "on_escalation", "escalation_condition": "artifacts.impact_analysis.escalation.required == true", "description": "エスカレーション基準に該当する場合のみ architect を起動" },
       "plan_gate":           { "required": true,  "description": "planner による実行計画を策定する" },
@@ -22,6 +24,7 @@
       "submit_gate":         { "required": true,  "description": "PR 作成・マージ" }
     },
     "stable": {
+      "requirements_gate":   { "required": true,  "description": "要求開発を実施し、設計哲学との整合性を詳細に検証する" },
       "analysis_gate":       { "required": true,  "description": "影響分析を実施し、API 互換性を特に重視" },
       "design_gate":         { "required": "on_escalation", "escalation_condition": "artifacts.impact_analysis.escalation.required == true OR len(artifacts.impact_analysis.affected_files) >= 2", "description": "エスカレーション閾値を引き下げ（2モジュール以上で発動）" },
       "plan_gate":           { "required": true,  "description": "planner による実行計画を策定する" },
@@ -32,6 +35,7 @@
       "submit_gate":         { "required": true,  "description": "PR 作成・マージ" }
     },
     "release-ready": {
+      "requirements_gate":   { "required": true,  "description": "要求開発を実施し、全ステークホルダーの承認を得る" },
       "analysis_gate":       { "required": true,  "description": "全変更で影響分析を実施" },
       "design_gate":         { "required": true,  "description": "全変更で architect による構造確認を実施" },
       "plan_gate":           { "required": true,  "description": "planner による実行計画を策定する" },
@@ -42,6 +46,7 @@
       "submit_gate":         { "required": true,  "description": "PR 作成・マージ" }
     },
     "sandbox": {
+      "requirements_gate":   { "required": true,  "description": "要求開発を実施し、ユーザー承認を得る" },
       "analysis_gate":       { "required": true,  "description": "影響分析を実施する" },
       "design_gate":         { "required": "on_escalation", "escalation_condition": "artifacts.impact_analysis.escalation.required == true", "description": "エスカレーション基準に該当する場合のみ architect を起動" },
       "plan_gate":           { "required": true,  "description": "planner による実行計画を策定する" },

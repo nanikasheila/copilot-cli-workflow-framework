@@ -6,7 +6,7 @@
 
 ## ADR テンプレート
 
-新規 ADR は `docs/architecture/adr/ADR-000-template.md` に準拠する。
+新規 ADR は `docs/adr-template.md` に準拠する。
 必須フィールド:
 
 | フィールド | 説明 |

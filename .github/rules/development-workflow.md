@@ -37,15 +37,16 @@
 | # | フェーズ | エージェント | Gate | 参照スキル |
 |---|---|---|---|---|
 | 1 | Feature 開始 & Board 作成 | — | — | `start-feature` + `manage-board` |
-| 2 | 影響分析 | planner | `analysis_gate` | `orchestrate-workflow` |
-| 3 | 構造評価 | architect | `design_gate` | `orchestrate-workflow` |
-| 4 | 計画策定 | planner | `plan_gate` | `orchestrate-workflow` |
-| 5 | 実装 | developer | `implementation_gate` | `orchestrate-workflow` |
-| 6 | テスト | developer | `test_gate` | `orchestrate-workflow` |
-| 7 | コードレビュー | reviewer | `review_gate` | `orchestrate-workflow` |
-| 8 | ドキュメント更新 | writer | `documentation_gate` | `orchestrate-workflow` |
-| 9 | PR 提出 & マージ | — | `submit_gate` | `submit-pull-request` |
-| 10 | クリーンアップ | — | — | `cleanup-worktree` + `manage-board` |
+| 2 | 要求開発 | requirements-engineer | `requirements_gate` | `orchestrate-workflow` |
+| 3 | 要求分析 + 影響分析 | analyst + impact-analyst | `analysis_gate` | `orchestrate-workflow` |
+| 4 | 構造評価 | architect | `design_gate` | `orchestrate-workflow` |
+| 5 | 計画策定 | planner | `plan_gate` | `orchestrate-workflow` |
+| 6 | 実装 | developer | `implementation_gate` | `orchestrate-workflow` |
+| 7 | テスト | developer | `test_gate` | `orchestrate-workflow` |
+| 8 | コードレビュー | reviewer | `review_gate` | `orchestrate-workflow` |
+| 9 | ドキュメント更新 | writer | `documentation_gate` | `orchestrate-workflow` |
+| 10 | PR 提出 & マージ | — | `submit_gate` | `submit-pull-request` |
+| 11 | クリーンアップ | — | — | `cleanup-worktree` + `manage-board` |
 
 > 各フェーズの具体的な手順は skills 層で定義する。
 
@@ -75,7 +76,7 @@
 
 `experimental` な Feature は以下のショートカットが可能:
 
-- `initialized` → 直接 `implementing`（分析・設計・計画をスキップ）
+- `initialized` → 直接 `implementing`（要求開発・分析・設計・計画をスキップ）
 - `implementing` → 直接 `approved`（テスト・レビューをスキップ）
 - `approved` → `submitting` → `completed`（ドキュメントをスキップ）
 - 最低限のパス: `initialized → implementing → approved → submitting → completed`

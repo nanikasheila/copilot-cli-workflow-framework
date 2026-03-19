@@ -227,6 +227,104 @@
       "additionalProperties": false
     },
 
+    "artifact_requirements_development": {
+      "type": "object",
+      "description": "requirements-engineer が出力する要求開発結果。ユーザーの要望から検証済み要求への変換記録",
+      "required": ["original_wish", "problem_statement", "validated_needs", "scope_boundary", "approval"],
+      "properties": {
+        "original_wish": {
+          "type": "string",
+          "description": "ユーザーの元の要望（原文保存）"
+        },
+        "problem_statement": {
+          "type": "string",
+          "description": "本質的な問題の定義（Why を明確化）"
+        },
+        "validated_needs": {
+          "type": "array",
+          "description": "検証済みニーズの一覧",
+          "items": {
+            "type": "object",
+            "required": ["id", "description", "rationale", "priority"],
+            "properties": {
+              "id": { "type": "string", "description": "ニーズ ID（例: NEED-001）" },
+              "description": { "type": "string", "description": "検証済みニーズの説明" },
+              "rationale": { "type": "string", "description": "なぜこれが必要か（根拠）" },
+              "priority": {
+                "type": "string",
+                "enum": ["must", "should", "could", "wont"],
+                "description": "MoSCoW 法による優先度"
+              },
+              "conflicts": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "競合する既存要求（あれば）"
+              },
+              "alignment": {
+                "type": "string",
+                "description": "設計哲学との整合性メモ"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "alternatives_considered": {
+          "type": "array",
+          "description": "検討した代替案（不採用含む）",
+          "items": {
+            "type": "object",
+            "required": ["description", "reason_rejected"],
+            "properties": {
+              "description": { "type": "string", "description": "代替案の説明" },
+              "reason_rejected": { "type": "string", "description": "不採用理由" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "scope_boundary": {
+          "type": "object",
+          "description": "スコープ境界の定義",
+          "required": ["in_scope", "out_of_scope"],
+          "properties": {
+            "in_scope": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "スコープ内の項目"
+            },
+            "out_of_scope": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "スコープ外の項目"
+            },
+            "deferred": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "将来対応とする項目"
+            }
+          },
+          "additionalProperties": false
+        },
+        "approval": {
+          "type": "object",
+          "description": "ユーザー承認の状態",
+          "required": ["status"],
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["pending", "approved", "rejected", "needs_revision"],
+              "description": "承認状態"
+            },
+            "revision_notes": {
+              "type": "string",
+              "description": "修正要求メモ（needs_revision 時）"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+
     "artifact_requirements": {
       "type": "object",
       "description": "analyst が出力する要求分析結果（USDM 準拠の構造化要件）",
