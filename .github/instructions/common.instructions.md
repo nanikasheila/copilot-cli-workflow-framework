@@ -139,12 +139,26 @@ function normalizeInput(raw: string): string {
 |---|---|
 | `.github/settings.json` | プロジェクト固有設定 |
 | `.github/` | Copilot 設定・開発ルール・スキル |
+| `.github/docs/` | フレームワーク同梱ドキュメント（設計哲学・ADR テンプレート） |
 | `docs/` | ドキュメント（必要に応じて作成） |
-| `docs/architecture/` | 構造ドキュメント（architect エージェントが管理） |
+| `docs/architecture/` | プロジェクト固有の構造ドキュメント（architect エージェントが管理） |
 
-## 構造ドキュメント（`docs/architecture/`）
+## ドキュメントの2層構造
 
-プロジェクトの構造的知識を `docs/architecture/` に永続化する。
+ドキュメントは **フレームワーク層** と **プロジェクト層** に分離する。
+
+### フレームワーク層（`.github/docs/`）
+
+`.github/` と一緒に他プロジェクトへ移植されるドキュメント:
+
+| ファイル | 内容 |
+|---|---|
+| `design-philosophy.md` | 設計原則（Pace Layering, NFR as Structure, Data Flow） |
+| `adr-template.md` | ADR の標準テンプレート |
+
+### プロジェクト層（`docs/architecture/`）
+
+プロジェクト固有の構造的知識を永続化する。
 これにより LLM がコードの部分を読んだときに、全体の中での位置づけを判断できる。
 
 | ファイル | 内容 | 更新タイミング |
@@ -155,6 +169,7 @@ function normalizeInput(raw: string): string {
 | `glossary.md` | ドメイン固有の用語定義 | 新しいドメイン概念の導入時 |
 
 `architect` エージェントが構造評価・配置判断・ ADR を出力した際、`writer` エージェントがこのディレクトリに反映する。
+`assessor` エージェントが初回評価時に初期案を生成する。
 
 ## 開発ワークフロー
 

@@ -111,9 +111,20 @@ test -f .gitignore
 > **Why**: 前回の検証で `__pycache__/` や `.coverage` が Git 管理対象になりかけた。
 > Feature 開始時に .gitignore を確保することで、不要ファイルのコミットを防止する。
 
-### 5. 作業開始
+### 5. 次のステップへのガイド
 
-worktree ディレクトリ内でファイルの変更を行う。
+worktree の準備が完了したら、ユーザーに次のステップを案内する:
+
+| Maturity | 次のステップ | 説明 |
+|---|---|---|
+| experimental 以外 | 要求開発 | `requirements-engineer` を起動して要望を検証済み要求に変換する |
+| experimental | 実装 | 要求開発をスキップし、直接 `analyzing` または `implementing` に進む |
+
+```text
+次のステップ:
+- 要望を整理するには: orchestrate-workflow スキルを実行（要求開発から開始）
+- すぐに実装するには: worktree ディレクトリ内でファイルの変更を開始
+```
 
 ## 入れ子ブランチの場合
 

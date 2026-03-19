@@ -1,7 +1,7 @@
 ---
 name: analyze-and-plan
 description: >-
-  機能開発の計画フェーズ（要求分析・影響分析・実行計画策定）を単独で実行する。「要件を分析して」
+  機能開発の計画フェーズ（要求開発・要求分析・影響分析・実行計画策定）を単独で実行する。「要件を分析して」
   「計画を立てて」「実行計画を作って」「影響範囲を調べて」「仕様を整理して」と言った場合にトリガーする。
   要求分析と影響分析を並列実行し、planner・developer が利用できる実行計画を生成する。
   orchestrate-workflow の内部でも呼び出されるが、計画フェーズのみを単独実行したい場合に直接使用する。
@@ -30,7 +30,35 @@ description: >-
    - `rules/development-workflow.md`（Maturity 判断用）
    - `rules/workflow-state.md`（状態遷移ポリシー）
 
-### 1. 要求分析 + 影響分析（並列実行）
+### 1. 要求開発（条件付き）
+
+Board が存在し、`gate-profiles.json` の `requirements_gate.required` が `true` の場合、
+`requirements-engineer` エージェントを先に起動してユーザーの要望を検証済み要求に変換する。
+
+#### 実行条件
+
+| 条件 | 動作 |
+|---|---|
+| Board あり + `requirements_gate.required: true` | requirements-engineer を起動 |
+| Board あり + `requirements_gate.required: false` | スキップ（experimental） |
+| Board なし | ユーザーに要求開発が必要か確認（ask_user） |
+
+#### requirements-engineer への指示
+
+```text
+task ツール（agent_type: requirements-engineer）:
+- ユーザーの要望: <description>
+- Maturity: <maturity>
+- 出力: 検証済み要求定義（problem_statement, validated_needs, scope_boundary）
+- Board 書き込み先: artifacts.requirements_development
+```
+
+requirements-engineer の完了後、`requirements_gate` を評価する:
+- `approval.status === "approved"` → 次のステップに進む
+- `approval.status === "rejected"` → ユーザーに報告して終了
+- `approval.status === "needs_revision"` → requirements-engineer を再実行
+
+### 2. 要求分析 + 影響分析（並列実行）
 
 `analyst` と `impact-analyst` を `task` ツールで**同時に**起動する。
 両エージェントは読み取り専用のため並列実行が安全。
@@ -41,6 +69,7 @@ description: >-
 task ツール（agent_type: analyst）:
 - Feature の説明: <description>
 - Maturity: <maturity>
+- 要求開発結果: <artifacts.requirements_development（存在する場合）>
 - 出力: 機能要求(FR)、非機能要求(NFR)、受け入れ基準(AC)、エッジケース(EC) の構造化リスト
 - Board 書き込み先: artifacts.requirements
 ```
@@ -54,7 +83,7 @@ task ツール（agent_type: impact-analyst）:
 - Board 書き込み先: artifacts.impact_analysis
 ```
 
-### 2. 結果の統合・評価
+### 3. 結果の統合・評価
 
 両エージェントの結果を受け取り、以下を評価する:
 
@@ -64,7 +93,7 @@ task ツール（agent_type: impact-analyst）:
 | 要求の明確性 | analyst の AC/EC が十分に定義されているか |
 | 影響範囲 | 影響ファイル数、API 変更の有無 |
 
-### 3. 構造リスクがある場合: architect エスカレーション
+### 4. 構造リスクがある場合: architect エスカレーション
 
 `escalation.required: true` の場合、`architect` エージェントに設計評価を委任する:
 
@@ -75,7 +104,7 @@ task ツール（agent_type: architect）:
 - 出力: 構造評価、設計提案、ADR（必要に応じて）
 ```
 
-### 4. 計画策定
+### 5. 計画策定
 
 `planner` エージェントに計画策定を委任する:
 
@@ -87,16 +116,17 @@ task ツール（agent_type: planner）:
 - 出力: タスク一覧（担当エージェント・依存関係・優先度）、リスク対策
 ```
 
-### 5. Board 更新（Board が存在する場合）
+### 6. Board 更新（Board が存在する場合）
 
 Board の以下のセクションを更新する:
 
+- `artifacts.requirements_development` — requirements-engineer の出力（実行した場合）
 - `artifacts.requirements` — analyst の出力
 - `artifacts.impact_analysis` — impact-analyst の出力
 - `artifacts.plan` — planner の出力
 - `history` — 分析・計画策定の記録を追記
 
-### 6. ユーザーへの報告
+### 7. ユーザーへの報告
 
 以下の構造で結果を表示する:
 
@@ -119,6 +149,7 @@ Board の以下のセクションを更新する:
 
 | エラー | 対処 |
 |---|---|
+| requirements-engineer がタイムアウト | 要求開発をスキップして要求分析に進める（リスク:中 を付記） |
 | analyst がタイムアウト | 影響分析の結果のみで計画策定を進める |
 | impact-analyst がタイムアウト | 要求分析の結果のみで計画策定を進める（リスク:高 を付記） |
 | Board が存在しない | Board なしで実行し、結果をユーザーに直接表示 |

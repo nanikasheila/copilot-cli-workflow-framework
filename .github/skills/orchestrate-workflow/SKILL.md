@@ -57,6 +57,7 @@ CLI では `rules/` が自動ロードされないため、各フェーズ開始
 |---|---|
 | 全フェーズ共通 | `rules/workflow-state.md`, `rules/gate-profiles.json` |
 | Feature 開始 | `rules/branch-naming.md`, `rules/worktree-layout.md` |
+| 要求開発 | `rules/development-workflow.md`（Maturity 判断用） |
 | 要求分析 | `rules/development-workflow.md`（Maturity 判断用） |
 | 影響分析 | `rules/development-workflow.md`, `rules/worktree-layout.md` |
 | 計画策定 | `rules/development-workflow.md` |
@@ -219,9 +220,44 @@ Board コンテキストの伝達は**プロンプトへの直接埋め込み**�
 - `gates` を全て `not_reached` にリセット
 - `artifacts` と `history` は保持（前サイクルのコンテキストとして参照可能）
 
-### 2. 要求分析 + 影響分析（並列実行）
+### 2. 要求開発
+
+`gate-profiles.json` の `requirements_gate.required` を確認し、要求開発の実施要否を判定する:
+
+| `requirements_gate.required` の値 | 動作 |
+|---|---|
+| `true` | requirements-engineer を呼び出す（development, stable, release-ready, sandbox） |
+| `false` | 要求開発をスキップし、Phase 3 に進む（experimental） |
+
+requirements-engineer を呼び出す場合:
+
+- `requirements-engineer` エージェントにユーザーの要望の要求開発を依頼する
+- 入力: ユーザーの要望テキスト、プロジェクトの設計哲学、既存 Board の要求情報
+- requirements-engineer はユーザーとの対話（`ask_user`）を通じて以下を実施する:
+  1. 要望の本質（Why）の引き出し
+  2. 設計哲学（Pace Layering, NFR as Structure, Data Flow）との整合性検証
+  3. 既存要求との競合分析
+  4. 代替案の検討と提示
+  5. スコープの定義（in_scope / out_of_scope / deferred）
+  6. MoSCoW 法による優先順位付け
+  7. ユーザー承認の取得
+- requirements-engineer は Board の `artifacts.requirements_development` に結果を書き込む
+
+requirements-engineer をスキップする場合:
+
+- Board の `artifacts.requirements_development` を `null` に設定する
+- Phase 3 に進む
+
+> **Why**: ユーザーの「要望」がそのまま正しい「要求」である保証はない。
+> 要求開発フェーズで問題の本質を掘り起こし、プロジェクトコンセプトとの整合性を検証することで、
+> 「正しくないものを正しく作る」リスクを排除する。
+
+**Gate**: `requirements_gate` — `gate-profiles.json` の `required` 値に従う
+
+### 3. 要求分析 + 影響分析（並列実行）
 
 - **analyst** と **impact-analyst** を**並列で呼び出す**（両エージェントとも読み取り専用）
+- `artifacts.requirements_development` が存在する場合、analyst はその検証済みニーズを入力として USDM 形式に構造化する
 - analyst は Board の `artifacts.requirements` に FR/NFR/AC/EC を構造化 JSON で書き込む
 - impact-analyst は Board の `artifacts.impact_analysis` に影響ファイル・依存グラフ・リスク評価を書き込む
 - `affected_files` には変更対象・移動元・移動先・参照更新先を**漏れなく**列挙する
@@ -233,7 +269,7 @@ Board コンテキストの伝達は**プロンプトへの直接埋め込み**�
 
 **Gate**: `analysis_gate` — `gate-profiles.json` の `required` 値に従う
 
-### 3. 構造評価・配置判断（条件付き）
+### 4. 構造評価・配置判断（条件付き）
 
 `gate-profiles.json` の `design_gate.required` を確認し、エスカレーション要否を判定する:
 
@@ -241,7 +277,7 @@ Board コンテキストの伝達は**プロンプトへの直接埋め込み**�
 |---|---|
 | `true` | 常に architect を呼び出す（release-ready） |
 | `"on_escalation"` | `artifacts.impact_analysis.escalation.required == true` の場合のみ architect を呼び出す。stable プロファイルでは `affected_files >= 2` も発動条件 |
-| `false` | architect をスキップし、Phase 4 に進む（experimental） |
+| `false` | architect をスキップし、Phase 5 に進む（experimental） |
 
 architect を呼び出す場合:
 
@@ -252,18 +288,18 @@ architect を呼び出す場合:
 architect をスキップする場合:
 
 - Board の `artifacts.architecture_decision` を `null` に設定する
-- Phase 4 に進む
+- Phase 5 に進む
 
 **Gate**: `design_gate` — `gate-profiles.json` の `required` 値と `escalation_condition` に従う
 
-### 4. 計画策定
+### 5. 計画策定
 
 - `planner` エージェントに実行計画の策定を依頼する（analyst + impact-analyst + architect の結果を入力に含む）
 - planner は Board の `artifacts.execution_plan` に結果を書き込む
 
 **Gate**: `plan_gate` — `gate-profiles.json` の `required` 値に従う
 
-### 5. 実装 + テストケース設計
+### 6. 実装 + テストケース設計
 
 - `developer` エージェントに実装を依頼する（**逐次**、ファイル編集あり）
 - `test-designer` エージェントにテストケース設計を依頼する
@@ -282,7 +318,7 @@ architect をスキップする場合:
 
 **Gate**: `implementation_gate`（全 Maturity で必須）
 
-### 6. テスト検証
+### 7. テスト検証
 
 - `test-verifier` エージェントにテスト検証を依頼する（developer とは独立したコンテキスト）
 - test-verifier は以下を検証する:
@@ -298,7 +334,7 @@ architect をスキップする場合:
 
 **Gate**: `test_gate` — `gate-profiles.json` の `required` / `pass_rate` / `coverage_min` / `regression_required` に従う
 
-### 7. コードレビュー
+### 8. コードレビュー
 
 - **レビュー準備（並列）**: `explore` エージェントを並列で起動し、変更差分のコンテキストと関連規約を収集する
 - `reviewer` エージェントにレビューを依頼する（`code-review` agent_type を使用）
@@ -320,7 +356,7 @@ architect をスキップする場合:
 - `developer` に test-verifier のフィードバック（missing TC、quality_issues）を渡して修正を依頼
 - test-verifier の verdict が `conditional_pass` → planner に許容判断を委ねる
 
-### 8. ドキュメント・ルール更新
+### 9. ドキュメント・ルール更新
 
 - `writer` エージェントにドキュメント更新を依頼する
 - writer は Board の `artifacts.documentation` に更新ファイル一覧を書き込む
@@ -335,7 +371,7 @@ architect をスキップする場合:
 | 新規モジュール追加 | `docs/architecture/module-map.md` + 関連 ADR |
 | バグ修正のみ | 原則不要（挙動が変わる場合は該当ファイルを更新） |
 
-### 9. PR 提出 & マージ
+### 10. PR 提出 & マージ
 
 - `submit-pull-request` スキルに従い、コミット → プッシュ → PR 作成 → マージ
 - GitHub を使用しない場合はローカルで `git merge --no-ff` を実施する
@@ -346,7 +382,7 @@ architect をスキップする場合:
 
 **Gate**: `submit_gate`（全 Maturity で必須）
 
-### 10. クリーンアップ
+### 11. クリーンアップ
 
 - `cleanup-worktree` スキルに従い、worktree・ブランチを整理する
 - Issue トラッカー利用時: `rules/issue-tracker-workflow.md` に従い Done に更新

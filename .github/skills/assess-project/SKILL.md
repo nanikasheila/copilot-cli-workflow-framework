@@ -404,13 +404,14 @@ grep -rn "secret\s*=\s*['\"]" --include="*.py" --include="*.js" --include="*.ts"
 
 ### 8. docs/architecture/ の初期生成
 
-評価結果に基づき、以下のドキュメントの初期案を提案する（直接書き込まず、提案として出力）:
+評価結果に基づき、以下のプロジェクト固有ドキュメントの初期案を提案する（直接書き込まず、提案として出力）:
 
 - `docs/architecture/module-map.md` — 検出したモジュール構成を反映
 - `docs/architecture/data-flow.md` — 主要なデータフローを反映
 - `docs/architecture/glossary.md` — ドメイン用語を反映
 
-> これらの生成は `writer` エージェントに委任することを推奨する。
+> これらはプロジェクト固有のドキュメントであり、フレームワーク同梱の `.github/docs/`（設計哲学・ADR テンプレート）とは別の層に属する。
+> 生成は `writer` エージェントに委任することを推奨する。
 
 ### 9. settings.json の補完提案
 

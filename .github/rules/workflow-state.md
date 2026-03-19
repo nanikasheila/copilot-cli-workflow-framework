@@ -18,9 +18,11 @@
 ## Flow State 遷移図
 
 ```text
-initialized ──[analysis_gate]──► analyzing
+initialized ──[requirements_gate]► eliciting
+initialized ──[analysis_gate]──► analyzing       ※ requirements_gate スキップ時
 initialized ──────────────────► planned         ※ analysis スキップ時（現行プロファイルでは未使用）
 initialized ──────────────────► implementing    ※ experimental ショートカット
+eliciting   ──[analysis_gate]──► analyzing
 analyzing   ──[design_gate]────► designing      ※ スキップ可
 analyzing   ──[plan_gate]──────► planned         ※ design_gate スキップ時
 designing   ──[plan_gate]──────► planned
@@ -43,7 +45,9 @@ submitting  ──────────────────► completed
 
 | 現在の State | 遷移先 | Gate | 条件 |
 |---|---|---|---|
-| `initialized` | `analyzing` | `analysis_gate` | Gate Profile で `required: true` の場合は影響分析を実施 |
+| `initialized` | `eliciting` | `requirements_gate` | Gate Profile で `required: true` の場合は要求開発を実施 |
+| `initialized` | `analyzing` | `analysis_gate` | Gate Profile で `requirements_gate.required: false` かつ `analysis_gate.required: true` の場合 |
+| `eliciting` | `analyzing` | `analysis_gate` | 要求開発完了後、影響分析に進む |
 | `initialized` | `planned` | — | Gate Profile で `analysis_gate.required: false` の場合（experimental） |
 | `initialized` | `implementing` | — | Gate Profile で analysis/plan 両方 `required: false` の場合（experimental） |
 | `analyzing` | `designing` | `design_gate` | エスカレーション判定で architect が必要な場合（`gate-profiles.json` の `design_gate.required` 値に従う） |
@@ -95,24 +99,25 @@ sandbox ──► abandoned   ※ sandbox は他の Maturity に昇格不可
 
 ### 権限マトリクス
 
-| フィールド | orchestrator | planner | architect | developer | reviewer | writer | analyst | impact-analyst | test-designer | test-verifier |
-|---|---|---|---|---|---|---|---|---|---|---|
-| `flow_state` | **write** | — | — | — | — | — | — | — | — | — |
-| `gates.*` | **write** | — | — | — | — | — | — | — | — | — |
-| `maturity` | **write** | — | — | — | — | — | — | — | — | — |
-| `cycle` | **write** | — | — | — | — | — | — | — | — | — |
-| `artifacts.requirements` | — | — | — | — | — | — | **write** | — | — | — |
-| `artifacts.impact_analysis` | — | — | — | — | — | — | — | **write** | — | — |
-| `artifacts.architecture_decision` | — | — | **write** | — | — | — | — | — | — | — |
-| `artifacts.execution_plan` | — | **write** | — | — | — | — | — | — | — | — |
-| `artifacts.implementation` | — | — | — | **write** | — | — | — | — | — | — |
-| `artifacts.test_design` | — | — | — | — | — | — | — | — | **write** | — |
-| `artifacts.test_results` | — | — | — | **write** | — | — | — | — | — | — |
-| `artifacts.test_verification` | — | — | — | — | — | — | — | — | — | **write** |
-| `artifacts.review_findings` | — | — | — | — | **write** | — | — | — | — | — |
-| `artifacts.documentation` | — | — | — | — | — | **write** | — | — | — | — |
-| `history` | **write** | — | — | — | — | — | — | — | — | — |
-| 全フィールド | read | read | read | read | read | read | read | read | read | read |
+| フィールド | orchestrator | planner | architect | developer | reviewer | writer | analyst | impact-analyst | test-designer | test-verifier | requirements-engineer |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| `flow_state` | **write** | — | — | — | — | — | — | — | — | — | — |
+| `gates.*` | **write** | — | — | — | — | — | — | — | — | — | — |
+| `maturity` | **write** | — | — | — | — | — | — | — | — | — | — |
+| `cycle` | **write** | — | — | — | — | — | — | — | — | — | — |
+| `artifacts.requirements` | — | — | — | — | — | — | **write** | — | — | — | — |
+| `artifacts.requirements_development` | — | — | — | — | — | — | — | — | — | — | **write** |
+| `artifacts.impact_analysis` | — | — | — | — | — | — | — | **write** | — | — | — |
+| `artifacts.architecture_decision` | — | — | **write** | — | — | — | — | — | — | — | — |
+| `artifacts.execution_plan` | — | **write** | — | — | — | — | — | — | — | — | — |
+| `artifacts.implementation` | — | — | — | **write** | — | — | — | — | — | — | — |
+| `artifacts.test_design` | — | — | — | — | — | — | — | — | **write** | — | — |
+| `artifacts.test_results` | — | — | — | **write** | — | — | — | — | — | — | — |
+| `artifacts.test_verification` | — | — | — | — | — | — | — | — | — | **write** | — |
+| `artifacts.review_findings` | — | — | — | — | **write** | — | — | — | — | — | — |
+| `artifacts.documentation` | — | — | — | — | — | **write** | — | — | — | — | — |
+| `history` | **write** | — | — | — | — | — | — | — | — | — | — |
+| 全フィールド | read | read | read | read | read | read | read | read | read | read | read |
 
 ## Gate 評価
 

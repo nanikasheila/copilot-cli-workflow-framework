@@ -60,9 +60,9 @@ class TestExtractPathReferences(unittest.TestCase):
         self.assertIn("settings.json", extract_path_references(text))
 
     def test_detects_docs_path(self):
-        text = "See `docs/architecture/design-philosophy.md` for background."
+        text = "See `docs/design-philosophy.md` for background."
         self.assertIn(
-            "docs/architecture/design-philosophy.md",
+            "docs/design-philosophy.md",
             extract_path_references(text),
         )
 
@@ -128,10 +128,10 @@ class TestResolvePath(unittest.TestCase):
         self.assertTrue(resolve_path("rules/commit-message.md", self.root))
 
     def test_resolves_repo_root_relative_path(self):
-        # docs/architecture/design-philosophy.md resolves directly from root
-        (self.root / "docs" / "architecture").mkdir(parents=True)
-        (self.root / "docs" / "architecture" / "design-philosophy.md").write_text("x")
-        self.assertTrue(resolve_path("docs/architecture/design-philosophy.md", self.root))
+        # .github/docs/design-philosophy.md resolves via .github-relative path
+        (self.root / ".github" / "docs").mkdir(parents=True, exist_ok=True)
+        (self.root / ".github" / "docs" / "design-philosophy.md").write_text("x")
+        self.assertTrue(resolve_path("docs/design-philosophy.md", self.root))
 
     def test_returns_false_for_missing_file(self):
         self.assertFalse(resolve_path("rules/nonexistent.md", self.root))

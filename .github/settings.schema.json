@@ -155,6 +155,9 @@
         "assessor": {
           "$ref": "#/$defs/agentConfig"
         },
+        "requirements-engineer": {
+          "$ref": "#/$defs/agentConfig"
+        },
         "analyst": {
           "$ref": "#/$defs/agentConfig"
         },

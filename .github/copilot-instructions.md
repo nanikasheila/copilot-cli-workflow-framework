@@ -34,6 +34,7 @@
 | Rules | `rules/` | 宣言的ポリシー。作業時に `view` で確認 |
 | Skills | `skills/` | タスクに応じて自動ロードされるワークフロー手順 |
 | Agents | `agents/` | `/agent` or `task` ツールで呼び出す専門エージェント |
+| Docs | `docs/` | フレームワーク同梱ドキュメント（設計哲学・ADR テンプレート） |
 | Board | `.copilot/boards/` | Feature ごとのランタイムコンテキスト |
 
 ## エージェント連携
@@ -41,7 +42,7 @@
 - オーケストレーターが `task` ツールで各エージェントを Spawn する
 - エージェント間の情報伝達は **Board** を通じて行う
 - `flow_state` / `gates` / `maturity` はオーケストレーターのみが更新する
-- 詳細: `skills/orchestrate-workflow/SKILL.md`, `docs/architecture/design-philosophy.md`
+- 詳細: `skills/orchestrate-workflow/SKILL.md`, `docs/design-philosophy.md`
 
 ### 並列実行の安全性
 
