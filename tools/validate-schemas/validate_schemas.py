@@ -278,6 +278,7 @@ def validate_board_schema(github_dir: Path) -> list[str]:
     flow_states = properties.get("flow_state", {}).get("enum", [])
     expected_states = [
         "initialized",
+        "eliciting",
         "analyzing",
         "designing",
         "planned",
