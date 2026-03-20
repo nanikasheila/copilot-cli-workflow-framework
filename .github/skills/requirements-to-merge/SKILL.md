@@ -65,7 +65,7 @@ git branch --show-current
 | Feature ブランチ上にいる | 続行 |
 | worktree 内にいる | 続行 |
 
-4. Board の存在を確認する:
+1. Board の存在を確認する:
 
 ```bash
 ls .copilot/boards/<feature-id>.json
@@ -76,7 +76,7 @@ ls .copilot/boards/<feature-id>.json
 | Board が存在する | Board を読み取り、`flow_state` を確認 |
 | Board が存在しない | **中断** — `start-feature` スキルで Board を作成してから再実行 |
 
-5. Board の `flow_state` に応じた再開判定:
+1. Board の `flow_state` に応じた再開判定:
 
 | flow_state | 対応 |
 |---|---|
@@ -87,7 +87,7 @@ ls .copilot/boards/<feature-id>.json
 | `testing` / `reviewing` / `approved` | フェーズ 4（PR 提出）から再開 |
 | `submitting` / `completed` | 既に完了済み。ユーザーに通知して終了 |
 
-6. `gate-profiles.json` から Board の `gate_profile` に対応するプロファイルを読み込む
+1. `gate-profiles.json` から Board の `gate_profile` に対応するプロファイルを読み込む
 
 ### 1. 要求開発（develop-requirements）
 

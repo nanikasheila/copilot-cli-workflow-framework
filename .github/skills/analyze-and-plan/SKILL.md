@@ -54,6 +54,7 @@ task ツール（agent_type: requirements-engineer）:
 ```
 
 requirements-engineer の完了後、`requirements_gate` を評価する:
+
 - `approval.status === "approved"` → 次のステップに進む
 - `approval.status === "rejected"` → ユーザーに報告して終了
 - `approval.status === "needs_revision"` → requirements-engineer を再実行
