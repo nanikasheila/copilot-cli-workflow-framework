@@ -5,13 +5,13 @@
 [![GitHub Forks](https://img.shields.io/github/forks/nanikasheila/copilot-cli-workflow-framework?style=social)](https://github.com/nanikasheila/copilot-cli-workflow-framework/network)
 [![GitHub Issues](https://img.shields.io/github/issues/nanikasheila/copilot-cli-workflow-framework)](https://github.com/nanikasheila/copilot-cli-workflow-framework/issues)
 
-> **English summary**: A reusable `.github/` framework that powers a **10-agent AI development workflow** using GitHub Copilot CLI. Agents collaborate through a shared Board, enabling parallel execution of read-only agents (analyst + impact-analyst, etc.) and enforcing context isolation between implementers, test designers, and verifiers. Drop-in ready — copy `.github/` to your project and run `initialize-project`.
+> **English summary**: A reusable `.github/` framework that powers an **11-agent AI development workflow** using GitHub Copilot CLI. Agents collaborate through a shared Board, enabling parallel execution of read-only agents (analyst + impact-analyst, etc.) and enforcing context isolation between implementers, test designers, and verifiers. Drop-in ready — copy `.github/` to your project and run `initialize-project`.
 
 ---
 
 GitHub Copilot CLI で**マルチエージェント開発ワークフロー**を実現する `.github` 構成フレームワーク。
 
-10 体のエージェントが Board を介して協調し、要求分析 → 設計 → 実装 → テスト設計 → 独立検証 → レビュー → ドキュメント → PR の一連のフローを自動化します。読み取り専用エージェントの**並列実行**と**コンテキスト分離**による品質保証が特徴です。
+11 体のエージェントが Board を介して協調し、要求開発 → 要求分析 → 設計 → 実装 → テスト設計 → 独立検証 → レビュー → ドキュメント → PR の一連のフローを自動化します。読み取り専用エージェントの**並列実行**と**コンテキスト分離**による品質保証が特徴です。
 
 > **VS Code 拡張機能版**: [copilot-workflow-framework](https://github.com/nanikasheila/copilot-workflow-framework)
 > — 同じ思想の VS Code 版です。両者の違いは[比較テーブル](#cli-vs-vs-code-拡張機能)を参照してください。
@@ -34,14 +34,15 @@ GitHub Copilot CLI で**マルチエージェント開発ワークフロー**を
 
 ## 構造
 
-`.github/` は **Instructions・Rules・Skills・Agents** の **4 層** + **Board（ランタイム）** で構成されています。
+`.github/` は **Instructions・Rules・Skills・Agents・Docs** の **5 層** + **Board（ランタイム）** で構成されています。
 
 | 層 | 適用方式 | 役割 |
 |---|---|---|
 | **Instructions** | ファイルパターンで自動適用 | 言語別・テスト用のコーディングガイドライン |
 | **Rules** | 各エージェントが `view` で手動参照 | ブランチ命名・コミット形式・ワークフロー規則 |
-| **Skills** | タスクに応じて自動ロード（13 個） | ワークフロー手順の定義（Issue 作成、PR 提出 等） |
-| **Agents** | `task` ツールで呼び出し（10 体） | 専門的な役割を持つカスタムエージェント |
+| **Skills** | タスクに応じて自動ロード（16 個） | ワークフロー手順の定義（Issue 作成、PR 提出 等） |
+| **Agents** | `task` ツールで呼び出し（11 体） | 専門的な役割を持つカスタムエージェント |
+| **Docs** | フレームワーク同梱ドキュメント | 設計思想・ADR テンプレート（他プロジェクトへ移植可能） |
 | **Board** | ランタイム（`.copilot/boards/`） | Feature 単位の状態管理・エージェント間連携の媒体 |
 
 ### ディレクトリツリー
@@ -55,13 +56,14 @@ GitHub Copilot CLI で**マルチエージェント開発ワークフロー**を
 ├── board-artifacts.schema.json   # Board artifact 定義（成果物スキーマ）
 ├── gate-profiles.schema.json     # Gate Profile スキーマ
 │
-├── agents/                       # カスタムエージェント（10 体）
+├── agents/                       # カスタムエージェント（11 体）
 │   ├── analyst.agent.md          #   要求分析・受け入れ基準策定
 │   ├── architect.agent.md        #   構造設計・設計判断
 │   ├── assessor.agent.md         #   プロジェクト全体評価
 │   ├── developer.agent.md        #   実装・デバッグ
 │   ├── impact-analyst.agent.md   #   影響分析・依存グラフ・リスク評価
 │   ├── planner.agent.md           #   タスク分解・計画策定
+│   ├── requirements-engineer.agent.md  #   要求開発・対話的要求引き出し
 │   ├── reviewer.agent.md         #   コードレビュー・品質・セキュリティ検証
 │   ├── test-designer.agent.md    #   テストケース設計
 │   ├── test-verifier.agent.md    #   テスト検証・品質判定
@@ -72,7 +74,8 @@ GitHub Copilot CLI で**マルチエージェント開発ワークフロー**を
 │   ├── javascript.instructions.md
 │   ├── typescript.instructions.md
 │   ├── python.instructions.md
-│   └── test.instructions.md
+│   ├── test.instructions.md
+│   └── verification.instructions.md
 │
 ├── rules/                        # 開発ルール（手動参照）
 │   ├── development-workflow.md
@@ -87,20 +90,27 @@ GitHub Copilot CLI で**マルチエージェント開発ワークフロー**を
 │   ├── adr-management.md         #   ADR テンプレート・ステータス管理・不変原則
 │   └── protected-files.md        #   保護ファイル一覧・変更手順
 │
-├── skills/                       # ワークフロースキル（13 個）
+├── skills/                       # ワークフロースキル（16 個）
 │   ├── analyze-and-plan/
 │   ├── assess-project/
 │   ├── cleanup-worktree/
 │   ├── configure-model/
+│   ├── develop-requirements/
+│   ├── execute-plan/
 │   ├── generate-gitignore/
 │   ├── initialize-project/
 │   ├── manage-board/
 │   ├── merge-nested-branch/
 │   ├── orchestrate-workflow/
+│   ├── requirements-to-merge/
 │   ├── resolve-conflict/
 │   ├── review-code/
 │   ├── start-feature/
 │   └── submit-pull-request/
+│
+├── docs/                         # フレームワーク同梱ドキュメント
+│   ├── design-philosophy.md      #   設計思想（Pace Layering, NFR as Structure）
+│   └── adr-template.md           #   ADR 標準テンプレート
 │
 └── workflows/
     └── ci.yml                    # CI ワークフロー
@@ -114,9 +124,8 @@ docs/
 └── architecture/                 # 構造ドキュメント（architect/writer が維持）
     ├── module-map.md             #   ディレクトリごとの責務・層の対応・依存方向
     ├── data-flow.md              #   主要データの流れ・Source of Truth
-    ├── design-philosophy.md      #   設計思想
     ├── glossary.md               #   ドメイン固有の用語定義
-    └── adr/                      #   設計判断記録（ADR-001, ADR-002, ...）
+    └── adr/                      #   設計判断記録（ADR-000-template, ADR-001, ...）
 ```
 
 ### tools/（フレームワーク外ツール）
@@ -148,6 +157,7 @@ lefthook.yml                      # プリコミットフック設定（Lefthook
 
 | エージェント | 役割 | 並列安全 | 備考 |
 |---|---|---|---|
+| `requirements-engineer` | 要求開発・対話的要求引き出し | — | 対話型。analyst の前工程として機能 |
 | `analyst` | 要求分析・受け入れ基準策定 | ✅ | 読み取り専用。impact-analyst と並列実行可能 |
 | `impact-analyst` | 影響分析・依存グラフ・リスク評価 | ✅ | 読み取り専用。analyst と並列実行可能 |
 | `architect` | 構造設計・設計判断 | — | エスカレーション時のみ呼び出し |
@@ -170,8 +180,11 @@ lefthook.yml                      # プリコミットフック設定（Lefthook
 | スキル | 用途 |
 |---|---|
 | `start-feature` | Issue 作成・ブランチ・worktree 準備で新規作業を開始 |
+| `develop-requirements` | requirements-engineer を単独で呼び出し、要求開発を実行 |
 | `analyze-and-plan` | 要求分析（analyst）・影響分析（impact-analyst）・計画策定（planner）を連携実行 |
 | `orchestrate-workflow` | Feature 開発フロー全体のオーケストレーション手順 |
+| `execute-plan` | plan.md のタスク一覧を依存関係に基づき並列実行 |
+| `requirements-to-merge` | 要求開発→計画→実装→PR 提出の一括フロー |
 | `manage-board` | Board の CRUD・状態遷移・Gate 評価・アーカイブ |
 | `review-code` | コードレビュー実行・修正委任 |
 | `submit-pull-request` | 変更のコミット・PR 作成・マージ |
@@ -187,41 +200,46 @@ lefthook.yml                      # プリコミットフック設定（Lefthook
 
 ## 開発フロー
 
-`orchestrate-workflow` スキルが定義する 9 フェーズの開発フローです。読み取り専用エージェントは並列実行されます。
+`orchestrate-workflow` スキルが定義する 11 フェーズの開発フローです。読み取り専用エージェントは並列実行されます。
 
 ```mermaid
 flowchart TD
     P1["Phase 1: start-feature<br/>Issue 作成 → ブランチ → worktree 準備"]
-    P2A["analyst<br/>要求分析・受け入れ基準"]
-    P2B["impact-analyst<br/>影響分析・リスク評価"]
-    P3["Phase 3: architect<br/>構造変更エスカレーション<br/>（必要時のみ）"]
-    P4["Phase 4: planner<br/>タスク分解・実行計画"]
-    P5A["developer<br/>実装・デバッグ"]
-    P5B["test-designer<br/>テストケース設計"]
-    P6["Phase 6: test-verifier<br/>独立検証<br/>（実装者 ≠ 検証者）"]
-    P7{"Phase 7: reviewer<br/>コードレビュー<br/>セキュリティ検証"}
-    P8["Phase 8: writer<br/>ドキュメント更新<br/>（必要時のみ）"]
-    P9["Phase 9: submit-pull-request<br/>PR 作成 → マージ → クリーンアップ"]
+    P2["Phase 2: requirements-engineer<br/>要求開発・対話的引き出し"]
+    P3A["analyst<br/>要求分析・受け入れ基準"]
+    P3B["impact-analyst<br/>影響分析・リスク評価"]
+    P4["Phase 4: architect<br/>構造変更エスカレーション<br/>（必要時のみ）"]
+    P5["Phase 5: planner<br/>タスク分解・実行計画"]
+    P6A["developer<br/>実装・デバッグ"]
+    P6B["test-designer<br/>テストケース設計"]
+    P7["Phase 7: test-verifier<br/>独立検証<br/>（実装者 ≠ 検証者）"]
+    P8{"Phase 8: reviewer<br/>コードレビュー<br/>セキュリティ検証"}
+    P9["Phase 9: writer<br/>ドキュメント更新<br/>（必要時のみ）"]
+    P10["Phase 10: submit-pull-request<br/>PR 作成 → マージ"]
+    P11["Phase 11: cleanup-worktree<br/>worktree・ブランチ整理"]
 
-    P1 --> P2A & P2B
-    P2A & P2B --> P3
-    P3 --> P4
-    P4 --> P5A & P5B
-    P5A & P5B --> P6
-    P6 --> P7
-    P7 -->|NG| P5A
-    P7 -->|OK| P8
-    P8 --> P9
+    P1 --> P2
+    P2 --> P3A & P3B
+    P3A & P3B --> P4
+    P4 --> P5
+    P5 --> P6A & P6B
+    P6A & P6B --> P7
+    P7 --> P8
+    P8 -->|NG| P6A
+    P8 -->|OK| P9
+    P9 --> P10
+    P10 --> P11
 
-    style P2A fill:#d4edda,stroke:#28a745
-    style P2B fill:#d4edda,stroke:#28a745
-    style P5B fill:#d4edda,stroke:#28a745
-    style P6 fill:#d4edda,stroke:#28a745
-    style P3 fill:#fff3cd,stroke:#ffc107
-    style P8 fill:#fff3cd,stroke:#ffc107
+    style P2 fill:#cce5ff,stroke:#0366d6
+    style P3A fill:#d4edda,stroke:#28a745
+    style P3B fill:#d4edda,stroke:#28a745
+    style P6B fill:#d4edda,stroke:#28a745
+    style P7 fill:#d4edda,stroke:#28a745
+    style P4 fill:#fff3cd,stroke:#ffc107
+    style P9 fill:#fff3cd,stroke:#ffc107
 ```
 
-> 🟢 **並列実行可能**（読み取り専用）　🟡 **必要時のみ呼び出し**
+> 🔵 **対話型**（ユーザーとの対話が必要）　🟢 **並列実行可能**（読み取り専用）　🟡 **必要時のみ呼び出し**
 
 ### Board によるエージェント間連携
 
@@ -237,14 +255,14 @@ flowchart TD
 
 ## オーケストレーション
 
-> 開発フロー（9フェーズ）が「**何をするか**」を定義し、オーケストレーションが「**どう駆動するか**」を担う。両者は**両輪**の関係です。
+> 開発フロー（11フェーズ）が「**何をするか**」を定義し、オーケストレーションが「**どう駆動するか**」を担う。両者は**両輪**の関係です。
 
 ### orchestrate-workflow スキルの役割
 
 `orchestrate-workflow` スキルはオーケストレーターとして以下を管理します:
 
 - **Board の読み書き** — Feature ごとの状態・成果物・履歴を JSON に永続化
-- **Flow State の遷移** — `initialized → analyzing → ... → completed` の状態機械を制御
+- **Flow State の遷移** — `initialized → eliciting → analyzing → ... → completed` の状態機械を制御
 - **Gate 評価** — フェーズ遷移前に品質基準を自動チェック（`gate-profiles.json` 定義）
 - **エージェント呼び出し** — `task` ツールで各エージェントを独立コンテキストで起動
 - **SQL ミラー同期** — Board JSON と同時に SQL テーブルを更新し、高速クエリを維持
@@ -270,6 +288,7 @@ flowchart LR
 
     subgraph Agents["専門エージェント（task ツール経由）"]
         direction LR
+        A0["requirements-engineer"]
         A1["analyst"]
         A2["impact-analyst"]
         A3["developer"]
@@ -302,15 +321,20 @@ Gate 条件の詳細は `.github/rules/gate-profiles.json` を参照してくだ
 ```mermaid
 stateDiagram-v2
     [*] --> initialized: start-feature
-    initialized --> analyzing: feature_defined
-    analyzing --> designing: analysis_complete
-    designing --> planning: design_approved (optional)
-    planning --> implementing: plan_ready
-    implementing --> verifying: implementation_complete
-    verifying --> reviewing: tests_passed
-    reviewing --> documenting: review_approved
+    initialized --> eliciting: requirements_gate
+    initialized --> analyzing: analysis_gate (skip requirements)
+    eliciting --> analyzing: analysis_gate
+    analyzing --> designing: design_gate
+    analyzing --> planned: plan_gate (skip design)
+    designing --> planned: plan_gate
+    planned --> implementing: implementation_gate
+    implementing --> testing: test_gate
+    testing --> reviewing: review_gate
+    reviewing --> approved: review_approved
     reviewing --> implementing: review_rejected (loop back)
-    documenting --> submitting: docs_updated (optional)
+    approved --> documenting: documentation_gate
+    approved --> submitting: submit_gate (skip docs)
+    documenting --> submitting: submit_gate
     submitting --> completed: pr_merged
     completed --> [*]
 ```
@@ -335,8 +359,11 @@ stateDiagram-v2
 
 | ジョブ | 内容 |
 |---|---|
-| `lint-python` | Ruff でコードスタイルと型チェック |
+| `lint-python` | Ruff でコードスタイルとフォーマット検証 |
 | `lint-markdown` | markdownlint-cli2 で Markdown 整合性確認 |
+| `validate-schemas` | JSON スキーマ整合性バリデーション |
+| `validate-config` | GitHub 設定ファイルのバリデーション |
+| `test` | Python ユニットテスト（pytest） |
 | `validate-architecture` | ポインタ腐敗・サイズ超過・ADR ステータス異常を検出 |
 
 ---
