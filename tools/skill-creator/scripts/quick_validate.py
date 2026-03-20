@@ -36,7 +36,7 @@ def validate_skill(skill_path):
         )
 
     # Read and validate frontmatter
-    content = skill_md.read_text()
+    content = skill_md.read_text(encoding="utf-8")
     if not content.startswith("---"):
         return False, format_error(
             "No YAML frontmatter found",
