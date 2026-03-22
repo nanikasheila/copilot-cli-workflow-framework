@@ -528,6 +528,102 @@
       "additionalProperties": false
     },
 
+    "artifact_validation_plan": {
+      "type": "object",
+      "description": "test-designer が出力する妥当性確認計画。V字モデルの左辺で策定し、各受け入れ基準（AC）の検証方法・合格基準を定義する",
+      "required": ["summary", "validation_items", "coverage_summary"],
+      "properties": {
+        "summary": { "type": "string", "description": "妥当性確認計画の概要" },
+        "validation_items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ac_id", "requirement_ref", "description", "validation_method", "pass_criteria"],
+            "properties": {
+              "ac_id": { "type": "string", "description": "受け入れ基準 ID（例: AC-001）" },
+              "requirement_ref": { "type": "string", "description": "対応する要求 ID（例: FR-001）" },
+              "description": { "type": "string", "description": "受け入れ基準の内容" },
+              "validation_method": {
+                "type": "string",
+                "enum": ["automated_test", "manual_check", "review", "demo"],
+                "description": "検証方法"
+              },
+              "test_case_refs": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "対応するテストケース ID"
+              },
+              "expected_evidence": { "type": "string", "description": "期待するエビデンスの説明" },
+              "pass_criteria": { "type": "string", "description": "合格基準" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "coverage_summary": {
+          "type": "object",
+          "required": ["total_ac", "covered_ac"],
+          "properties": {
+            "total_ac": { "type": "integer", "description": "AC 総数" },
+            "covered_ac": { "type": "integer", "description": "検証計画でカバーされた AC 数" },
+            "uncovered_ac": { "type": "integer", "description": "未カバーの AC 数" },
+            "coverage_rate": { "type": "string", "description": "AC カバレッジ率" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_acceptance_validation": {
+      "type": "object",
+      "description": "test-verifier が出力する妥当性確認結果。V字モデルの右辺で各 AC の充足を判定する",
+      "required": ["summary", "verdict", "validation_results", "satisfaction_summary"],
+      "properties": {
+        "summary": { "type": "string", "description": "妥当性確認結果の概要" },
+        "verdict": {
+          "type": "string",
+          "enum": ["validated", "not_validated", "partially_validated"],
+          "description": "総合判定"
+        },
+        "validation_results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ac_id", "requirement_ref", "status"],
+            "properties": {
+              "ac_id": { "type": "string", "description": "受け入れ基準 ID" },
+              "requirement_ref": { "type": "string", "description": "対応する要求 ID" },
+              "status": {
+                "type": "string",
+                "enum": ["satisfied", "not_satisfied", "partial"],
+                "description": "AC 充足状態"
+              },
+              "evidence": { "type": "string", "description": "充足を裏付けるエビデンス" },
+              "test_results_ref": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "参照テスト結果（例: TC-001: pass）"
+              },
+              "notes": { "type": "string", "description": "補足" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "satisfaction_summary": {
+          "type": "object",
+          "required": ["total_ac", "satisfied", "satisfaction_rate"],
+          "properties": {
+            "total_ac": { "type": "integer" },
+            "satisfied": { "type": "integer" },
+            "not_satisfied": { "type": "integer" },
+            "satisfaction_rate": { "type": "string", "description": "AC 充足率" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+
     "api_signature": {
       "type": "object",
       "description": "公開関数・クラスのシグネチャ情報",

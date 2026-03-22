@@ -75,6 +75,35 @@ model: claude-sonnet-4.6
 }
 ```
 
+`artifacts.validation_plan` に以下の構造で書き込む（V字モデル左辺 — 妥当性確認計画）:
+
+```json
+{
+  "summary": "妥当性確認計画の概要",
+  "validation_items": [
+    {
+      "ac_id": "AC-001",
+      "requirement_ref": "FR-001",
+      "description": "受け入れ基準の内容",
+      "validation_method": "automated_test | manual_check | review | demo",
+      "test_case_refs": ["TC-001", "TC-002"],
+      "expected_evidence": "期待するエビデンスの説明",
+      "pass_criteria": "合格基準"
+    }
+  ],
+  "coverage_summary": {
+    "total_ac": 5,
+    "covered_ac": 5,
+    "uncovered_ac": 0,
+    "coverage_rate": "100%"
+  }
+}
+```
+
+> **Why**: V字モデルでは、要求に対する妥当性確認（Validation）は実装前に計画する。
+> **How**: テストケース設計と同時に、各 AC に対する検証方法・合格基準を定義する。
+> この計画が test-verifier による妥当性確認（Phase 8）の入力となる。
+
 ### Maturity 別のテスト設計基準
 
 | Maturity | テスト設計の深さ |
@@ -87,9 +116,9 @@ model: claude-sonnet-4.6
 
 ### 出力スキーマ契約
 
-本エージェントの出力は `board-artifacts.schema.json` の `artifact_test_design` 定義に準拠する。
+本エージェントの出力は `board-artifacts.schema.json` の `artifact_test_design` および `artifact_validation_plan` 定義に準拠する。
 
-出力先: `artifacts.test_design`
+出力先: `artifacts.test_design`, `artifacts.validation_plan`
 
 ## Sealed テスト基準（オプション）
 
@@ -142,6 +171,7 @@ Board の `artifacts.test_design` に以下を追加して書き込む:
 4. **エッジケースの補完**: EC に対応するテストケースを追加
 5. **カバレッジマトリクスの作成**: 要求 → テストケースのトレーサビリティを確保
 6. **テストインフラの特定**: 必要なフィクスチャ・ヘルパーを列挙
+7. **妥当性確認計画の策定**: 各 AC に対する検証方法・合格基準・期待エビデンスを定義し `validation_plan` に出力
 
 ## 実装者（developer）との関係
 
@@ -152,8 +182,9 @@ Board の `artifacts.test_design` に以下を追加して書き込む:
 ### テスト駆動の流れ
 
 ```text
-analyst → test-designer → developer（実装 + テストコード） → test-verifier
-  要求       テスト仕様       実装 + テストコード実装          第三者検証
+analyst → test-designer → developer（実装 + テストコード） → test-verifier（検証 + 妥当性確認）
+  要求       テスト仕様 +       実装 + テストコード実装          第三者検証 + AC充足判定
+             妥当性確認計画
 ```
 
 ## 他エージェントとの連携

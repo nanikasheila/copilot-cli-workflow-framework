@@ -19,6 +19,10 @@ applyTo: "**/*"
 >              アルゴリズム検証（カテゴリ 3）
 >                データ駆動検証（カテゴリ 7）
 > ```
+>
+> **ワークフローでの実現**: `orchestrate-workflow` の Phase 6 で test-designer が
+> `validation_plan` を策定し、Phase 8 で test-verifier が `acceptance_validation` を
+> 実施する。`validation_gate` により AC 充足が Gate 通過条件となる。
 
 ---
 

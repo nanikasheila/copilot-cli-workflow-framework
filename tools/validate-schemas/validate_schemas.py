@@ -284,6 +284,7 @@ def validate_board_schema(github_dir: Path) -> list[str]:
         "planned",
         "implementing",
         "testing",
+        "validating",
         "reviewing",
         "approved",
         "documenting",

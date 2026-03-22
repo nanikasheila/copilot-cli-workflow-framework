@@ -8,6 +8,7 @@
       "plan_gate":           { "required": false, "description": "形式的な計画策定は不要" },
       "implementation_gate": { "required": true,  "description": "コードの存在は最低限必要" },
       "test_gate":           { "required": false, "description": "テスト不要。手動確認のみでも可" },
+      "validation_gate":     { "required": false, "description": "妥当性確認不要" },
       "review_gate":         { "required": false, "description": "セルフレビューのみ。reviewer スキップ可" },
       "documentation_gate":  { "required": false, "description": "ドキュメント不要" },
       "submit_gate":         { "required": true,  "description": "コミット・プッシュは必要" }
@@ -19,6 +20,7 @@
       "plan_gate":           { "required": true,  "description": "planner による実行計画を策定する" },
       "implementation_gate": { "required": true,  "evidence_required": ["commit_sha"], "description": "コード実装の完了を確認" },
       "test_gate":           { "required": true,  "pass_rate": 100, "coverage_min": 70, "evidence_required": ["test_output", "coverage_report"], "automated_checks": [{"name": "test", "type": "test"}], "description": "主要パスのテスト PASS + カバレッジ 70% 以上" },
+      "validation_gate":     { "required": true,  "satisfaction_rate_min": 100, "evidence_required": ["validation_report"], "description": "全受け入れ基準（AC）の充足を確認" },
       "review_gate":         { "required": true,  "checks": ["logic", "security_basic"], "evidence_required": ["review_verdict"], "description": "ロジック + 基本セキュリティチェック" },
       "documentation_gate":  { "required": false, "description": "必要に応じて実施" },
       "submit_gate":         { "required": true,  "description": "PR 作成・マージ" }
@@ -30,6 +32,7 @@
       "plan_gate":           { "required": true,  "description": "planner による実行計画を策定する" },
       "implementation_gate": { "required": true,  "evidence_required": ["commit_sha"], "description": "コード実装の完了を確認" },
       "test_gate":           { "required": true,  "pass_rate": 100, "coverage_min": 85, "evidence_required": ["test_output", "coverage_report", "build_success"], "automated_checks": [{"name": "build", "type": "build"}, {"name": "test", "type": "test"}], "description": "全テスト PASS + カバレッジ 85% 以上" },
+      "validation_gate":     { "required": true,  "satisfaction_rate_min": 100, "evidence_required": ["validation_report"], "description": "全受け入れ基準（AC）の充足を確認" },
       "review_gate":         { "required": true,  "checks": ["logic", "security_deep", "test_quality"], "evidence_required": ["review_verdict"], "description": "ロジック + 深層セキュリティ + テスト品質" },
       "documentation_gate":  { "required": true,  "description": "ドキュメント更新必須" },
       "submit_gate":         { "required": true,  "description": "PR 作成・マージ" }
@@ -41,6 +44,7 @@
       "plan_gate":           { "required": true,  "description": "planner による実行計画を策定する" },
       "implementation_gate": { "required": true,  "evidence_required": ["commit_sha"], "description": "コード実装の完了を確認" },
       "test_gate":           { "required": true,  "pass_rate": 100, "coverage_min": 90, "regression_required": true, "evidence_required": ["test_output", "coverage_report", "build_success", "lint_pass"], "automated_checks": [{"name": "build", "type": "build"}, {"name": "lint", "type": "lint"}, {"name": "test", "type": "test"}], "description": "全テスト PASS + カバレッジ 90% 以上 + 回帰テスト" },
+      "validation_gate":     { "required": true,  "satisfaction_rate_min": 100, "evidence_required": ["validation_report"], "description": "全受け入れ基準（AC）の充足 + 全エビデンス必須" },
       "review_gate":         { "required": true,  "checks": ["logic", "security_deep", "architecture", "performance", "test_quality"], "evidence_required": ["review_verdict"], "description": "全観点でのフルレビュー" },
       "documentation_gate":  { "required": true,  "description": "ドキュメント更新・リリースノート必須" },
       "submit_gate":         { "required": true,  "description": "PR 作成・マージ" }
@@ -52,6 +56,7 @@
       "plan_gate":           { "required": true,  "description": "planner による実行計画を策定する" },
       "implementation_gate": { "required": true,  "evidence_required": ["commit_sha"], "description": "コード実装の完了を確認" },
       "test_gate":           { "required": true,  "pass_rate": 100, "coverage_min": 70, "evidence_required": ["test_output", "coverage_report"], "automated_checks": [{"name": "test", "type": "test"}], "description": "主要パスのテスト PASS + カバレッジ 70% 以上" },
+      "validation_gate":     { "required": true,  "satisfaction_rate_min": 100, "evidence_required": ["validation_report"], "description": "全受け入れ基準（AC）の充足を確認" },
       "review_gate":         { "required": true,  "checks": ["logic", "security_basic"], "evidence_required": ["review_verdict"], "description": "ロジック + 基本セキュリティチェック" },
       "documentation_gate":  { "required": false, "description": "sandbox では不要" },
       "submit_gate":         { "required": "blocked", "description": "main マージ禁止。sandbox は worktree 内で完結する検証専用" }
