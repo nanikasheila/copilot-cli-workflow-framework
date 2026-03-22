@@ -334,7 +334,24 @@ architect をスキップする場合:
 
 **Gate**: `test_gate` — `gate-profiles.json` の `required` / `pass_rate` / `coverage_min` / `regression_required` に従う
 
-### 8. コードレビュー
+### 8. 妥当性確認（Validation）
+
+- test-verifier が Phase 7 で技術的検証（Verification）を完了した後、妥当性確認を実施する
+- `test-verifier` エージェントに妥当性確認を依頼する（Phase 7 と同一または別呼び出し）
+- test-verifier は `artifacts.validation_plan` に基づき、以下を実施する:
+  - 各受け入れ基準（AC）に対してエビデンスを照合し充足を判定する
+  - テスト結果、コードレビュー、手動確認などのエビデンスを組み合わせて判定する
+  - per-AC の充足状態（satisfied / not_satisfied / partial）をレポートする
+- test-verifier は Board の `artifacts.acceptance_validation` に妥当性確認結果を書き込む
+- verdict が `not_validated` または `partially_validated` → `flow_state` を `implementing` にループバック
+
+> **V字モデルとの対応**: 左辺（Phase 6）で test-designer が策定した validation_plan を、
+> 右辺（Phase 8）で test-verifier が実行する。これにより「テストが通った」だけでなく
+> 「要求が満たされた」ことを構造的に証明する。
+
+**Gate**: `validation_gate` — `gate-profiles.json` の `required` / `satisfaction_rate_min` に従う
+
+### 9. コードレビュー
 
 - **レビュー準備（並列）**: `explore` エージェントを並列で起動し、変更差分のコンテキストと関連規約を収集する
 - `reviewer` エージェントにレビューを依頼する（`code-review` agent_type を使用）
@@ -347,7 +364,7 @@ architect をスキップする場合:
 
 - reviewer の verdict が `fix_required` → `flow_state` を `implementing` に戻す
 - `developer` に reviewer の `fix_instruction` を渡して修正を依頼
-- 修正 → test-verifier で再検証 → 再レビュー（Gate を再評価）
+- 修正 → test-verifier で再検証 → 妥当性確認 → 再レビュー（Gate を再評価）
 - `lgtm` で `approved` に遷移
 
 #### テスト不足時のループバック
@@ -356,7 +373,13 @@ architect をスキップする場合:
 - `developer` に test-verifier のフィードバック（missing TC、quality_issues）を渡して修正を依頼
 - test-verifier の verdict が `conditional_pass` → planner に許容判断を委ねる
 
-### 9. ドキュメント・ルール更新
+#### 妥当性確認不合格時のループバック
+
+- acceptance_validation の verdict が `not_validated` → `flow_state` を `implementing` に戻す
+- `developer` に未充足 AC の情報を渡して修正を依頼
+- acceptance_validation の verdict が `partially_validated` → planner に許容判断を委ねる
+
+### 10. ドキュメント・ルール更新
 
 - `writer` エージェントにドキュメント更新を依頼する
 - writer は Board の `artifacts.documentation` に更新ファイル一覧を書き込む
@@ -371,7 +394,7 @@ architect をスキップする場合:
 | 新規モジュール追加 | `docs/architecture/module-map.md` + 関連 ADR |
 | バグ修正のみ | 原則不要（挙動が変わる場合は該当ファイルを更新） |
 
-### 10. PR 提出 & マージ
+### 11. PR 提出 & マージ
 
 - `submit-pull-request` スキルに従い、コミット → プッシュ → PR 作成 → マージ
 - GitHub を使用しない場合はローカルで `git merge --no-ff` を実施する
@@ -382,7 +405,7 @@ architect をスキップする場合:
 
 **Gate**: `submit_gate`（全 Maturity で必須）
 
-### 11. クリーンアップ
+### 12. クリーンアップ
 
 - `cleanup-worktree` スキルに従い、worktree・ブランチを整理する
 - Issue トラッカー利用時: `rules/issue-tracker-workflow.md` に従い Done に更新
@@ -403,9 +426,10 @@ architect をスキップする場合:
 4. 計画策定                      → [plan_gate]
 5. 実装                          → [implementation_gate]
 6. テスト                        → [test_gate]
-7. コードレビュー                → [review_gate] → approved
+7. 妥当性確認                    → [validation_gate]
+8. コードレビュー                → [review_gate] → approved
    ── ここで終了 ──
-8. クリーンアップ（Board 破棄）  → worktree・ブランチ削除
+9. クリーンアップ（Board 破棄）  → worktree・ブランチ削除
 ```
 
 ### submit_gate の blocked 振る舞い

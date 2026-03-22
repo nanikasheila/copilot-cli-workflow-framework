@@ -200,7 +200,7 @@ lefthook.yml                      # プリコミットフック設定（Lefthook
 
 ## 開発フロー
 
-`orchestrate-workflow` スキルが定義する 11 フェーズの開発フローです。読み取り専用エージェントは並列実行されます。
+`orchestrate-workflow` スキルが定義する 12 フェーズの開発フローです。読み取り専用エージェントは並列実行されます。
 
 ```mermaid
 flowchart TD
@@ -211,12 +211,13 @@ flowchart TD
     P4["Phase 4: architect<br/>構造変更エスカレーション<br/>（必要時のみ）"]
     P5["Phase 5: planner<br/>タスク分解・実行計画"]
     P6A["developer<br/>実装・デバッグ"]
-    P6B["test-designer<br/>テストケース設計"]
+    P6B["test-designer<br/>テストケース設計<br/>+ 妥当性確認計画"]
     P7["Phase 7: test-verifier<br/>独立検証<br/>（実装者 ≠ 検証者）"]
-    P8{"Phase 8: reviewer<br/>コードレビュー<br/>セキュリティ検証"}
-    P9["Phase 9: writer<br/>ドキュメント更新<br/>（必要時のみ）"]
-    P10["Phase 10: submit-pull-request<br/>PR 作成 → マージ"]
-    P11["Phase 11: cleanup-worktree<br/>worktree・ブランチ整理"]
+    P8["Phase 8: test-verifier<br/>妥当性確認（Validation）<br/>AC 充足判定"]
+    P9{"Phase 9: reviewer<br/>コードレビュー<br/>セキュリティ検証"}
+    P10["Phase 10: writer<br/>ドキュメント更新<br/>（必要時のみ）"]
+    P11["Phase 11: submit-pull-request<br/>PR 作成 → マージ"]
+    P12["Phase 12: cleanup-worktree<br/>worktree・ブランチ整理"]
 
     P1 --> P2
     P2 --> P3A & P3B
@@ -227,19 +228,22 @@ flowchart TD
     P7 --> P8
     P8 -->|NG| P6A
     P8 -->|OK| P9
-    P9 --> P10
+    P9 -->|NG| P6A
+    P9 -->|OK| P10
     P10 --> P11
+    P11 --> P12
 
     style P2 fill:#cce5ff,stroke:#0366d6
     style P3A fill:#d4edda,stroke:#28a745
     style P3B fill:#d4edda,stroke:#28a745
     style P6B fill:#d4edda,stroke:#28a745
     style P7 fill:#d4edda,stroke:#28a745
+    style P8 fill:#f8d7da,stroke:#dc3545
     style P4 fill:#fff3cd,stroke:#ffc107
-    style P9 fill:#fff3cd,stroke:#ffc107
+    style P10 fill:#fff3cd,stroke:#ffc107
 ```
 
-> 🔵 **対話型**（ユーザーとの対話が必要）　🟢 **並列実行可能**（読み取り専用）　🟡 **必要時のみ呼び出し**
+> 🔵 **対話型**（ユーザーとの対話が必要）　🟢 **並列実行可能**（読み取り専用）　🟡 **必要時のみ呼び出し**　🔴 **V字モデル対応**（AC 充足を判定）
 
 ### Board によるエージェント間連携
 
@@ -255,7 +259,7 @@ flowchart TD
 
 ## オーケストレーション
 
-> 開発フロー（11フェーズ）が「**何をするか**」を定義し、オーケストレーションが「**どう駆動するか**」を担う。両者は**両輪**の関係です。
+> 開発フロー（12フェーズ）が「**何をするか**」を定義し、オーケストレーションが「**どう駆動するか**」を担う。両者は**両輪**の関係です。
 
 ### orchestrate-workflow スキルの役割
 

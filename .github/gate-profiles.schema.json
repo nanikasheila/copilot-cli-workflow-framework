@@ -31,6 +31,7 @@
         "plan_gate":           { "$ref": "#/definitions/gate_condition" },
         "implementation_gate": { "$ref": "#/definitions/gate_condition" },
         "test_gate":           { "$ref": "#/definitions/test_gate_condition" },
+        "validation_gate":     { "$ref": "#/definitions/validation_gate_condition" },
         "review_gate":         { "$ref": "#/definitions/review_gate_condition" },
         "documentation_gate":  { "$ref": "#/definitions/gate_condition" },
         "submit_gate":         { "$ref": "#/definitions/gate_condition" }
@@ -58,7 +59,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["commit_sha", "test_output", "build_success", "lint_pass", "review_verdict", "coverage_report"]
+            "enum": ["commit_sha", "test_output", "build_success", "lint_pass", "review_verdict", "coverage_report", "validation_report"]
           },
           "description": "Gate 通過に必要なエビデンスの種別。evaluate-gate.ps1 が Board の artifacts から検証する"
         },
@@ -116,7 +117,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["commit_sha", "test_output", "build_success", "lint_pass", "review_verdict", "coverage_report"]
+            "enum": ["commit_sha", "test_output", "build_success", "lint_pass", "review_verdict", "coverage_report", "validation_report"]
           },
           "description": "Gate 通過に必要なエビデンスの種別。evaluate-gate.ps1 が Board の artifacts から検証する"
         },
@@ -169,7 +170,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["commit_sha", "test_output", "build_success", "lint_pass", "review_verdict", "coverage_report"]
+            "enum": ["commit_sha", "test_output", "build_success", "lint_pass", "review_verdict", "coverage_report", "validation_report"]
           },
           "description": "Gate 通過に必要なエビデンスの種別。evaluate-gate.ps1 が Board の artifacts から検証する"
         },
@@ -191,6 +192,36 @@
             "additionalProperties": false
           },
           "description": "Gate 通過前に自動実行するチェック。settings.json の project.test/project.build コマンドを参照"
+        },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
+    "validation_gate_condition": {
+      "type": "object",
+      "description": "妥当性確認 Gate 固有の条件。受け入れ基準（AC）の充足を判定する",
+      "required": ["required"],
+      "properties": {
+        "required": {
+          "oneOf": [
+            { "type": "boolean" },
+            { "type": "string", "enum": ["on_escalation"] }
+          ]
+        },
+        "satisfaction_rate_min": {
+          "type": "integer",
+          "description": "要求する最低 AC 充足率（%）",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "evidence_required": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["commit_sha", "test_output", "build_success", "lint_pass", "review_verdict", "coverage_report", "validation_report"]
+          },
+          "description": "Gate 通過に必要なエビデンスの種別"
         },
         "description": { "type": "string" }
       },

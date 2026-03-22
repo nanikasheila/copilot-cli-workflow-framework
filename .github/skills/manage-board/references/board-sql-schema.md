@@ -29,7 +29,7 @@ CREATE TABLE gates (
 -- 初期ロード例:
 -- INSERT INTO gates VALUES ('analysis', 'not_reached', NULL, NULL, NULL);
 -- INSERT INTO gates VALUES ('design', 'not_reached', NULL, NULL, NULL);
--- ... 全8 Gate
+-- ... 全10 Gate
 
 -- Artifact 状態サマリ（JSON 本体は Board JSON に保持）
 CREATE TABLE artifacts (
@@ -48,6 +48,8 @@ CREATE TABLE artifacts (
 -- INSERT INTO artifacts VALUES ('test_design', 'test-designer', 'empty', NULL, NULL);
 -- INSERT INTO artifacts VALUES ('test_results', 'developer', 'empty', NULL, NULL);
 -- INSERT INTO artifacts VALUES ('test_verification', 'test-verifier', 'empty', NULL, NULL);
+-- INSERT INTO artifacts VALUES ('validation_plan', 'test-designer', 'empty', NULL, NULL);
+-- INSERT INTO artifacts VALUES ('acceptance_validation', 'test-verifier', 'empty', NULL, NULL);
 -- INSERT INTO artifacts VALUES ('review_findings', 'reviewer', 'empty', NULL, NULL);
 -- INSERT INTO artifacts VALUES ('documentation', 'writer', 'empty', NULL, NULL);
 
@@ -69,8 +71,8 @@ Board JSON 書き込み後のバリデーションを SQL で高速化:
 ```sql
 -- flow_state の有効性チェック
 SELECT CASE
-  WHEN value IN ('initialized','analyzing','designing','planned','implementing',
-                  'testing','reviewing','approved','documenting','submitting','completed')
+  WHEN value IN ('initialized','eliciting','analyzing','designing','planned','implementing',
+                  'testing','validating','reviewing','approved','documenting','submitting','completed')
   THEN 'valid' ELSE 'INVALID: ' || value
 END AS check_result
 FROM board_state WHERE key = 'flow_state';

@@ -50,6 +50,7 @@
         "planned",
         "implementing",
         "testing",
+        "validating",
         "reviewing",
         "approved",
         "documenting",
@@ -73,6 +74,7 @@
         "plan":          { "$ref": "#/definitions/gate_status" },
         "implementation": { "$ref": "#/definitions/gate_status" },
         "test":          { "$ref": "#/definitions/gate_status" },
+        "validation":    { "$ref": "#/definitions/gate_status" },
         "review":        { "$ref": "#/definitions/gate_status" },
         "documentation": { "$ref": "#/definitions/gate_status" },
         "submit":        { "$ref": "#/definitions/gate_status" }
@@ -119,6 +121,14 @@
         "test_verification": {
           "description": "test-verifier のテスト検証結果",
           "oneOf": [{ "$ref": "board-artifacts.schema.json#/definitions/artifact_test_verification" }, { "type": "null" }]
+        },
+        "validation_plan": {
+          "description": "test-designer の妥当性確認計画（V字モデル左辺）",
+          "oneOf": [{ "$ref": "board-artifacts.schema.json#/definitions/artifact_validation_plan" }, { "type": "null" }]
+        },
+        "acceptance_validation": {
+          "description": "test-verifier の妥当性確認結果（V字モデル右辺）",
+          "oneOf": [{ "$ref": "board-artifacts.schema.json#/definitions/artifact_acceptance_validation" }, { "type": "null" }]
         },
         "review_findings": {
           "type": "array",

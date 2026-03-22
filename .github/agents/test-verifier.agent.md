@@ -15,6 +15,7 @@ developer が実装したテストコードを**実装者とは独立した立�
 - **テスト品質**: テストが正しい振る舞いを検証しているか（偽陽性・偽陰性の検出）
 - **カバレッジ**: コードカバレッジが要求水準を満たしているか
 - **回帰テスト**: 既存テストが全て通過しているか
+- **妥当性確認（Validation）**: validation_plan に基づき、各 AC の充足を判定する
 
 > **Why**: 人間のソフトウェア開発でも実装者とテスト検証者は分離すべきとされる。同一コンテキストでの実装とテストは、確証バイアスによりバグを見逃す。
 > **How**: テスト実行は `task` エージェントに委譲し、結果を test-designer の仕様と照合して客観的に判定する。
@@ -57,6 +58,7 @@ SEQUENTIAL:
 |---|---|
 | `artifacts.requirements` | 受け入れ基準の充足判定 |
 | `artifacts.test_design` | テストケース仕様との照合 |
+| `artifacts.validation_plan` | 妥当性確認計画（AC ごとの検証方法・合格基準） |
 | `artifacts.implementation` | 実装された公開 API の確認 |
 | `maturity` | 通過基準の判断 |
 
@@ -113,9 +115,40 @@ SEQUENTIAL:
 
 ### 出力スキーマ契約
 
-本エージェントの出力は `board-artifacts.schema.json` の `artifact_test_verification` 定義に準拠する。
+本エージェントの出力は `board-artifacts.schema.json` の `artifact_test_verification` および `artifact_acceptance_validation` 定義に準拠する。
 
-出力先: `artifacts.test_verification`
+出力先: `artifacts.test_verification`, `artifacts.acceptance_validation`
+
+### 妥当性確認結果の出力
+
+`artifacts.acceptance_validation` に以下の構造で書き込む（V字モデル右辺 — 妥当性確認の実行結果）:
+
+```json
+{
+  "summary": "妥当性確認結果の概要",
+  "verdict": "validated | not_validated | partially_validated",
+  "validation_results": [
+    {
+      "ac_id": "AC-001",
+      "requirement_ref": "FR-001",
+      "status": "satisfied | not_satisfied | partial",
+      "evidence": "充足を裏付けるエビデンス",
+      "test_results_ref": ["TC-001: pass", "TC-002: pass"],
+      "notes": "補足"
+    }
+  ],
+  "satisfaction_summary": {
+    "total_ac": 5,
+    "satisfied": 4,
+    "not_satisfied": 1,
+    "satisfaction_rate": "80%"
+  }
+}
+```
+
+> **Why**: テストの pass/fail だけでは「要求を満たしているか」の判断ができない。
+> V字モデルの右辺として、validation_plan に定義された各 AC を1つずつ判定し、
+> 充足エビデンスを明示することで、要求に対する妥当性を客観的に証明する。
 
 ## Sealed 基準の検証（オプション）
 
@@ -162,7 +195,8 @@ SEQUENTIAL:
 4. **カバレッジ分析**: カバレッジレポートが利用可能な場合は基準との照合
 5. **品質検証**: 弱いアサーション・偽陽性の検出
 6. **回帰テスト確認**: 既存テストの pass 状況
-7. **verdict の判定**: 総合的な合否判定
+7. **verdict の判定**: 総合的な合否判定 → `artifacts.test_verification` に出力
+8. **妥当性確認**: `validation_plan` の各 AC に対してエビデンスを照合し充足を判定 → `artifacts.acceptance_validation` に出力
 
 ### verdict の判定基準
 

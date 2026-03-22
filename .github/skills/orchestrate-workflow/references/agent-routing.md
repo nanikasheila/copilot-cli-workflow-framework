@@ -15,7 +15,9 @@
 | 計画策定 | planner | `planner` | analyst + impact-analyst の結果を統合して計画 |
 | 実装 | developer | `developer` | ファイル編集が必要 |
 | テストケース設計 | test-designer | `test-designer` | 読み取り専用。要求ベースでテスト仕様を導出 |
+| 妥当性確認計画 | test-designer | `test-designer` | テスト設計と同時に validation_plan を出力 |
 | テスト検証 | test-verifier | `test-verifier` | 実装者と独立した第三者検証 |
+| 妥当性確認 | test-verifier | `test-verifier` | validation_plan に基づく AC 充足判定 |
 | コードレビュー | reviewer | `code-review` | 差分検出に特化した軽量エージェント |
 | ドキュメント | writer | `writer` | ファイル編集が必要 |
 | 事前調査 | — | `explore` | 高速・並列安全な読み取り専用調査 |
@@ -79,13 +81,14 @@ SEQUENTIAL:
   - planner エージェント呼び出し（analyst + impact-analyst + architect の結果を入力）
 ```
 
-### フェーズ 6: 実装 + テストケース設計
+### フェーズ 6: 実装 + テストケース設計 + 妥当性確認計画
 
 ```text
 PARALLEL（実装とテスト設計は独立に実行可能）:
   - developer エージェント（実装）
-  - test-designer エージェント（要求ベースのテストケース設計 — 読み取り専用）
+  - test-designer エージェント（要求ベースのテストケース設計 + 妥当性確認計画策定 — 読み取り専用）
   ※ test-designer は requirements を入力とするため、実装を待たずに設計可能
+  ※ test-designer は test_design と validation_plan を同時に出力する
 SEQUENTIAL:
   - developer がテストコード実装（test-designer の仕様に基づく）
 ```
@@ -93,6 +96,7 @@ SEQUENTIAL:
 > **設計意図**: test-designer は実装コードを見ずに要求からテストを設計する。
 > これにより実装バイアスのないテストケースが得られる。
 > developer は実装完了後に test-designer の仕様を受け取り、テストコードを書く。
+> 同時に策定される validation_plan は Phase 8 で test-verifier が妥当性確認に使用する。
 
 ### フェーズ 7: テスト検証
 
@@ -108,7 +112,18 @@ SEQUENTIAL:
 > **コンテキスト分離の効果**: developer が書いたテストを、developer とは別のコンテキストで検証。
 > 人間のQAチームと同様、「実装者 ≠ 検証者」の原則をLLMにも適用。
 
-### フェーズ 8: コードレビュー
+### フェーズ 8: 妥当性確認（Validation）
+
+```text
+SEQUENTIAL:
+  - test-verifier エージェント呼び出し（validation_plan に基づく AC 充足判定）
+  - 結果を Board artifacts.acceptance_validation に書き込み → validation_gate 評価
+```
+
+> **V字モデル対応**: Phase 6 で test-designer が策定した validation_plan（左辺）を、
+> Phase 8 で test-verifier が実行（右辺）する。テスト pass だけでなく AC 充足を証明する。
+
+### フェーズ 9: コードレビュー
 
 ```text
 PARALLEL（レビュー準備）:
@@ -118,7 +133,7 @@ SEQUENTIAL:
   - reviewer エージェント呼び出し（code-review タイプ）
 ```
 
-### フェーズ 9-11: ドキュメント・PR・クリーンアップ
+### フェーズ 10-12: ドキュメント・PR・クリーンアップ
 
 ```text
 SEQUENTIAL:

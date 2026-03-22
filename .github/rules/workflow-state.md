@@ -30,7 +30,9 @@ planned     ──[implementation_gate]► implementing
 implementing──[test_gate]──────► testing
 implementing──[review_gate]───► reviewing       ※ test_gate スキップ時
 implementing──────────────────► approved         ※ experimental（test/review スキップ）
-testing     ──[review_gate]───► reviewing
+testing     ──[validation_gate]► validating
+validating  ──[review_gate]───► reviewing
+validating  ──(not_validated)─► implementing    ※ ループバック
 reviewing   ──(lgtm)──────────► approved        ※ () = verdict
 reviewing   ──(fix_required)──► implementing    ※ ループバック
 approved    ──[documentation_gate]► documenting  ※ スキップ可
@@ -57,7 +59,10 @@ submitting  ──────────────────► completed
 | `implementing` | `testing` | `test_gate` | 実装完了。テストが必要な場合 |
 | `implementing` | `reviewing` | `review_gate` | Gate Profile で `test_gate.required: false` の場合 |
 | `implementing` | `approved` | — | Gate Profile で test/review 両方 `required: false` の場合（experimental） |
-| `testing` | `reviewing` | `review_gate` | テスト通過後 |
+| `testing` | `validating` | `validation_gate` | 技術的テスト通過後、AC 充足の妥当性確認に進む |
+| `testing` | `reviewing` | `review_gate` | Gate Profile で `validation_gate.required: false` の場合 |
+| `validating` | `reviewing` | `review_gate` | 全 AC の充足を確認後、コードレビューに進む |
+| `validating` | `implementing` | — | 妥当性確認で AC 未充足の場合（ループバック） |
 | `reviewing` | `approved` | — | reviewer が LGTM を出した場合 |
 | `reviewing` | `implementing` | — | reviewer が `fix_required` を出した場合（ループバック） |
 | `approved` | `documenting` | `documentation_gate` | Gate Profile で `required: true` の場合 |
@@ -114,6 +119,8 @@ sandbox ──► abandoned   ※ sandbox は他の Maturity に昇格不可
 | `artifacts.test_design` | — | — | — | — | — | — | — | — | **write** | — | — |
 | `artifacts.test_results` | — | — | — | **write** | — | — | — | — | — | — | — |
 | `artifacts.test_verification` | — | — | — | — | — | — | — | — | — | **write** | — |
+| `artifacts.validation_plan` | — | — | — | — | — | — | — | — | **write** | — | — |
+| `artifacts.acceptance_validation` | — | — | — | — | — | — | — | — | — | **write** | — |
 | `artifacts.review_findings` | — | — | — | — | **write** | — | — | — | — | — | — |
 | `artifacts.documentation` | — | — | — | — | — | **write** | — | — | — | — | — |
 | `history` | **write** | — | — | — | — | — | — | — | — | — | — |
