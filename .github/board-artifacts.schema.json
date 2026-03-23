@@ -304,6 +304,16 @@
           },
           "additionalProperties": false
         },
+        "assumptions": {
+          "type": "array",
+          "description": "要求の前提となる仮定",
+          "items": { "type": "string" }
+        },
+        "failure_scenarios": {
+          "type": "array",
+          "description": "要求が不適切となるシナリオ（反例）",
+          "items": { "type": "string" }
+        },
         "approval": {
           "type": "object",
           "description": "ユーザー承認の状態",
@@ -569,6 +579,11 @@
             "coverage_rate": { "type": "string", "description": "AC カバレッジ率" }
           },
           "additionalProperties": false
+        },
+        "assumptions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "妥当性確認計画策定時に識別した仮定"
         }
       },
       "additionalProperties": false
@@ -620,6 +635,21 @@
           },
           "additionalProperties": false
         }
+      },
+      "unknowns": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "確認できなかった事項"
+      },
+      "residual_risks": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "AC は充足したが残存するリスク"
+      },
+      "assumptions_validated": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "妥当性判断の前提として確認した仮定"
       },
       "additionalProperties": false
     },

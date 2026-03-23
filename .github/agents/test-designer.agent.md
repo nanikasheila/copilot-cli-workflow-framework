@@ -96,7 +96,8 @@ model: claude-sonnet-4.6
     "covered_ac": 5,
     "uncovered_ac": 0,
     "coverage_rate": "100%"
-  }
+  },
+  "assumptions": ["要求の前提となる仮定（テスト設計時に識別したもの）"]
 }
 ```
 

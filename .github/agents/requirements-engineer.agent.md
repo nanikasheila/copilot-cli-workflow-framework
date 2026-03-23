@@ -89,6 +89,8 @@ SEQUENTIAL:
       "reason_rejected": "不採用理由"
     }
   ],
+  "assumptions": ["要求の前提となる仮定（仮定と事実を混同しない）"],
+  "failure_scenarios": ["要求が不適切となるシナリオ（反例）"],
   "scope_boundary": {
     "in_scope": ["スコープ内の項目"],
     "out_of_scope": ["スコープ外の項目"],

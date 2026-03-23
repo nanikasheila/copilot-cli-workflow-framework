@@ -318,7 +318,7 @@ architect をスキップする場合:
 
 **Gate**: `implementation_gate`（全 Maturity で必須）
 
-### 7. テスト検証
+### 7. テスト検証（Verification）
 
 - `test-verifier` エージェントにテスト検証を依頼する（developer とは独立したコンテキスト）
 - test-verifier は以下を検証する:

@@ -50,6 +50,18 @@ task(agent_type="task", prompt="以下のテストコマンドを実行せよ: <
 
 成功時は簡潔なサマリ、失敗時は完全な出力が返される。
 
+## 実装前の妥当性確認
+
+実装着手前に以下を明確にする。**ask_user での確認は不要**（Board の情報から確認する）:
+
+1. **目的の再確認**: `artifacts.requirements_development.problem_statement` を確認し、表面的依頼と本来目的の区別を認識する
+2. **成功条件の確認**: `artifacts.requirements` の AC を確認し、実装完了の基準を把握する
+3. **仮定の認識**: `artifacts.requirements_development.assumptions` を確認し、実装上の前提が事実か仮定かを区別する
+4. **不明点の把握**: 不明な事項は推定で埋めず、`artifacts.implementation` に「不明」として記録する
+
+> **Why**: 実装者が目的を理解せず作業すると、技術的に正しいが目的に合わない実装になる。
+> **How**: Board に蓄積された要求情報を実装前に確認し、判断の根拠を意識する。
+
 ## Board 連携
 
 > Board連携共通: `agents/references/board-integration-guide.md` を参照。以下はこのエージェント固有のBoard連携:
