@@ -4,8 +4,8 @@ description: >-
   要求開発から計画立案・実装・PR 提出までを一括で実行するエンドツーエンドスキル。
   「要求から実装まで一括でやって」「全部通しでやって」「要望から PR まで進めて」
   「ワンショットで開発して」「要求開発から merge まで」と言った場合にトリガーする。
-  develop-requirements → planner → execute-plan → submit-pull-request の
-  4フェーズを Board・Gate と連携して実行する。orchestrate-workflow の要求駆動版として、
+  develop-requirements → planner → execute-plan → test-verifier(V) → test-verifier(V&V) → submit-pull-request の
+  6フェーズを Board・Gate と連携して実行する。orchestrate-workflow の要求駆動版として、
   要求開発を起点に素早くマージまで完了させる用途に適する。
 ---
 
@@ -27,10 +27,11 @@ description: >-
 | エントリーポイント | 要求開発（requirements-engineer）固定 | 任意のフェーズから開始可能 |
 | 影響分析 | execute-plan 内で統合実施 | impact-analyst で独立フェーズとして実施 |
 | 構造評価 | execute-plan 内で統合実施 | architect で条件付き独立フェーズとして実施 |
-| テスト検証 | execute-plan 内で統合実施 | test-verifier で独立検証 |
+| テスト検証 | test-verifier で独立検証 | test-verifier で独立検証 |
+| 妥当性確認 | test-verifier で独立検証【必須】 | test-verifier で独立検証【必須】 |
 | コードレビュー | execute-plan 内で統合実施 | reviewer で独立レビュー |
 | ドキュメント更新 | execute-plan 内で統合実施 | writer で独立実施 |
-| フェーズ数 | 4（要求開発→計画→実装→PR） | 11（全フェーズ独立） |
+| フェーズ数 | 6（要求開発→計画→実装→テスト検証→妥当性確認→PR） | 11（全フェーズ独立） |
 | 用途 | 要求開発を起点に一気通貫で完了 | フェーズ単位の制御が必要な場合 |
 
 > **使い分け**: 要求開発から始めて素早くマージしたい場合は本スキル。
@@ -84,7 +85,9 @@ ls .copilot/boards/<feature-id>.json
 | `eliciting` | 要求開発が途中。フェーズ 1 を再開 |
 | `analyzing` / `designing` / `planned` | フェーズ 2（計画立案）から再開 |
 | `implementing` | フェーズ 3（実装）から再開 |
-| `testing` / `reviewing` / `approved` | フェーズ 4（PR 提出）から再開 |
+| `testing` | フェーズ 4（テスト検証）から再開 |
+| `validating` | フェーズ 5（妥当性確認）から再開 |
+| `reviewing` / `approved` | フェーズ 6（PR 提出）から再開 |
 | `submitting` / `completed` | 既に完了済み。ユーザーに通知して終了 |
 
 1. `gate-profiles.json` から Board の `gate_profile` に対応するプロファイルを読み込む
@@ -140,7 +143,7 @@ task ツール（agent_type: requirements-engineer）:
 #### 中間報告
 
 ```markdown
-## ✅ フェーズ 1/4 完了: 要求開発
+## ✅ フェーズ 1/6 完了: 要求開発
 
 - 問題定義: <problem_statement の要約>
 - ニーズ: <validated_needs の数>件（Must: N / Should: N / Could: N）
@@ -201,7 +204,7 @@ planner は以下を含む `plan.md` と Board の `artifacts.execution_plan` �
 #### 中間報告
 
 ```markdown
-## ✅ フェーズ 2/4 完了: 計画立案
+## ✅ フェーズ 2/6 完了: 計画立案
 
 - タスク数: N 件
 - 並列実行可能: N 件
@@ -242,17 +245,93 @@ planner は以下を含む `plan.md` と Board の `artifacts.execution_plan` �
 #### 中間報告
 
 ```markdown
-## ✅ フェーズ 3/4 完了: 実装
+## ✅ フェーズ 3/6 完了: 実装
 
 - 完了: N 件
 - ブロック: N 件（ある場合は理由付き）
 - 変更ファイル: <ファイル一覧>
 - Gate: implementation_gate → passed
 
-→ フェーズ 4: PR 提出に進みます
+→ フェーズ 4: テスト検証に進みます
 ```
 
-### 4. PR 提出（submit-pull-request）
+### 4. テスト検証（Verification）
+
+> **Gate**: `test_gate` — `gate-profiles.json` の `required` 値に従う
+
+`test-verifier` エージェントに検証を依頼する。execute-plan 内でテストが実行済みでも、
+独立した検証を実施する（実装者 ≠ 検証者の原則）。
+
+```text
+task ツール（agent_type: test-verifier）:
+- テスト仕様: <artifacts.test_design（存在する場合）>
+- 要求仕様: <artifacts.requirements_development.validated_needs>
+- テストコマンド: <settings.project.test.command>
+- Board コンテキスト:
+  - feature_id: <feature_id>
+  - maturity: <maturity>
+- 出力: テスト検証結果（verdict, traceability, quality_issues）
+- Board 書き込み先: artifacts.test_verification
+```
+
+#### verdict に応じた制御
+
+| verdict | 対応 |
+|---|---|
+| `pass` | `test_gate` を `passed` に更新。フェーズ 5 に進む |
+| `conditional_pass` | planner に許容判断を委ねる |
+| `fail` | developer に修正指示を渡してフェーズ 3 に戻る（最大 2 回） |
+
+#### flow_state 遷移
+
+- `implementing` → `testing`（test-verifier 開始時）
+
+#### Board 更新
+
+- `artifacts.test_verification` — test-verifier の出力
+- `gates.test.status` — `passed` / `failed`
+- `history` — テスト検証の記録を追記
+
+### 5. 妥当性確認（Validation）【スキップ不可・MUST】
+
+> ⛔ **このフェーズは Gate Profile の `required` 値に関わらず必ず実施する。**
+> `testing → reviewing` への直接遷移は禁止。必ず `testing → validating` の経路を通ること。
+
+Phase 4 完了後、**必ず別の `test-verifier` エージェント呼び出しで**妥当性確認を実施する。
+Phase 4（Verification）と Phase 5（Validation）は同一呼び出しにまとめてはならない。
+
+```text
+task ツール（agent_type: test-verifier）:
+- 妥当性確認計画: <artifacts.validation_plan（存在する場合）>
+- 要求仕様: <artifacts.requirements / artifacts.requirements_development>
+- テスト結果: <artifacts.test_verification>
+- 出力: 妥当性確認結果（verdict, validation_results, unknowns, residual_risks）
+- Board 書き込み先: artifacts.acceptance_validation
+- 指示: validation_plan が存在しない場合、requirements の AC から確認項目を自ら構築すること
+```
+
+#### verdict に応じた制御
+
+| verdict | 対応 |
+|---|---|
+| `validated` | `validation_gate` を `passed` に更新。フェーズ 6 に進む |
+| `partially_validated` | planner に許容判断を委ねる |
+| `not_validated` | developer に未充足 AC を渡してフェーズ 3 に戻る（最大 2 回） |
+
+> ⛔ **MUST NOT**: `artifacts.acceptance_validation` が存在しない場合、または
+> `acceptance_validation.verdict` が `"validated"` でない場合、フェーズ 6 に遷移してはならない。
+
+#### flow_state 遷移
+
+- `testing` → `validating`（妥当性確認開始時）
+
+#### Board 更新
+
+- `artifacts.acceptance_validation` — test-verifier の出力
+- `gates.validation.status` — `passed` / `failed`
+- `history` — 妥当性確認の記録を追記
+
+### 6. PR 提出（submit-pull-request）
 
 > **Gate**: `submit_gate`（全 Maturity で必須。sandbox の場合は `blocked`）
 
@@ -269,7 +348,7 @@ planner は以下を含む `plan.md` と Board の `artifacts.execution_plan` �
 
 #### flow_state 遷移
 
-- `implementing` → `approved`（実装完了、PR 準備完了）
+- `validating` → `approved`（妥当性確認完了、PR 準備完了）
 - `approved` → `submitting`（PR 作成開始）
 - `submitting` → `completed`（マージ完了）
 
@@ -317,7 +396,9 @@ PR の説明文（body）に以下を含める:
 | 1. 要求開発 | ✅ 完了（ニーズ N 件） | requirements_gate → passed |
 | 2. 計画立案 | ✅ 完了（タスク N 件） | plan_gate → passed |
 | 3. 実装 | ✅ 完了（変更 N ファイル） | implementation_gate → passed |
-| 4. PR 提出 | ✅ マージ完了（PR #N） | submit_gate → passed |
+| 4. テスト検証 | ✅ 完了 | test_gate → passed |
+| 5. 妥当性確認 | ✅ 完了（AC 充足率 N%） | validation_gate → passed |
+| 6. PR 提出 | ✅ マージ完了（PR #N） | submit_gate → passed |
 
 ### PR
 <PR の URL>
@@ -332,9 +413,11 @@ flow_state: completed
 
 | データ | Board フィールド | 生成元 | 消費先 |
 |---|---|---|---|
-| 検証済み要求 | `artifacts.requirements_development` | フェーズ 1 | フェーズ 2, 4 |
+| 検証済み要求 | `artifacts.requirements_development` | フェーズ 1 | フェーズ 2, 4, 5, 6 |
 | 実行計画 | `artifacts.execution_plan` | フェーズ 2 | フェーズ 3 |
-| 実装結果 | `artifacts.implementation` | フェーズ 3 | フェーズ 4 |
+| 実装結果 | `artifacts.implementation` | フェーズ 3 | フェーズ 4, 6 |
+| テスト検証結果 | `artifacts.test_verification` | フェーズ 4 | フェーズ 5, 6 |
+| 妥当性確認結果 | `artifacts.acceptance_validation` | フェーズ 5 | フェーズ 6 |
 
 > **コンテキスト保全**: 各フェーズの出力は Board に永続化される。
 > コンテキストが圧迫された場合でも、Board ファイルを `view` で再読み込みすれば状態を完全に復元できる。
@@ -348,8 +431,10 @@ Board に状態が永続化されているため、中断後の再開が確実�
 |---|---|---|
 | フェーズ 1 完了後 | `flow_state: eliciting`, `artifacts.requirements_development` あり | 本スキルを再実行 → フェーズ 2 から自動再開 |
 | フェーズ 2 完了後 | `flow_state: planned`, `artifacts.execution_plan` あり | 本スキルを再実行 → フェーズ 3 から自動再開。または `execute-plan` を直接実行 |
-| フェーズ 3 完了後 | `flow_state: implementing`, `artifacts.implementation` あり | 本スキルを再実行 → フェーズ 4 から自動再開。または `submit-pull-request` を直接実行 |
-| フェーズ 4 失敗 | `flow_state: submitting` | `submit-pull-request` を再実行。コンフリクト時は `resolve-conflict` |
+| フェーズ 3 完了後 | `flow_state: implementing`, `artifacts.implementation` あり | 本スキルを再実行 → フェーズ 4 から自動再開 |
+| フェーズ 4 完了後 | `flow_state: testing`, `artifacts.test_verification` あり | 本スキルを再実行 → フェーズ 5 から自動再開 |
+| フェーズ 5 完了後 | `flow_state: validating`, `artifacts.acceptance_validation` あり | 本スキルを再実行 → フェーズ 6 から自動再開 |
+| フェーズ 6 失敗 | `flow_state: submitting` | `submit-pull-request` を再実行。コンフリクト時は `resolve-conflict` |
 
 ## エラー時の対処
 

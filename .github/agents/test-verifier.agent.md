@@ -143,13 +143,18 @@ SEQUENTIAL:
     "satisfied": 4,
     "not_satisfied": 1,
     "satisfaction_rate": "80%"
-  }
+  },
+  "unknowns": ["確認できなかった事項"],
+  "residual_risks": ["AC は充足したが残存するリスク"],
+  "assumptions_validated": ["妥当性判断の前提として確認した仮定"]
 }
 ```
 
 > **Why**: テストの pass/fail だけでは「要求を満たしているか」の判断ができない。
 > V字モデルの右辺として、validation_plan に定義された各 AC を1つずつ判定し、
 > 充足エビデンスを明示することで、要求に対する妥当性を客観的に証明する。
+> `unknowns`（未確認事項）と `residual_risks`（残余リスク）は Validation の完全性を担保するための必須フィールド。
+> Validation 根拠が Verification の言い換え（「テストが通った」のみ）になっていないか自己検証すること。
 
 ## Sealed 基準の検証（オプション）
 
