@@ -334,24 +334,41 @@ architect をスキップする場合:
 
 **Gate**: `test_gate` — `gate-profiles.json` の `required` / `pass_rate` / `coverage_min` / `regression_required` に従う
 
-### 8. 妥当性確認（Validation）
+### 8. 妥当性確認（Validation）【スキップ不可・MUST】
 
-- test-verifier が Phase 7 で技術的検証（Verification）を完了した後、妥当性確認を実施する
-- `test-verifier` エージェントに妥当性確認を依頼する（Phase 7 と同一または別呼び出し）
-- test-verifier は `artifacts.validation_plan` に基づき、以下を実施する:
-  - 各受け入れ基準（AC）に対してエビデンスを照合し充足を判定する
+> ⛔ **このフェーズは Gate Profile の `required` 値に関わらず必ず実施する。**
+> `testing → reviewing` への直接遷移は禁止。必ず `testing → validating → reviewing` の経路を通ること。
+
+- Phase 7 完了後、**必ず別の `test-verifier` エージェント呼び出しで**妥当性確認を実施する
+  - Phase 7（テスト検証）と Phase 8（妥当性確認）は同一呼び出しにまとめてはならない
+  - 理由: テスト pass の確認と AC 充足の確認は独立した判断であり、混同を避ける
+- test-verifier は以下を実施する:
+  - `artifacts.validation_plan` が存在する場合: 各 AC に対してエビデンスを照合し充足を判定する
+  - `validation_plan` が存在しない場合: `artifacts.requirements` から AC を抽出して妥当性確認を実施する（不在を理由にスキップしてはならない）
   - テスト結果、コードレビュー、手動確認などのエビデンスを組み合わせて判定する
   - per-AC の充足状態（satisfied / not_satisfied / partial）をレポートする
 - test-verifier は Board の `artifacts.acceptance_validation` に妥当性確認結果を書き込む
-- verdict が `not_validated` または `partially_validated` → `flow_state` を `implementing` にループバック
+
+> ⛔ **MUST NOT**: `artifacts.acceptance_validation` が存在しない場合、または
+> `acceptance_validation.verdict` が `"validated"` でない場合、Phase 9 に遷移してはならない。
+
+- verdict が `not_validated` → `flow_state` を `implementing` にループバック。`developer` に未充足 AC を渡す
+- verdict が `partially_validated` → planner に許容判断を委ねる（ただし次フェーズへの遷移は planner の明示的な許可が必要）
 
 > **V字モデルとの対応**: 左辺（Phase 6）で test-designer が策定した validation_plan を、
 > 右辺（Phase 8）で test-verifier が実行する。これにより「テストが通った」だけでなく
 > 「要求が満たされた」ことを構造的に証明する。
 
-**Gate**: `validation_gate` — `gate-profiles.json` の `required` / `satisfaction_rate_min` に従う
+**Gate**: `validation_gate` — `required` 値に関わらず評価必須。`satisfaction_rate_min` を `acceptance_validation.satisfaction_summary.satisfaction_rate` と比較する
 
 ### 9. コードレビュー
+
+> **前提条件**: Phase 9 を開始する前に以下を確認すること。
+>
+> - `artifacts.acceptance_validation` が存在すること
+> - `acceptance_validation.verdict` が `"validated"` であること
+>
+> これを満たさない場合は Phase 8 に戻すこと。
 
 - **レビュー準備（並列）**: `explore` エージェントを並列で起動し、変更差分のコンテキストと関連規約を収集する
 - `reviewer` エージェントにレビューを依頼する（`code-review` agent_type を使用）

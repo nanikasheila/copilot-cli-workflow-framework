@@ -60,7 +60,6 @@ submitting  ──────────────────► completed
 | `implementing` | `reviewing` | `review_gate` | Gate Profile で `test_gate.required: false` の場合 |
 | `implementing` | `approved` | — | Gate Profile で test/review 両方 `required: false` の場合（experimental） |
 | `testing` | `validating` | `validation_gate` | 技術的テスト通過後、AC 充足の妥当性確認に進む |
-| `testing` | `reviewing` | `review_gate` | Gate Profile で `validation_gate.required: false` の場合 |
 | `validating` | `reviewing` | `review_gate` | 全 AC の充足を確認後、コードレビューに進む |
 | `validating` | `implementing` | — | 妥当性確認で AC 未充足の場合（ループバック） |
 | `reviewing` | `approved` | — | reviewer が LGTM を出した場合 |
@@ -75,7 +74,12 @@ submitting  ──────────────────► completed
 - `completed` からの逆戻り（新しいサイクルを開始する）
 - 2つ以上先への飛び越し（Gate をバイパスするため）
   - ただし Gate Profile で `required: false` の Gate はスキップ可能
+  - **例外**: `validation_gate` は `required` 値に関わらずスキップ不可（後述）
 - `abandoned` への遷移は Flow State ではなく Maturity State で行う
+
+> **validation_gate は常に必須**: `testing → reviewing` への直接遷移は **すべての Maturity において禁止**。
+> Gate Profile の `required` 値に関わらず、コード変更が存在する場合は必ず `testing → validating → reviewing` の経路を通ること。
+> これは「テストが通った」だけでなく「要求を満たした」ことを証明するための不可逆なプロセス要件である。
 
 ## Maturity State 遷移ルール
 
@@ -140,7 +144,9 @@ Gate 評価の規則:
 - スキップされた Gate は Board に記録する（監査証跡のため）
 - スキップされた Gate に対応する artifacts は空（null）のままでよい
 
-> 具体的な Board 操作手順は skills 層で定義する。
+> **validation_gate の特別ルール**: `validation_gate` は `required: false` であっても **スキップ不可**。
+> 必ず `test-verifier` による `acceptance_validation` の出力が必要。
+> 詳細な評価ルールは `skills/manage-board/references/gate-evaluation-rules.md` を参照。
 
 ### Gate 失敗時の振る舞い
 

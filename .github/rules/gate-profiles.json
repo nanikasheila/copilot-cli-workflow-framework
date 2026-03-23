@@ -8,7 +8,7 @@
       "plan_gate":           { "required": false, "description": "形式的な計画策定は不要" },
       "implementation_gate": { "required": true,  "description": "コードの存在は最低限必要" },
       "test_gate":           { "required": false, "description": "テスト不要。手動確認のみでも可" },
-      "validation_gate":     { "required": false, "description": "妥当性確認不要" },
+      "validation_gate":     { "required": true,  "satisfaction_rate_min": 80, "description": "手動確認でも可。受け入れ基準への追跡が必要（AC充足確認は変更に対して常に必須）" },
       "review_gate":         { "required": false, "description": "セルフレビューのみ。reviewer スキップ可" },
       "documentation_gate":  { "required": false, "description": "ドキュメント不要" },
       "submit_gate":         { "required": true,  "description": "コミット・プッシュは必要" }
