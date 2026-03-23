@@ -5,30 +5,51 @@
 [![GitHub Forks](https://img.shields.io/github/forks/nanikasheila/copilot-cli-workflow-framework?style=social)](https://github.com/nanikasheila/copilot-cli-workflow-framework/network)
 [![GitHub Issues](https://img.shields.io/github/issues/nanikasheila/copilot-cli-workflow-framework)](https://github.com/nanikasheila/copilot-cli-workflow-framework/issues)
 
-> **English summary**: A reusable `.github/` framework that powers an **11-agent AI development workflow** using GitHub Copilot CLI. Agents collaborate through a shared Board, enabling parallel execution of read-only agents (analyst + impact-analyst, etc.) and enforcing context isolation between implementers, test designers, and verifiers. Drop-in ready — copy `.github/` to your project and run `initialize-project`.
+> **English summary**: A reusable `.github/` framework that powers an **11-agent AI development workflow** using GitHub Copilot CLI. Enforces a **V-model process** — requirements development and acceptance validation are first-class concerns, not afterthoughts. Agents collaborate through a shared Board, enabling parallel execution of read-only agents and enforcing context isolation between implementers, test designers, and verifiers. Drop-in ready — copy `.github/` to your project and run `initialize-project`.
 
 ---
 
 GitHub Copilot CLI で**マルチエージェント開発ワークフロー**を実現する `.github` 構成フレームワーク。
 
-11 体のエージェントが Board を介して協調し、要求開発 → 要求分析 → 設計 → 実装 → テスト設計 → 独立検証 → レビュー → ドキュメント → PR の一連のフローを自動化します。読み取り専用エージェントの**並列実行**と**コンテキスト分離**による品質保証が特徴です。
-
-> **VS Code 拡張機能版**: [copilot-workflow-framework](https://github.com/nanikasheila/copilot-workflow-framework)
-> — 同じ思想の VS Code 版です。両者の違いは[比較テーブル](#cli-vs-vs-code-拡張機能)を参照してください。
+11 体のエージェントが Board を介して協調し、要求開発 → 要求分析 → 設計 → 実装 → テスト設計 → **独立検証（Verification）** → **妥当性確認（Validation）** → レビュー → ドキュメント → PR の一連のフローを自動化します。**V字モデル**に基づく品質保証と**コンテキスト分離**が特徴です。
 
 ---
 
-## CLI vs VS Code 拡張機能
+## 設計思想
 
-| 観点 | CLI 版（本リポジトリ） | VS Code 拡張機能版 |
+### V字モデルによる品質保証
+
+本フレームワークは **V字モデル**（V-model）の考え方を採用しています。
+
+```text
+要求開発  ──────────────────────────  妥当性確認（Validation）
+  要求分析  ──────────────────  設計整合性チェック
+    テスト設計  ──────────  テスト検証（Verification）
+      実　装
+```
+
+- **左辺（開発プロセス）**: 要求開発 → 要求分析 → テスト設計 → 実装
+- **右辺（検証プロセス）**: テスト検証（Verification）→ 妥当性確認（Validation）
+
+### Verification と Validation の分離
+
+| | Verification（検証） | Validation（妥当性確認） |
 |---|---|---|
-| **コンテキスト** | `task` ツールで各エージェントを**別コンテキストウィンドウ**で実行。結果（サマリ）のみ親に返す | 全エージェントが **1 つのコンテキスト**を共有 |
-| **並列実行** | 読み取り専用エージェントを**同時実行可能**（analyst + impact-analyst 等） | 逐次実行のみ |
-| **Rules 適用** | 自動ロード**されない**。各エージェントが `view` で手動参照 | `applyTo` パターンで**自動適用** |
-| **Prompts** | **廃止** — 全プロンプトを **Skills に移行**済み | `/` スラッシュコマンドで利用可能 |
-| **Board ミラー** | JSON（永続的正本）+ **SQL ミラー**（セッション内クエリ層） | JSON のみ |
-| **エージェント数** | **10 体**（分析・テスト設計・検証を専門エージェントに分離） | 6 体 |
-| **品質保証** | 「実装者 ≠ テスト設計者 ≠ 検証者」をコンテキスト分離で**強制** | 同一コンテキスト内で分離 |
+| **問い** | 正しく作っているか？ | 正しいものを作っているか？ |
+| **対象** | 仕様・テスト・形式的期待への適合 | 目的・要求・運用文脈への適合 |
+| **完了条件** | テスト全 pass、ビルド成功 | 受け入れ基準（AC）全充足 |
+| **担当** | test-verifier（Phase 7） | test-verifier（Phase 8） |
+
+> **核心原則**: テスト pass ≠ 要求充足。テストが全て通っても、受け入れ基準の半分しかカバーしていないかもしれない。
+
+### 要求開発の重視
+
+ユーザーの曖昧な「要望」を、検証可能な「要求」に変換するプロセス（requirements-engineer）を開発フローの起点に据えています。
+
+- **目的の再構成**: 表面的依頼の背後にある本来目的を引き出す
+- **仮定の明示**: 暗黙の前提を仮定として識別し、事実と区別する
+- **反例の検討**: 要求が不適切となるシナリオを事前に検討する
+- **スコープ定義**: スコープ内/外/将来対応を明確に分離する
 
 ---
 
@@ -75,7 +96,8 @@ GitHub Copilot CLI で**マルチエージェント開発ワークフロー**を
 │   ├── typescript.instructions.md
 │   ├── python.instructions.md
 │   ├── test.instructions.md
-│   └── verification.instructions.md
+│   ├── verification.instructions.md   # Verification（検証）ルール
+│   └── validation.instructions.md     # Validation（妥当性確認）ルール
 │
 ├── rules/                        # 開発ルール（手動参照）
 │   ├── development-workflow.md
@@ -88,7 +110,9 @@ GitHub Copilot CLI で**マルチエージェント開発ワークフロー**を
 │   ├── issue-tracker-workflow.md
 │   ├── error-handling.md
 │   ├── adr-management.md         #   ADR テンプレート・ステータス管理・不変原則
-│   └── protected-files.md        #   保護ファイル一覧・変更手順
+│   ├── protected-files.md        #   保護ファイル一覧・変更手順
+│   ├── verification-procedures.md #  Verification 詳細手順リファレンス
+│   └── validation-procedures.md  #   Validation 詳細手順リファレンス
 │
 ├── skills/                       # ワークフロースキル（16 個）
 │   ├── analyze-and-plan/
@@ -164,7 +188,7 @@ lefthook.yml                      # プリコミットフック設定（Lefthook
 | `planner` | タスク分解・計画策定 | — | analyst + impact-analyst の結果を入力として受け取る |
 | `developer` | 実装・デバッグ | — | 書き込み系。test-designer と並列実行可能 |
 | `test-designer` | テストケース設計 | ✅ | 読み取り専用。要求ベースで設計（実装に依存しない） |
-| `test-verifier` | テスト検証・品質判定 | ✅ | 実装者と独立した立場で検証 |
+| `test-verifier` | テスト検証（Verification）・妥当性確認（Validation） | ✅ | 実装者と独立した立場で V&V を実施 |
 | `reviewer` | コードレビュー・品質・セキュリティ検証 | ✅ | セキュリティ観点を常時チェック |
 | `writer` | ドキュメント・リリース管理 | — | 技術文書・リリースノート・バージョニング |
 | `assessor` | プロジェクト全体評価 | — | 移植直後の包括評価。コード変更は行わない |
@@ -184,7 +208,7 @@ lefthook.yml                      # プリコミットフック設定（Lefthook
 | `analyze-and-plan` | 要求分析（analyst）・影響分析（impact-analyst）・計画策定（planner）を連携実行 |
 | `orchestrate-workflow` | Feature 開発フロー全体のオーケストレーション手順 |
 | `execute-plan` | plan.md のタスク一覧を依存関係に基づき並列実行 |
-| `requirements-to-merge` | 要求開発→計画→実装→PR 提出の一括フロー |
+| `requirements-to-merge` | 要求開発→計画→実装→検証→妥当性確認→PR の6フェーズ一括フロー |
 | `manage-board` | Board の CRUD・状態遷移・Gate 評価・アーカイブ |
 | `review-code` | コードレビュー実行・修正委任 |
 | `submit-pull-request` | 変更のコミット・PR 作成・マージ |
@@ -200,7 +224,7 @@ lefthook.yml                      # プリコミットフック設定（Lefthook
 
 ## 開発フロー
 
-`orchestrate-workflow` スキルが定義する 12 フェーズの開発フローです。読み取り専用エージェントは並列実行されます。
+`orchestrate-workflow` スキルが定義する 12 フェーズの開発フローです。Phase 7（Verification）と Phase 8（Validation）で V字モデルに基づく品質保証を実施します。
 
 ```mermaid
 flowchart TD
@@ -333,7 +357,9 @@ stateDiagram-v2
     designing --> planned: plan_gate
     planned --> implementing: implementation_gate
     implementing --> testing: test_gate
-    testing --> reviewing: review_gate
+    testing --> validating: validation_gate
+    validating --> reviewing: review_gate
+    validating --> implementing: not_validated (loop back)
     reviewing --> approved: review_approved
     reviewing --> implementing: review_rejected (loop back)
     approved --> documenting: documentation_gate
@@ -442,9 +468,9 @@ ADR は不変原則により一度承認されると変更不可のため、腐�
 
 ## FAQ
 
-### Q: VS Code 版とどちらを使えばよいですか？
+### Q: Verification と Validation の違いは何ですか？
 
-**Copilot CLI** を使っている場合は本リポジトリを、**VS Code Copilot Chat** を使っている場合は [VS Code 版](https://github.com/nanikasheila/copilot-workflow-framework)を使ってください。CLI 版は並列実行とコンテキスト分離による品質保証に強みがあります。
+**Verification**（検証）は「仕様通りに正しく作っているか？」を確認するプロセスです（テスト pass、ビルド成功）。**Validation**（妥当性確認）は「要求を本当に満たしているか？」を確認するプロセスです（受け入れ基準の充足判定）。テストが全て通っても、受け入れ基準の半分しかカバーしていないケースがあるため、両方が必要です。
 
 ### Q: Rules が自動適用されないのはなぜですか？
 
