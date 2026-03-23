@@ -2,6 +2,52 @@
 
 `manage-board/SKILL.md` セクション 4「Gate 評価」の詳細ロジック。
 
+## validation_gate の特別ルール
+
+`validation_gate` は他の Gate と異なり、**`required` の値に関わらず常に評価が必要**。
+
+### 評価条件
+
+| 条件 | 動作 |
+|---|---|
+| `required: true` かつ `acceptance_validation.verdict == "validated"` | PASS |
+| `required: true` かつ `acceptance_validation.verdict != "validated"` | FAIL → implementing にループバック |
+| `required: false`（experimental 非推奨）でも | 必ず評価し PASS/FAIL を記録 |
+| `acceptance_validation` artifact が存在しない | FAIL（エビデンス欠如） |
+
+> **なぜ特別扱いか**: `validation_gate` をスキップすると、技術的に正しいが要求を満たしていない
+> コードが `approved` に到達する。これは V字モデルの根本的な違反であり、
+> どの Maturity でも許容できない。
+
+### 評価手順（validation_gate 固有）
+
+1. `artifacts.acceptance_validation` が存在するか確認（存在しなければ即 FAIL）
+2. `acceptance_validation.verdict` を読み取る
+3. `validation_gate.satisfaction_rate_min` と `acceptance_validation.satisfaction_summary.satisfaction_rate` を比較
+4. 全 AC が `satisfied` または Gate が許容する `partial` 比率以内かを確認
+5. 結果を `gates.validation` に記録
+
+```json
+{
+  "status": "passed | failed",
+  "required": true,
+  "evaluated_by": "test-verifier",
+  "verdict": "validated | not_validated | partially_validated",
+  "satisfaction_rate": "100%",
+  "timestamp": "<ISO 8601>"
+}
+```
+
+### validation_plan が存在しない場合
+
+test-designer が validation_plan を出力していない場合でも:
+
+1. test-verifier は `artifacts.requirements` から AC を抽出して妥当性確認を実施する
+2. `acceptance_validation` を必ず出力する
+3. `validation_plan` が不在であることを `notes` に記録する
+
+validation_plan の不在を理由に validation_gate の評価を省略してはならない。
+
 ## 評価手順
 
 1. `gate_profile` の値で `gate-profiles.json` の該当プロファイルを取得
@@ -60,6 +106,7 @@ Gate 通過判定の前に、gate-profiles.json の `evidence_required` で指�
 | `lint_pass` | `artifacts.lint_result.passed` | `true` であること |
 | `review_verdict` | `artifacts.review_findings[last].verdict` | 値が存在すること |
 | `coverage_report` | `artifacts.test_results.coverage` または `.coverage_percent` | 数値が存在すること |
+| `validation_report` | `artifacts.acceptance_validation` | オブジェクトが存在し、`verdict` フィールドが存在すること |
 
 ### maturity 別エビデンス要件
 
@@ -67,14 +114,18 @@ Gate 通過判定の前に、gate-profiles.json の `evidence_required` で指�
 |---|---|---|
 | `development` | implementation_gate | `commit_sha` |
 | `development` | test_gate | `test_output`, `coverage_report` |
+| `development` | validation_gate | `validation_report` |
 | `development` | review_gate | `review_verdict` |
 | `stable` | implementation_gate | `commit_sha` |
 | `stable` | test_gate | `test_output`, `coverage_report`, `build_success` |
+| `stable` | validation_gate | `validation_report` |
 | `stable` | review_gate | `review_verdict` |
 | `release-ready` | implementation_gate | `commit_sha` |
 | `release-ready` | test_gate | `test_output`, `coverage_report`, `build_success`, `lint_pass` |
+| `release-ready` | validation_gate | `validation_report` |
 | `release-ready` | review_gate | `review_verdict` |
-| `experimental` | — | なし（軽量フロー維持） |
+| `experimental` | validation_gate | `validation_report`（自動テスト不要。手動確認でも可） |
+| `sandbox` | validation_gate | `validation_report` |
 
 ### 検証結果の出力フォーマット
 

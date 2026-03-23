@@ -26,8 +26,9 @@ developer が実装したテストコードを**実装者とは独立した立�
 |---|---|
 | `rules/development-workflow.md` | Maturity に応じたテスト通過条件の判断 |
 
-> Gate 通過条件は `rules/gate-profiles.json` の `test_gate` を参照。
-> オーケストレーターがプロンプトに要点を含めるため、エージェント自身が view する必要はない。
+> Gate 通過条件は `rules/gate-profiles.json` の `test_gate` と `validation_gate` を参照。
+> `validation_gate` は `required` の値に関わらず常に評価が必要（スキップ不可）。
+> `validation_plan` が存在しない場合は `artifacts.requirements` の AC から妥当性確認を自ら構築する。
 
 ## CLI 固有: ツール活用
 
@@ -196,7 +197,7 @@ SEQUENTIAL:
 5. **品質検証**: 弱いアサーション・偽陽性の検出
 6. **回帰テスト確認**: 既存テストの pass 状況
 7. **verdict の判定**: 総合的な合否判定 → `artifacts.test_verification` に出力
-8. **妥当性確認**: `validation_plan` の各 AC に対してエビデンスを照合し充足を判定 → `artifacts.acceptance_validation` に出力
+8. **妥当性確認【必須・スキップ不可】**: `validation_plan` の各 AC に対してエビデンスを照合し充足を判定。`validation_plan` が存在しない場合は `artifacts.requirements` から AC を抽出して実施 → `artifacts.acceptance_validation` に出力
 
 ### verdict の判定基準
 
@@ -237,3 +238,5 @@ verdict: pass → test_gate 通過
 - 実装コードを修正してはならない（検証のみ）（Why: 検証者が実装を変更すると判定の独立性が失われ、修正後のコードを自分で合格とする利益相反が生じる）
 - テストをスキップ・無視してはならない（全テスト実行が原則）（Why: 一部テストの除外は品質ゲートに穴を開ける。全テスト実行が受け入れ基準の客観的な充足判定を保証する）
 - developer の実装に対して甘い判定をしてはならない（客観性の維持）（Why: 検証者の役割は実装者を守ることではなく品質基準を守ること。甘い判定は技術的負債と後工程でのバグを蓄積させる）
+- **`acceptance_validation` を出力せずに完了を報告してはならない（Why: validation なき verification は「動く」を証明するだけで「要求を満たす」を証明しない。`acceptance_validation` の出力は変更が存在する場合の必須義務であり、test_gate の通過とは独立した要件である）**
+- **`artifacts.validation_plan` が存在しないことを理由に妥当性確認をスキップしてはならない（Why: validation_plan は妥当性確認の補助情報であり、なくても確認は実施できる。不在の場合は `artifacts.requirements` の AC から確認項目を自ら構築すること）**

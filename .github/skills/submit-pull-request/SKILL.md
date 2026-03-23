@@ -50,6 +50,8 @@ git status --short
 | 未追跡ファイルがある | `git add` でステージするか、`.gitignore` に追加 |
 | ステージ済み未コミットの変更がある | 手順 1 のコミットで解消される |
 | Board の `flow_state` が `submitting` でない | Board を確認し、Gate を通過してから再実行 |
+| `artifacts.acceptance_validation` が存在しない | **中断** — Phase 8（妥当性確認）が完了していない。test-verifier に妥当性確認を実施させてから再実行 |
+| `acceptance_validation.verdict` が `"validated"` でない | **中断** — 受け入れ基準（AC）が充足されていない。未充足 AC を developer に渡して修正させること |
 
 > **Why**: 旧 stop_check Hook がセッション終了時に未コミットを検出していた。
 > **How**: PR 提出フローの入口でチェックすることで、同等の安全性を手続きとして確保する。
