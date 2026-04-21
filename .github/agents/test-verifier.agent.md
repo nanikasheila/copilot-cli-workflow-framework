@@ -118,7 +118,22 @@ SEQUENTIAL:
 
 本エージェントの出力は `board-artifacts.schema.json` の `artifact_test_verification` および `artifact_acceptance_validation` 定義に準拠する。
 
-出力先: `artifacts.test_verification`, `artifacts.acceptance_validation`
+出力先: `artifacts.test_verification`, `artifacts.acceptance_validation`, `artifacts.discovered_issues`（append）
+
+### discovered_issues への追記責務
+
+検証中に「テスト失敗には至らないが完遂判定の妨げになる」事象を発見したら **必ず** `artifacts.discovered_issues.items[]` に append する（`origin: test_verification`）。
+
+- success_metrics の `actual` が `target` を満たさない項目（severity=high、must_fix_before_complete=true）
+- temporal_observation で観察された逸脱（収束しない・振動する・閾値超え）
+- AC は満たすが運用上の問題が見えた項目（observability 不足、ログ不足）
+- 既存 quality_issues とは独立に append する（quality_issues は当該テストの結果、discovered_issues は完遂判定の対象）
+
+### 自己完了判定の禁止
+
+- 本エージェントは acceptance_validation の verdict を出すが、これは「妥当性検証の判定」であり「Feature 完了の判定」ではない
+- verdict=validated でも success_metrics 未達や discovered_issues 未解消があれば完遂とはならない（completion_gate が再評価）
+- 詳細: `rules/completion-policy.md`
 
 ### 妥当性確認結果の出力
 
@@ -199,10 +214,16 @@ SEQUENTIAL:
 2. **結果の分析**: pass/fail/skip の集計、エラーメッセージの分析
 3. **トレーサビリティ検証**: test_design の全 TC が実装されているかを照合
 4. **カバレッジ分析**: カバレッジレポートが利用可能な場合は基準との照合
-5. **品質検証**: 弱いアサーション・偽陽性の検出
-6. **回帰テスト確認**: 既存テストの pass 状況
-7. **verdict の判定**: 総合的な合否判定 → `artifacts.test_verification` に出力
-8. **妥当性確認【必須・スキップ不可】**: `validation_plan` の各 AC に対してエビデンスを照合し充足を判定。`validation_plan` が存在しない場合は `artifacts.requirements` から AC を抽出して実施 → `artifacts.acceptance_validation` に出力
+5. **時間的振る舞いの検証（temporal/integration カテゴリの TC がある場合は必須）**:
+   - 各 `category: temporal | integration` の TC について、`temporal_observation` に定義された観察期間・収束先・安定性基準を満たすか確認する
+   - 単一サイクルの pass で済ませていないか（最低観察サイクル数: `rules/verification-procedures.md` §4a の基準を満たすか）を検査
+   - 状態変数の時系列が単調増加・固着・持続振動を示していないか確認
+   - 違反は `quality_issues` に `type: weak_assertion` または新規 `type: missing_temporal_check` として記録
+6. **品質検証**: 弱いアサーション・偽陽性の検出
+7. **回帰テスト確認**: 既存テストの pass 状況
+8. **verdict の判定**: 総合的な合否判定 → `artifacts.test_verification` に出力
+9. **妥当性確認【必須・スキップ不可】**: `validation_plan` の各 AC に対してエビデンスを照合し充足を判定。`validation_plan` が存在しない場合は `artifacts.requirements` から AC を抽出して実施 → `artifacts.acceptance_validation` に出力
+   - **success_metrics への紐付け確認**: `requirements_development.validated_needs[].success_metrics` の各 SM-xxx に対し、`metric_ref` で紐付いたテスト結果が実測値で目標を満たすことを `evidence` に明示する。「テストが通った」のみは Validation 不合格
 
 ### verdict の判定基準
 

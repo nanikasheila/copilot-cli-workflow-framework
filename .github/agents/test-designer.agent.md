@@ -55,13 +55,20 @@ model: claude-sonnet-4.6
   "test_cases": [
     {
       "id": "TC-001",
-      "category": "happy_path | boundary | error | edge_case | regression | security",
+      "category": "happy_path | boundary | error | edge_case | regression | security | temporal | integration",
       "requirement_ref": "FR-001 / AC-001",
+      "metric_ref": "SM-001（対応する success_metric があれば）",
       "description": "テストケースの説明",
       "preconditions": ["前提条件"],
       "input": "入力データ・操作",
       "expected_output": "期待される出力・状態",
-      "priority": "critical | high | medium | low"
+      "priority": "critical | high | medium | low",
+      "temporal_observation": {
+        "duration": "観察期間（temporal/integration 時推奨。例: 「10サイクル」「30秒」）",
+        "sampling_interval": "サンプリング間隔",
+        "convergence_target": "収束先と許容範囲（例: baseline ±5%）",
+        "stability_criteria": "発散・固着・振動の判定基準"
+      }
     }
   ],
   "coverage_matrix": {
@@ -111,9 +118,9 @@ model: claude-sonnet-4.6
 |---|---|
 | `sandbox` | happy_path のみ。最小限の動作確認 |
 | `experimental` | happy_path + 主要な error ケース |
-| `development` | happy_path + error + boundary + edge_case |
-| `stable` | 全カテゴリ + regression + カバレッジマトリクス |
-| `release-ready` | 全カテゴリ + security + 全 AC のトレーサビリティ |
+| `development` | happy_path + error + boundary + edge_case。**周期処理・状態を持つ機能・統合的振る舞いには `temporal` または `integration` カテゴリのテストを最低1ケース必須**（`rules/verification-procedures.md` §3a に準拠） |
+| `stable` | 全カテゴリ + regression + カバレッジマトリクス + `temporal_observation` の必須化 |
+| `release-ready` | 全カテゴリ + security + 全 AC のトレーサビリティ + `success_metrics` の全 ID を `metric_ref` でカバー |
 
 ### 出力スキーマ契約
 
@@ -166,13 +173,19 @@ Board の `artifacts.test_design` に以下を追加して書き込む:
 
 ## 設計プロセス
 
-1. **要求の読み込み**: `artifacts.requirements` から FR / AC / EC を取得
+1. **要求の読み込み**: `artifacts.requirements` から FR / AC / EC を取得し、`artifacts.requirements_development.validated_needs[].success_metrics` も併せて読む
 2. **既存テストの調査**: テストインフラ・パターンを `explore` で把握
 3. **テストケースの導出**: 各 AC に対して1つ以上のテストケースを設計
 4. **エッジケースの補完**: EC に対応するテストケースを追加
-5. **カバレッジマトリクスの作成**: 要求 → テストケースのトレーサビリティを確保
-6. **テストインフラの特定**: 必要なフィクスチャ・ヘルパーを列挙
-7. **妥当性確認計画の策定**: 各 AC に対する検証方法・合格基準・期待エビデンスを定義し `validation_plan` に出力
+5. **時間的振る舞いの設計（development 以上で必須）**:
+   - 周期的処理・状態保持機能・複数モジュール連携がある場合、`category: temporal` または `integration` のテストを設計する
+   - `temporal_observation` に観察期間・収束先・安定性基準を明示する
+   - `rules/verification-procedures.md` §1 (収束/過渡応答/安定性) と §3a (複数サイクル) を参照
+6. **success_metrics への紐付け**: 各 SM-xxx に対し対応するテストケースを設計し、`metric_ref` で紐付ける
+7. **カバレッジマトリクスの作成**: 要求 → テストケースのトレーサビリティを確保
+8. **テストインフラの特定**: 必要なフィクスチャ・ヘルパーを列挙
+9. **test_strategy への時間的観点の明記（development 以上で必須）**: `test_strategy` 文字列に「時間的振る舞いの検証方針（観察期間・収束/過渡応答・安定性の確認方法）」を含める
+10. **妥当性確認計画の策定**: 各 AC に対する検証方法・合格基準・期待エビデンスを定義し `validation_plan` に出力
 
 ## 実装者（developer）との関係
 

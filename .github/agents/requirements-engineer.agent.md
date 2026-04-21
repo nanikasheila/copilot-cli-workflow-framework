@@ -80,7 +80,17 @@ SEQUENTIAL:
       "rationale": "なぜこれが必要か（根拠）",
       "priority": "must | should | could | wont",
       "conflicts": ["競合する既存要求があれば記載"],
-      "alignment": "設計哲学との整合性メモ"
+      "alignment": "設計哲学との整合性メモ",
+      "success_metrics": [
+        {
+          "id": "SM-001",
+          "metric": "達成を測る観察可能な指標（例: 「ログイン成功率」「処理時間 95%ile」「再試行発生回数」）",
+          "target": "達成基準（数値・閾値・観察事象）（例: 「>= 99.5%」「< 300ms」「<= 3回」）",
+          "validation_method": "automated_test | integration_observation | manual_check | review | demo | production_metric",
+          "observability": "測定に必要な計装（任意）",
+          "temporal_window": "時間的観察窓（任意。例: 「10サイクル」「24時間」）"
+        }
+      ]
     }
   ],
   "alternatives_considered": [
@@ -107,10 +117,10 @@ SEQUENTIAL:
 
 | Maturity | 要求開発の深さ |
 |---|---|
-| `sandbox` | 問題定義 + 主要ニーズ。競合分析は概要レベル |
+| `sandbox` | 問題定義 + 主要ニーズ。競合分析は概要レベル。`success_metrics` は任意 |
 | `experimental` | スキップ可能（ショートカット対象） |
-| `development` | 問題定義 + ニーズ + 代替案 + スコープ定義。競合分析必須 |
-| `stable` / `release-ready` | 全項目を網羅。設計哲学との整合性を詳細に検証 |
+| `development` | 問題定義 + ニーズ + 代替案 + スコープ定義。競合分析必須。**各 must / should ニーズに `success_metrics` を1つ以上必須**（妥当性確認の起点） |
+| `stable` / `release-ready` | 全項目を網羅。設計哲学との整合性を詳細に検証。**全ニーズに `success_metrics` 必須・`validation_method` を明示・時間的振る舞いを伴う場合は `temporal_window` 必須** |
 
 ## 要求開発プロセス
 
@@ -135,7 +145,17 @@ SEQUENTIAL:
    - MoSCoW 法（Must / Should / Could / Won't）でニーズを分類
    - 既存の Feature との相対的な優先度を確認
 
-6. **承認取得**
+6. **妥当性確認指標の策定（development 以上で必須）**
+   - 各 `must` / `should` ニーズに対し「達成をどう測るか」を `success_metrics` として定義する
+   - 各指標は次の3点を満たすこと:
+     - **観察可能**: 数値・閾値・カウント・状態遷移など客観的に測れる
+     - **検証方法が明示**: `validation_method` で「どう確認するか」を選択
+     - **時間性の明示**: 即時判定不能な場合は `temporal_window` を指定
+   - 「使いやすい」「速い」のような曖昧表現は禁止。必ず計測可能な形に変換する
+   - この指標が test-designer の `metric_ref` ／ test-verifier の `acceptance_validation.evidence` の起点となる
+   - **Why**: 妥当性指標が甘いと、下流で AC が曖昧化し、test-verifier の Validation 根拠が「テストが通った」の言い換えに退化する（既知の品質問題）
+
+7. **承認取得**
    - 最終的な要求定義を ask_user でユーザーに提示
    - `approval.status` を更新
 

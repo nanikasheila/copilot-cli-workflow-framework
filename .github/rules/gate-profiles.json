@@ -11,6 +11,7 @@
       "validation_gate":     { "required": true,  "satisfaction_rate_min": 80, "description": "手動確認でも可。受け入れ基準への追跡が必要（AC充足確認は変更に対して常に必須）" },
       "review_gate":         { "required": false, "description": "セルフレビューのみ。reviewer スキップ可" },
       "documentation_gate":  { "required": false, "description": "ドキュメント不要" },
+      "completion_gate":     { "required": true,  "success_metrics_satisfaction_min": 0, "max_open_must_fix_issues": 0, "max_cycles": 5, "description": "実験段階でも must_fix の未解消はゼロ。指標は緩い" },
       "submit_gate":         { "required": true,  "description": "コミット・プッシュは必要" }
     },
     "development": {
@@ -23,6 +24,7 @@
       "validation_gate":     { "required": true,  "satisfaction_rate_min": 100, "evidence_required": ["validation_report"], "description": "全受け入れ基準（AC）の充足を確認" },
       "review_gate":         { "required": true,  "checks": ["logic", "security_basic"], "evidence_required": ["review_verdict"], "description": "ロジック + 基本セキュリティチェック" },
       "documentation_gate":  { "required": false, "description": "必要に応じて実施" },
+      "completion_gate":     { "required": true,  "success_metrics_satisfaction_min": 100, "max_open_must_fix_issues": 0, "max_cycles": 5, "require_temporal_evidence": false, "evidence_required": ["completion_check", "validation_report"], "description": "全 success_metrics 達成 + must_fix=true の discovered_issues がゼロ" },
       "submit_gate":         { "required": true,  "description": "PR 作成・マージ" }
     },
     "stable": {
@@ -35,6 +37,7 @@
       "validation_gate":     { "required": true,  "satisfaction_rate_min": 100, "evidence_required": ["validation_report"], "description": "全受け入れ基準（AC）の充足を確認" },
       "review_gate":         { "required": true,  "checks": ["logic", "security_deep", "test_quality"], "evidence_required": ["review_verdict"], "description": "ロジック + 深層セキュリティ + テスト品質" },
       "documentation_gate":  { "required": true,  "description": "ドキュメント更新必須" },
+      "completion_gate":     { "required": true,  "success_metrics_satisfaction_min": 100, "max_open_must_fix_issues": 0, "max_cycles": 5, "require_temporal_evidence": true, "evidence_required": ["completion_check", "validation_report", "review_verdict"], "description": "全 success_metrics 達成 + temporal 観察必須" },
       "submit_gate":         { "required": true,  "description": "PR 作成・マージ" }
     },
     "release-ready": {
@@ -47,6 +50,7 @@
       "validation_gate":     { "required": true,  "satisfaction_rate_min": 100, "evidence_required": ["validation_report"], "description": "全受け入れ基準（AC）の充足 + 全エビデンス必須" },
       "review_gate":         { "required": true,  "checks": ["logic", "security_deep", "architecture", "performance", "test_quality"], "evidence_required": ["review_verdict"], "description": "全観点でのフルレビュー" },
       "documentation_gate":  { "required": true,  "description": "ドキュメント更新・リリースノート必須" },
+      "completion_gate":     { "required": true,  "success_metrics_satisfaction_min": 100, "max_open_must_fix_issues": 0, "max_cycles": 7, "require_temporal_evidence": true, "evidence_required": ["completion_check", "validation_report", "review_verdict", "test_output"], "description": "全指標達成 + 全 must_fix 解消 + temporal/integration 観察エビデンス必須" },
       "submit_gate":         { "required": true,  "description": "PR 作成・マージ" }
     },
     "sandbox": {
@@ -59,6 +63,7 @@
       "validation_gate":     { "required": true,  "satisfaction_rate_min": 100, "evidence_required": ["validation_report"], "description": "全受け入れ基準（AC）の充足を確認" },
       "review_gate":         { "required": true,  "checks": ["logic", "security_basic"], "evidence_required": ["review_verdict"], "description": "ロジック + 基本セキュリティチェック" },
       "documentation_gate":  { "required": false, "description": "sandbox では不要" },
+      "completion_gate":     { "required": true,  "success_metrics_satisfaction_min": 100, "max_open_must_fix_issues": 0, "max_cycles": 5, "description": "sandbox でも要求充足は完遂条件。submit はしないが評価は実施" },
       "submit_gate":         { "required": "blocked", "description": "main マージ禁止。sandbox は worktree 内で完結する検証専用" }
     }
   }

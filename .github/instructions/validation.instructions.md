@@ -65,11 +65,16 @@ Verification（仕様適合確認）は `verification.instructions.md` を参照
 □ 目的・成功条件・仮定・不明点を実装前に整理した
 □ AC を列挙し、各 AC に対応する検証手段が存在する
 □ AC の充足判定を行い、未充足 AC がない
+□ success_metrics の actual が target を満たしている（development 以上）
 □ 設計原則・不変条件との整合を確認した
 □ 反例（不適切になる条件）を少なくとも1つ検討した
 □ 未確認事項と残余リスクを明示した
 □ Validation 根拠が Verification の言い換えになっていない
+□ discovered_issues に未解消の must_fix_before_complete 項目がない
 ```
+
+> ⚠️ 上記チェックを満たすまで `task_complete` を呼んではならない。
+> オーケストレーターは `completion_gate` でこのチェックを再評価する（`rules/completion-policy.md`）。
 
 > **ワークフローでの実現**: Phase 6 で test-designer が `validation_plan` を策定し、
 > Phase 8 で test-verifier が `acceptance_validation` を実施する。
