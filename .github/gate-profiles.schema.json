@@ -34,7 +34,54 @@
         "validation_gate":     { "$ref": "#/definitions/validation_gate_condition" },
         "review_gate":         { "$ref": "#/definitions/review_gate_condition" },
         "documentation_gate":  { "$ref": "#/definitions/gate_condition" },
+        "completion_gate":     { "$ref": "#/definitions/completion_gate_condition" },
         "submit_gate":         { "$ref": "#/definitions/gate_condition" }
+      },
+      "additionalProperties": false
+    },
+
+    "completion_gate_condition": {
+      "type": "object",
+      "description": "完遂 Gate 固有の条件。要求と発見問題が全て解消されるまでループバックを強制する",
+      "required": ["required"],
+      "properties": {
+        "required": {
+          "oneOf": [
+            { "type": "boolean" },
+            { "type": "string", "enum": ["blocked"] }
+          ]
+        },
+        "success_metrics_satisfaction_min": {
+          "type": "integer",
+          "description": "success_metrics の達成率最低値（%）。100 で全項目達成必須",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "max_open_must_fix_issues": {
+          "type": "integer",
+          "description": "discovered_issues のうち must_fix_before_complete=true で未解消の許容数。0 が既定",
+          "minimum": 0,
+          "default": 0
+        },
+        "max_cycles": {
+          "type": "integer",
+          "description": "完遂判定で許容する最大サイクル数。超過時は needs_user_decision にエスカレート",
+          "minimum": 1,
+          "default": 5
+        },
+        "require_temporal_evidence": {
+          "type": "boolean",
+          "description": "temporal/integration カテゴリのテストの観察結果を必須とするか",
+          "default": false
+        },
+        "evidence_required": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["completion_check", "validation_report", "review_verdict", "test_output"]
+          }
+        },
+        "description": { "type": "string" }
       },
       "additionalProperties": false
     },

@@ -263,6 +263,33 @@
               "alignment": {
                 "type": "string",
                 "description": "設計哲学との整合性メモ"
+              },
+              "success_metrics": {
+                "type": "array",
+                "description": "ニーズ達成の妥当性を測る指標。数値・閾値・観察可能な事象として記述する。development 以上の Maturity では1つ以上必須（Validation 根拠の起点）",
+                "items": {
+                  "type": "object",
+                  "required": ["id", "metric", "target", "validation_method"],
+                  "properties": {
+                    "id": { "type": "string", "description": "指標 ID（例: SM-001）" },
+                    "metric": { "type": "string", "description": "何を測るか（例: 「ログイン応答時間の95%ile」「失敗時のリトライ回数」）" },
+                    "target": { "type": "string", "description": "達成基準（例: 「< 300ms」「3回以内」「ゼロ件」）" },
+                    "validation_method": {
+                      "type": "string",
+                      "enum": ["automated_test", "integration_observation", "manual_check", "review", "demo", "production_metric"],
+                      "description": "どう検証するか"
+                    },
+                    "observability": {
+                      "type": "string",
+                      "description": "測定するために必要な計装・ログ・トレース等（任意）"
+                    },
+                    "temporal_window": {
+                      "type": "string",
+                      "description": "時間的観察が必要な場合の窓（例: 「10サイクル」「24時間」）。即時判定可なら省略可"
+                    }
+                  },
+                  "additionalProperties": false
+                }
               }
             },
             "additionalProperties": false
@@ -406,7 +433,7 @@
       "required": ["summary", "test_cases", "coverage_matrix"],
       "properties": {
         "summary": { "type": "string", "description": "テスト設計の概要" },
-        "test_strategy": { "type": "string", "description": "テスト戦略の説明" },
+        "test_strategy": { "type": "string", "description": "テスト戦略の説明（development 以上では「時間的振る舞いの検証方針」を含むこと）" },
         "test_cases": {
           "type": "array",
           "items": {
@@ -414,7 +441,7 @@
             "required": ["id", "category", "requirement_ref", "description", "expected_output", "priority"],
             "properties": {
               "id": { "type": "string", "description": "テストケース ID（例: TC-001）" },
-              "category": { "type": "string", "enum": ["happy_path", "boundary", "error", "edge_case", "regression", "security"] },
+              "category": { "type": "string", "enum": ["happy_path", "boundary", "error", "edge_case", "regression", "security", "temporal", "integration"], "description": "temporal: 時系列・複数サイクル・収束/過渡応答の観察。integration: 複数モジュール連携・統合的振る舞い検証" },
               "requirement_ref": { "type": "string", "description": "対応する要求 ID（例: FR-001 / AC-001）" },
               "description": { "type": "string" },
               "preconditions": {
@@ -423,7 +450,22 @@
               },
               "input": { "type": "string", "description": "入力データ・操作" },
               "expected_output": { "type": "string", "description": "期待される出力・状態" },
-              "priority": { "type": "string", "enum": ["critical", "high", "medium", "low"] }
+              "priority": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+              "temporal_observation": {
+                "type": "object",
+                "description": "category が temporal/integration の場合に推奨。時系列観察パラメータを定義する",
+                "properties": {
+                  "duration": { "type": "string", "description": "観察期間（例: 「10サイクル」「30秒」）" },
+                  "sampling_interval": { "type": "string", "description": "サンプリング間隔" },
+                  "convergence_target": { "type": "string", "description": "収束先と許容範囲（例: baseline ±5%）" },
+                  "stability_criteria": { "type": "string", "description": "発散・固着・振動の判定基準" }
+                },
+                "additionalProperties": false
+              },
+              "metric_ref": {
+                "type": "string",
+                "description": "対応する success_metric の ID（例: SM-001）。requirements_development.validated_needs.success_metrics と紐付ける"
+              }
             },
             "additionalProperties": false
           }
@@ -650,6 +692,126 @@
         "type": "array",
         "items": { "type": "string" },
         "description": "妥当性判断の前提として確認した仮定"
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_discovered_issues": {
+      "type": "object",
+      "description": "開発サイクル中に発見された未対応事項。完遂ループ（completion_gate）の評価対象",
+      "required": ["items"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "title", "severity", "origin", "status", "must_fix_before_complete"],
+            "properties": {
+              "id": { "type": "string", "description": "DI-001 形式の一意 ID" },
+              "title": { "type": "string" },
+              "description": { "type": "string", "description": "問題の詳細・再現条件・期待挙動" },
+              "severity": {
+                "type": "string",
+                "enum": ["critical", "high", "medium", "low"],
+                "description": "critical / high は must_fix_before_complete=true が既定"
+              },
+              "origin": {
+                "type": "string",
+                "enum": ["developer", "reviewer", "test-verifier", "validator", "runtime", "integration", "user-feedback"],
+                "description": "発見元のエージェント・観測経路"
+              },
+              "found_at_phase": {
+                "type": "string",
+                "enum": ["implementing", "testing", "validating", "reviewing", "documenting", "submitting", "post-merge"]
+              },
+              "status": {
+                "type": "string",
+                "enum": ["open", "in_progress", "resolved", "deferred", "wont_fix"]
+              },
+              "must_fix_before_complete": {
+                "type": "boolean",
+                "description": "true の場合、completion_gate の通過を阻止する。critical/high は既定で true"
+              },
+              "linked_requirement_id": {
+                "type": "string",
+                "description": "新規要求として昇格された場合の FR/AC ID（artifacts.requirements 側へ追記）"
+              },
+              "linked_metric_id": {
+                "type": "string",
+                "description": "対応する success_metrics の SM-xxx ID（あれば）"
+              },
+              "deferral_reason": {
+                "type": "string",
+                "description": "status=deferred/wont_fix の場合の根拠（next-cycle / out-of-scope など）"
+              },
+              "resolution": {
+                "type": "string",
+                "description": "解消時の対応概要（コミット・PR 番号など）"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "artifact_completion_check": {
+      "type": "object",
+      "description": "completion_gate の評価結果。task_complete を呼ぶ前に必ず生成する",
+      "required": ["verdict", "checks", "evaluated_at_cycle"],
+      "properties": {
+        "verdict": {
+          "type": "string",
+          "enum": ["complete", "incomplete", "needs_user_decision"]
+        },
+        "evaluated_at_cycle": { "type": "integer" },
+        "checks": {
+          "type": "object",
+          "description": "個別合否。すべて pass で初めて verdict=complete を許可する",
+          "required": [
+            "all_required_gates_passed",
+            "validation_satisfaction_meets_min",
+            "all_success_metrics_met",
+            "no_open_must_fix_issues",
+            "no_open_quality_issues"
+          ],
+          "properties": {
+            "all_required_gates_passed": { "type": "boolean" },
+            "validation_satisfaction_meets_min": { "type": "boolean" },
+            "all_success_metrics_met": {
+              "type": "boolean",
+              "description": "success_metrics 各 SM-xxx の actual が target を満たすか"
+            },
+            "no_open_must_fix_issues": {
+              "type": "boolean",
+              "description": "discovered_issues に must_fix_before_complete=true で status≠resolved の項目がない"
+            },
+            "no_open_quality_issues": {
+              "type": "boolean",
+              "description": "test_verification.quality_issues に未解決の critical/high がない"
+            },
+            "temporal_observations_complete": {
+              "type": "boolean",
+              "description": "category=temporal/integration の TC で観察期間・収束・安定性が確認済み"
+            }
+          },
+          "additionalProperties": false
+        },
+        "unmet_items": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "未充足項目の人間可読な列挙（オーケストレーターのループバック判断材料）"
+        },
+        "next_action": {
+          "type": "string",
+          "enum": ["loopback_to_implementing", "loopback_to_eliciting", "escalate_to_user", "proceed_to_submit"],
+          "description": "verdict=incomplete 時の次アクション。proceed_to_submit は verdict=complete のみ"
+        },
+        "cycle_overflow": {
+          "type": "boolean",
+          "description": "max_cycles を超過したか。true の場合 needs_user_decision にエスカレート"
+        }
       },
       "additionalProperties": false
     },

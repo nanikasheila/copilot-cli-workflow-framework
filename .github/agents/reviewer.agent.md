@@ -104,6 +104,20 @@ CLI では `rules/` が自動ロードされない。このエージェントが
 
 出力先: `artifacts.review_findings`（各レビュー試行のオブジェクト）
 
+### discovered_issues への追記責務
+
+レビュー中に「本筋ではないが要対応」の問題（既存コードに潜む類似バグ、設計負債、テスト不足、観察上の問題）を発見した場合は **必ず** `artifacts.discovered_issues.items[]` に append する（`origin: review`）。
+
+- review_findings の Critical/Warning とは別レイヤー: review_findings は当該変更に対する verdict、discovered_issues は完遂判定の対象
+- `severity: critical|high` は `must_fix_before_complete: true` を既定で設定する
+- 観察事項（推奨修正のうち scope 外）も `severity: low` で append する（次サイクルで判断するため）
+
+### 自己完了判定の禁止
+
+- 本エージェントは LGTM/fix_required の verdict を出すが、これは「当該変更の品質判定」であり「Feature 完了の判定」ではない
+- LGTM を出しても discovered_issues に未解消 must_fix が残る限り完遂とはならない（completion_gate が再評価）
+- 詳細: `rules/completion-policy.md`
+
 ## レビュー観点
 
 ### 設計・構造

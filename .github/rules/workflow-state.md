@@ -35,8 +35,11 @@ validating  ──[review_gate]───► reviewing
 validating  ──(not_validated)─► implementing    ※ ループバック
 reviewing   ──(lgtm)──────────► approved        ※ () = verdict
 reviewing   ──(fix_required)──► implementing    ※ ループバック
-approved    ──[documentation_gate]► documenting  ※ スキップ可
-approved    ──[submit_gate]───► submitting       ※ documentation_gate スキップ時
+approved    ──[completion_gate]► finalizing      ※ 完遂判定（要求充足 + discovered_issues 解消）
+finalizing  ──(incomplete)────► implementing    ※ ループバック（must_fix の解消）
+finalizing  ──(incomplete)────► eliciting       ※ ループバック（新規要求として昇格された場合）
+finalizing  ──(complete)──[documentation_gate]► documenting  ※ スキップ可
+finalizing  ──(complete)──[submit_gate]───► submitting       ※ documentation_gate スキップ時
 documenting ──[submit_gate]───► submitting
 submitting  ──────────────────► completed
 ```
@@ -64,8 +67,11 @@ submitting  ──────────────────► completed
 | `validating` | `implementing` | — | 妥当性確認で AC 未充足の場合（ループバック） |
 | `reviewing` | `approved` | — | reviewer が LGTM を出した場合 |
 | `reviewing` | `implementing` | — | reviewer が `fix_required` を出した場合（ループバック） |
-| `approved` | `documenting` | `documentation_gate` | Gate Profile で `required: true` の場合 |
-| `approved` | `submitting` | `submit_gate` | Gate Profile で `documentation_gate.required: false` の場合 |
+| `approved` | `finalizing` | `completion_gate` | 完遂判定を実施。Gate Profile で `required: true` の場合は必ず通過する |
+| `finalizing` | `implementing` | — | completion_check の verdict が `incomplete` で discovered_issues に未解消 must_fix がある場合（ループバック） |
+| `finalizing` | `eliciting` | — | completion_check の next_action が `loopback_to_eliciting`（新規要求の昇格が必要な場合） |
+| `finalizing` | `documenting` | `documentation_gate` | verdict=complete かつ Gate Profile で `documentation_gate.required: true` |
+| `finalizing` | `submitting` | `submit_gate` | verdict=complete かつ documentation_gate スキップ時 |
 | `documenting` | `submitting` | `submit_gate` | ドキュメント更新完了後 |
 | `submitting` | `completed` | — | PR マージ完了 |
 
@@ -127,6 +133,8 @@ sandbox ──► abandoned   ※ sandbox は他の Maturity に昇格不可
 | `artifacts.acceptance_validation` | — | — | — | — | — | — | — | — | — | **write** | — |
 | `artifacts.review_findings` | — | — | — | — | **write** | — | — | — | — | — | — |
 | `artifacts.documentation` | — | — | — | — | — | **write** | — | — | — | — | — |
+| `artifacts.discovered_issues` | append | — | — | append | append | — | — | — | append | append | — |
+| `artifacts.completion_check` | **write** | — | — | — | — | — | — | — | — | — | — |
 | `history` | **write** | — | — | — | — | — | — | — | — | — | — |
 | 全フィールド | read | read | read | read | read | read | read | read | read | read | read |
 

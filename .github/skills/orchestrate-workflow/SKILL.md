@@ -396,6 +396,20 @@ architect をスキップする場合:
 - `developer` に未充足 AC の情報を渡して修正を依頼
 - acceptance_validation の verdict が `partially_validated` → planner に許容判断を委ねる
 
+### 9.5. 完遂判定（Completion Loop）【スキップ不可・MUST】
+
+> **目的**: 「要求を満たしていない段階で行動が終わる」ことを構造的に防ぐ。
+> 詳細手順: `references/completion-loop.md` / 上位ポリシー: `rules/completion-policy.md`
+
+**要点**:
+
+- `flow_state: approved` 到達時、orchestrator は **必ず** `completion_gate` を評価し `artifacts.completion_check` に書き込む（6 項目: required gates / validation rate / success_metrics / must_fix issues / quality issues / temporal evidence）
+- verdict に応じて遷移: `complete` → `finalizing → documenting/submitting`、`incomplete` → `implementing` ループバック、新規要求昇格 → `eliciting` ループバック、`max_cycles` 超過 → ユーザー判断要請
+- 各エージェント（developer / reviewer / test-verifier）は発見した「本筋ではない要対応事項」を `artifacts.discovered_issues.items[]` に追記する義務あり
+- `task_complete` は `submitting → completed` 後のみ。「テスト pass」だけでは完遂ではない
+
+**Gate**: `completion_gate` — `gate-profiles.json` の `success_metrics_satisfaction_min` / `max_open_must_fix_issues` / `max_cycles` / `require_temporal_evidence` に従う
+
 ### 10. ドキュメント・ルール更新
 
 - `writer` エージェントにドキュメント更新を依頼する

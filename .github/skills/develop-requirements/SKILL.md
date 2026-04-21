@@ -145,3 +145,10 @@ Board の以下のセクションを更新する:
 | ユーザーが対話を打ち切った | 現時点の要求定義を `approval.status: "pending"` で Board に保存 |
 | Board が存在しない | `start-feature` スキルで Board を作成するよう案内する。Board なしでの実行は推奨しない |
 | 設計哲学ドキュメントがない | 設計哲学との整合性検証をスキップし、その旨を注記 |
+
+## CLI 機能との関係
+
+- 本スキルは要求開発の構造化手順（引き出し・妥当性検証・競合分析・success_metrics 策定・承認）を提供する
+- CLI ビルトインの **/plan**（Shift+Tab で plan-mode）は単発のプラン作成・編集に使う軽量機能。本スキルは要求 → 計画 → 承認の上位フローを担う
+- 計画作成のみが目的なら `analyze-and-plan` スキルまたは `/plan` を使う
+- スラッシュコマンド早見表: `.github/agents/references/cli-slash-commands.md`

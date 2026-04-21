@@ -23,8 +23,20 @@
 - `rules/error-handling.md` — エラーハンドリング
 - `rules/adr-management.md` — ADR 運用ルール
 - `rules/protected-files.md` — 保護ファイル変更ポリシー
+- `rules/completion-policy.md` — 完遂ポリシー（要求未充足での task_complete 禁止）
 
 > **重要**: `rules/` は CLI では自動ロードされない。各エージェントの「必要ルール」セクションで参照すべきルールを確認する。
+
+## task_complete の判定基準
+
+`task_complete` ツールを呼び出す前に、以下を **必ず** 確認する:
+
+1. オーケストレーターが `completion_gate` を評価し `verdict: complete` であること
+2. `artifacts.completion_check` の 6 項目（required gates / validation rate / success_metrics / must_fix issues / quality issues / temporal evidence）が全て pass
+3. `flow_state` が `submitting → completed` に到達していること
+4. 「テストが通った」「主要機能が動いた」だけでは不十分（Verification ≠ Validation）
+
+未充足項目がある場合は、ループバック（`implementing` または `eliciting`）して開発サイクルを継続する。詳細: `rules/completion-policy.md`
 
 ## .github 構造
 

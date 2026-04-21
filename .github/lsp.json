@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/copilot-lsp.json",
+  "servers": {
+    "pyright": {
+      "command": ["pyright-langserver", "--stdio"],
+      "filetypes": ["python"],
+      "rootPatterns": ["pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git"]
+    },
+    "typescript": {
+      "command": ["typescript-language-server", "--stdio"],
+      "filetypes": ["typescript", "typescriptreact", "javascript", "javascriptreact"],
+      "rootPatterns": ["tsconfig.json", "jsconfig.json", "package.json", ".git"]
+    }
+  }
+}

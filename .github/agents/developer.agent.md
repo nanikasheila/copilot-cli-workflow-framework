@@ -118,6 +118,23 @@ task(agent_type="task", prompt="以下のテストコマンドを実行せよ: <
 
 - `artifact_implementation` → 出力先: `artifacts.implementation`
 - `artifact_test_results` → 出力先: `artifacts.test_results`
+- `artifact_discovered_issues` → 出力先: `artifacts.discovered_issues`（**append 専用**）
+
+### discovered_issues への追記責務
+
+実装中に「本筋ではないが要対応」の問題（既存バグ、TODO、リファクタ候補、未充足 AC、設計矛盾）を発見した場合は **必ず** `artifacts.discovered_issues.items[]` に append する。
+
+- `severity: critical|high` の場合は `must_fix_before_complete: true` を既定で設定する
+- 機能要求として扱うべきものは `linked_requirement_id` で `artifacts.requirements` の AC/FR と紐付ける
+- 解消した場合は `status: resolved` に更新（write 権限あり）
+- 単に黙って実装スコープから外すこと、ローカル TODO コメントだけで済ませることは禁止
+
+### 自己完了判定の禁止
+
+- **本エージェントは「Feature 完了」を判定する権限を持たない**。完了判定は orchestrator のみが `completion_gate` を通じて行う
+- 実装が「動いた」「テストが通った」だけで完遂と報告してはならない（Verification ≠ Validation）
+- 出力は実装結果と発見事実に限定し、完了宣言・タスク終了の判断はしない
+- 詳細: `rules/completion-policy.md`
 
 ## 行動ルール
 
